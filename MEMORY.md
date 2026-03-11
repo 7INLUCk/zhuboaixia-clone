@@ -172,6 +172,12 @@ agent-browser close               # 关闭
 - 彻底修复：`rm -rf .next/cache/images` 清缓存后再用 next/image
 - 适用场景：logo、封面图等静态资源替换后不生效时
 
+## 2026-03-11 前端分享按钮实现模式（长期可复用）
+- 分享链接 = `${window.location.origin}/plaza/${showcaseId}`（路由已存在，无需额外开发）
+- 复制：`navigator.clipboard.writeText(url)` + `document.execCommand('copy')` fallback
+- 提示：`isNavigating` state + `setTimeout` 2.5秒自动消失 toast（`fixed top-16 left-1/2 z-[300]`）
+- 消除跳转闪现：点击即刻设 `isNavigating=true` 渲染全屏黑色遮罩，比 loading.tsx 更及时
+
 ## 2026-03-11 广场详情页抖音滑动架构（长期）
 - 不使用路由跳转，同页面内维护 currentIndex state + transform: translateY 动画
 - sessionStorage.plaza_showcase_ids 存 ID 列表，Same Dance Style 页进入时需重写此列表为 [同款+推荐] 合并顺序

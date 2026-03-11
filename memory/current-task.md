@@ -1,12 +1,7 @@
 # 当前任务：无
 
-上一轮（2026-03-11）完成内容：
-- 广场详情页抖音式滑动切换（完整实现）
-- Same Dance Style 页推荐区空态隐藏
-- Same Dance Style → 详情页滑动接续逻辑
-- 我的作品页 PerformanceCard 三状态样式重设计
-- 滚动失效修复（layout.tsx overflow-hidden → overflow-auto）
-- 底部留白清理、三点菜单删除
+上一轮（2026-03-11 19:50）完成内容：
+- 广场详情页分享按钮：复制链接到剪贴板 + toast 提示（待 AI 执行确认）
+- "View in community" 跳转修复 + 消除闪现（loading.tsx + isNavigating 遮罩）
+- "View original stage" 路由修复
 - 作品详情页自动播放
-- "View original stage" / "View in community" 路由修复
-- 广场详情页加载时底部 Tab 露出 → loading.tsx 全屏遮罩
