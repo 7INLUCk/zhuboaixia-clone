@@ -1,3 +1,34 @@
+## 2026-03-09 | 浏览器 tab 操作：禁止关闭已有会话 tab（高优先）
+- 触发类型：Boss纠正 + 执行失误
+- 失误：Boss 说"测试浏览器"，我调用了 `browser open(新URL)`，这会新开/覆盖 tab，导致原来 vibe-coding AI 助手的会话上下文完全丢失。
+- 根因：MiiMii vibe-coding 的 AI 助手对话历史存在当前 tab 的前端 session 中，一旦关闭 tab 或导航走，上下文清零，无法恢复。
+- 防呆规则：
+  1) **测试浏览器连通性**：只截图 `browser screenshot`，不要 `browser open` 新 URL；
+  2) **需要重启浏览器 profile**：执行 `browser stop` → `browser start`，然后 **重新导航回原 URL**（不是导航新 URL），并使用新 targetId 继续；
+  3) **vibe-coding 面板有上下文时**：在 act 失败时，先改用手动粘贴链路，不要轻易 browser stop/start；
+  4) **browser open 有破坏性**：任何情况下调用 `browser open(url)` 前，先确认是否有正在进行的工作 tab。
+
+## 2026-03-09 | browser.act 抖动问题 - 已知 Bug + 当前最佳 Workaround
+- 触发类型：可复用新方法（已查 GitHub Issue #14503 + #11518）
+- 现象：snapshot 成功但 act 持续 20000ms timeout，重启 gateway 不一定解决。
+- 根因（已确认）：WebSocket 连接进入 zombie state，重建后 targetId 失效；snapshot 走另一通道所以成功但 act 失败。
+- 当前官方 Workaround（截至 2026-03）：
+  1) `browser stop` → `browser start`（重启 profile，不是 restart gateway）
+  2) 重启后立刻调用 `browser open(原URL)` 获取 **新 targetId**
+  3) 用新 targetId 继续 snapshot + act（旧 targetId 全部失效）
+  4) 如果 restart 后 act 仍失败，走手动粘贴链路，不要无限重试
+- 注意：这是平台 bug（Issue #14503），官方尚未修复，只能靠 Workaround。
+- 关键约束：重启 profile 后必须重新拿 targetId，不能复用旧的。
+
+## 2026-03-09 | 无上下文会话的提示词写法（重要）
+- 触发类型：Boss纠正 + 执行失误
+- 失误：因误关 tab 导致 web Agent 上下文清空，却仍用"有上下文"版本提示词发送，导致 Agent 无法理解背景。
+- 防呆规则：
+  1) 每次给网页 Agent 发指令前，先确认 AI 助手聊天框是否有历史；
+  2) 若聊天框为空（"发送一条消息开始对话"），必须用"零上下文版"提示词；
+  3) 零上下文版必须包含：项目名+功能背景、目标文件路径、要做什么、验收标准；
+  4) 不能假设 Agent 知道"之前讨论的方案"、"上次的改动"等任何历史。
+
 ## 2026-03-04 | 实时监控任务的汇报闭环（高优先）
 - 触发类型：Boss纠正 + 执行失误
 - 失误：已承诺“实时监控”，但未在完成后第一时间主动通报，导致 Boss 追问。
@@ -140,3 +171,55 @@
   3) DB真相：Prisma 直连与业务查询对照；
   4) 运行态真相：若 DB 正常而 API 全500，直接走 Next/TRPC 运行态重建。
 - 结案标准：必须给“前后对照证据”再下根因结论，禁止口头推断。
+## 2026-03-11 sticky + flex column + 负 margin 陷阱
+
+### 触发场景
+页面组件用 `-mx-4 -my-4` 逃脱父级 padding，但父级只有 `px-4` 没有 `py-4`
+
+### 根因
+`-my-4` 把外层容器往上偏移 16px，sticky `top-0` 的搜索框和 flex 列的内容区产生 16px 重叠
+
+### 正确排查顺序
+1. 看父级 layout.tsx：有没有 `py-X` padding
+2. 如果父级只有 `px-X`，则子页面用 `-my-X` 是错误的
+3. 只删 `-my-X` 和 `sm:-my-X`，保留 `-mx-X`
+
+### 错误路径（不要走）
+- 给 sticky 搜索框加背景色（会颜色分层）
+- 给滚动容器加大 pt（治标，初始没问题但滚动后仍重叠）
+
+## 2026-03-11 微小 px 差距在手机上不可见
+
+### 教训
+- 4px (px-2 vs px-3) 差距在手机屏上视觉上几乎不可见
+- 建议每次调整至少 8-12px 以上才能被感知
+- 下次给 Boss 提示词时，位置调整要给足够大的值（不要太保守）
+
+## 2026-03-11 URL 参数读取 + 消除 React 闪现
+
+### 场景
+从趋势页跳转到首页并携带 `?templateId=xxx`，首页需要自动填入模板
+
+### 正确方案
+用 `useLayoutEffect` 读取 URL 参数并设置状态（不要用 lazy initializer）
+
+### 错误路径（已踩坑）
+用 `useState` lazy initializer 读 `window.location.search`：
+- 在 Next.js 客户端导航时，组件挂载时 URL 更新时机不确定
+- lazy initializer 可能读到旧 URL 值，导致功能失效
+- 不要用这个方案解决 URL 参数初始化问题
+
+### 规则
+- 消除 React "先默认态后正确态" 闪现：`useEffect` → `useLayoutEffect`
+- `useLayoutEffect` 在 DOM 更新后、浏览器绘制前同步执行，第一帧已是正确状态
+
+## 2026-03-11 不对称 padding vs translate-x 的区别
+
+### 场景
+想单独移动卡片位置，不影响同容器内其他元素（SectionHeader）
+
+### 错误路径
+`pl-12 pr-4`（不对称 padding）→ 容器内所有子元素都跟着移动
+
+### 正确方案
+在目标元素上加 `translate-x-5` → 只改变该元素视觉位置，不影响布局和兄弟元素

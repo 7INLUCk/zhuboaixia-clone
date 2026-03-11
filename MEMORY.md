@@ -1,5 +1,21 @@
 # MEMORY.md
 
+## 2026-03-10 新协作链路 SOP（最新口径，覆盖旧版）
+
+### 新协作循环（Boss手动发送版）
+1. 米迦读页面 → browser 截图/snapshot 读取 vibe-coding AI 最新回复
+2. 米迦汇报分析 → 当前状态 + 建议改法
+3. Boss 确认 → 拍板方向
+4. 米迦发提示词 → 给出可直接粘贴的提示词文本
+5. Boss 手动粘贴发送 → 复制到输入框丢给 AI
+6. AI 处理完成后 Boss 通知米迦
+7. 米迦读最新回复 → 回到第 1 步
+
+**核心原则：米迦不再自己操控输入框，只负责读页面+生成提示词，Boss 负责发送。**
+**原因：browser 自动输入延迟高、不稳定，手动粘贴更快更可靠。**
+
+---
+
 ## 2026-03-10 Vibe-Coding AI 助手操作工作流（长期）
 
 ### A. 源码查询 → 修改工作流（标准流程）
@@ -135,6 +151,64 @@ agent-browser close               # 关闭
 - 前端映射：author = stageUsername ?? name ?? "Anonymous"，authorAvatar = avatarUrl ?? image ?? ""。
 - 分支：vibe/leo/workspace，待 PR。
 - 额外修复：头像 src 为空时浏览器渲染破损图标 → 增加 onError fallback 处理。
+
+## 2026-03-10 Same Dance Style 页面架构（项目记录）
+- 入口：广场详情页 "See how others dance [模板名]" 链接
+- 路由：`/works/[showcaseId]/similar`（已存在，fullscreen 下）
+- 后端：`api.showcase.getByTemplate` 按 templateId 查同款作品
+- 关键 bug 记录：`getById` 的 Prisma select 需包含 `templateId: true`，否则 similar 页查不到作品
+- 样式参考：Stitch 设计稿（已存档在 Boss 消息里）
+
+## 2026-03-10 广场数据架构澄清（长期）
+- **首页热门趋势标签**：来自 Category 表，API = `api.trend.getCategories`
+- **广场 CategoryTabs**：已修改为同样用 Category 表（与首页同源）
+- **Tag 表**：单独存在但实际为空，不用于标签筛选
+- **HOT 标签**：由 `buildFilterChips(hasHot, categories)` 动态生成，hasHot = 是否有 isHot 模板
+- **UserShowcase.tags 字段**：目前全为空数组，继承代码已补（创建时从 template.categories 复制）
+
+## 2026-03-10 Next.js Image 缓存绕过方案（长期）
+- 问题：`next/image` 会缓存优化后的图片，文件替换后旧缓存仍被 serve
+- 临时绕过：改用原生 `<img>` 标签（去掉 `import Image from 'next/image'`）
+- 彻底修复：`rm -rf .next/cache/images` 清缓存后再用 next/image
+- 适用场景：logo、封面图等静态资源替换后不生效时
+
+## 2026-03-11 广场详情页抖音滑动架构（长期）
+- 不使用路由跳转，同页面内维护 currentIndex state + transform: translateY 动画
+- sessionStorage.plaza_showcase_ids 存 ID 列表，Same Dance Style 页进入时需重写此列表为 [同款+推荐] 合并顺序
+- 外层容器 position: fixed; inset: 0; z-50 彻底遮住底部 Tab
+- Pointer Events 同时支持触屏和鼠标（不用 TouchEvent）
+- URL 用 window.history.replaceState 静默更新
+- Next.js 路由跳转期间主布局可见：在目标路由目录新建 loading.tsx 全屏黑色遮罩解决
+
+## 2026-03-11 PerformanceCard 三状态样式（项目记录）
+- In Progress：橙色圆点badge + 模糊背景 + Loader2 spinner + 底部进度%
+- Not Completed：居中文字 + 橙色 Regenerate 按钮
+- Completed：只保留 Completed badge，无 Public badge
+- (main)/layout.tsx 的 main 元素曾有 overflow-hidden 锁死滚动，已改为 overflow-auto
+
+## 2026-03-11 我的作品→广场/同款 路由（项目记录）
+- "View in community" → `/plaza/${showcase.id}`
+- "View original stage" → `/works/${showcase.id}/similar`
+- 作品详情页视频自动播放：加 `autoPlay` 不加 `muted`（用户点击进来有手势，浏览器允许有声自动播放）
+
+## 2026-03-11 趋势页 -my-4 布局 bug 根因（长期）
+- **症状**：趋势页卡片滚动时穿入搜索框区域，视觉重叠
+- **根因**：外层容器用了 `-my-4`，但父级 `<main>` 只有 `px-4`（无 `py-4`），负 margin 把 flex 列错误上移 16px，内容区顶部侵入 sticky 搜索框区域
+- **正确修法**：删掉 `-my-4 sm:-my-6`，只保留 `-mx-4 sm:-mx-6`
+- **错误路径（已踩坑）**：加背景色（bg-white/bg-[#FAFAF8]/backdrop-blur）或大 pt 值（pt-8/pt-14）均为治标，不解决根因
+- **原则**：`-my-N` 只有在父级有对应 `py-N` 时才正确；sticky + flex column 存在负 margin 时会导致视觉位置和布局位置不一致
+
+## 2026-03-11 CSS transform scale 对齐技巧（长期）
+- `scale-[0.80] origin-top`：从中心顶部缩放，左右各产生 10% 额外空白，无法通过 padding 精确对齐左边缘
+- `scale-[0.80] origin-top-left`：从左上角缩放，左边缘固定在 padding 位置，适合需要左对齐的卡片缩放场景
+- padding 差距 < 8px 在手机屏上视觉不可见，需至少 12px+ 差距才能被感知
+- **不对称 padding** 影响容器内所有子元素；**translate-x** 只影响单个元素视觉位置，是卡片单独右移的正确方案
+
+## 2026-03-11 消除 React 状态切换闪现（长期）
+- **症状**：页面导航后，先显示默认态（一帧），再更新到正确态
+- **原因**：`useEffect` 在浏览器绘制后才执行，用户会看到默认态的那一帧
+- **正确修法**：改用 `useLayoutEffect`，在 DOM 渲染后、浏览器绘制前同步执行，无闪现
+- **错误路径**：lazy initializer 读取 URL 参数（Next.js 客户端导航时 URL 更新时机不确定，会读到旧值）
 
 ## 2026-03-09 Internal Server Error 分层诊断法（长期）
 - 当出现“本轮改动后页面500”时，禁止直接把因果归到功能改动，必须按层排查：
