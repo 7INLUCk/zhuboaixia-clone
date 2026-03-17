@@ -33,3 +33,22 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 ---
 
 Add whatever helps you do your job. This is your cheat sheet.
+
+
+## 飞书聊天记录爬取（feishu-history skill）
+- **脚本**：`python3 /Users/yuchuyang/.openclaw/workspace-main/skills/feishu-history/scripts/fetch_chat_history.py`
+- **SKILL.md**：`/Users/yuchuyang/.openclaw/workspace-main/skills/feishu-history/SKILL.md`
+- **触发时机**：Boss 说"查聊天记录"/"今天说了什么"/"飞书记录"
+- **最简用法**（用当前消息 ID 自动发现 chat）：
+  ```bash
+  python3 /Users/yuchuyang/.openclaw/workspace-main/skills/feishu-history/scripts/fetch_chat_history.py \
+      --anchor-msg-id <当前消息的message_id>
+  ```
+- **指定 chat_id 或日期**：
+  ```bash
+  --chat-id oc_3ec6934a25408c9fcb1dfa8bc7de2f02  # 小贾↔Leo主DM
+  --date 2026-03-17   # 指定日期
+  --hours 3           # 最近N小时
+  ```
+- **⚠️ 关键坑**：不能用 /im/v1/chats 列表里的 chat_id，必须用消息 ID 反查；API 不支持时间过滤参数，脚本内部处理。
+
