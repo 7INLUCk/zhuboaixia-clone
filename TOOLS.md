@@ -35,20 +35,24 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 Add whatever helps you do your job. This is your cheat sheet.
 
 
-## 飞书聊天记录爬取（feishu-history skill）
+## 飞书聊天记录（feishu-bot-history skill，优先）
+- **Skill**：`/Users/yuchuyang/.agents/skills/feishu-bot-history/SKILL.md`
+- **脚本**：`python3 /Users/yuchuyang/.agents/skills/feishu-bot-history/scripts/fetch_chat_history.py`
+- **触发时机**：Boss 说“查飞书记录”/“上周说了什么”/“定位某条消息”/“查 bot 聊天历史”
+- **优先用法（有当前 message_id）**：
+  ```bash
+  python3 /Users/yuchuyang/.agents/skills/feishu-bot-history/scripts/fetch_chat_history.py \
+      --anchor-msg-id om_xxx \
+      --hours 24 \
+      --app-id <当前bot app_id> \
+      --app-secret <当前bot app_secret>
+  ```
+- **只有 open_id 时**：先 `--open-id ou_xxx`；无缓存时加 `--bootstrap-p2p`
+- **已知 chat_id 时**：直接 `--chat-id oc_xxx`
+- **⚠️ 关键坑**：必须用**当前这个 bot 自己**的 app_id/app_secret，否则会报 `open_id cross app` / message 查不到
+
+## 飞书聊天记录爬取（feishu-history skill，旧）
 - **脚本**：`python3 /Users/yuchuyang/.openclaw/workspace-main/skills/feishu-history/scripts/fetch_chat_history.py`
 - **SKILL.md**：`/Users/yuchuyang/.openclaw/workspace-main/skills/feishu-history/SKILL.md`
-- **触发时机**：Boss 说"查聊天记录"/"今天说了什么"/"飞书记录"
-- **最简用法**（用当前消息 ID 自动发现 chat）：
-  ```bash
-  python3 /Users/yuchuyang/.openclaw/workspace-main/skills/feishu-history/scripts/fetch_chat_history.py \
-      --anchor-msg-id <当前消息的message_id>
-  ```
-- **指定 chat_id 或日期**：
-  ```bash
-  --chat-id oc_3ec6934a25408c9fcb1dfa8bc7de2f02  # 小贾↔Leo主DM
-  --date 2026-03-17   # 指定日期
-  --hours 3           # 最近N小时
-  ```
-- **⚠️ 关键坑**：不能用 /im/v1/chats 列表里的 chat_id，必须用消息 ID 反查；API 不支持时间过滤参数，脚本内部处理。
+- **备注**：后续优先用上面的 feishu-bot-history，旧 skill 仅作兼容参考
 

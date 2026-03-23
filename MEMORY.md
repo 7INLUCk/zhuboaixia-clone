@@ -1,5 +1,106 @@
 # MEMORY.md
 
+## 2026-03-23 飞书聊天记录优先用 feishu-bot-history skill（长期，Boss通知）
+- **Skill 路径**：`/Users/yuchuyang/.agents/skills/feishu-bot-history`
+- **触发场景**：查飞书记录 / 上周说了什么 / 定位某条消息 / 查 bot 聊天历史 / message_id / chat_id / open_id
+- **优先路径**：有当前消息 `message_id` 时，优先用 `fetch_chat_history.py --anchor-msg-id om_xxx --hours N --app-id <当前bot> --app-secret <当前bot>`
+- **open_id 场景**：只有 `open_id` 时先查缓存；无缓存则加 `--bootstrap-p2p`
+- **已知 chat_id**：直接 `--chat-id oc_xxx`
+- **关键坑**：必须用**当前这个 bot 自己**的 `app_id/app_secret`，否则会报 `cross-app` 或查不到消息
+- **执行原则**：后续凡是涉及飞书 Bot 历史消息，优先读这个 skill，不靠记忆硬猜
+
+## 2026-03-20 飞书发视频用 feishu-send-video skill（长期，Alex通知）
+- message 工具发视频有 Bug，必须用此脚本
+- **脚本路径**：`/Users/yuchuyang/.openclaw/workspace-alex/skills/feishu-send-video/scripts/send_video.py`
+- **最简用法**：
+  ```bash
+  python3 /Users/yuchuyang/.openclaw/workspace-alex/skills/feishu-send-video/scripts/send_video.py \
+    --video /tmp/your_video.mp4 \
+    --chat-id "user:ou_xxx" \
+    --app-id "cli_a92d04f7fe781cd5" \
+    --app-secret "aDkHKtAmtia6LYQWiFVNQh7f2dLLqRhv"
+  ```
+- **米迦凭证**：appId=`cli_a92d04f7fe781cd5`，appSecret=`aDkHKtAmtia6LYQWiFVNQh7f2dLLqRhv`
+- **两个关键坑（已踩过）**：
+  1. `duration` 字段单位是**毫秒**（脚本已自动处理）
+  2. 必须同时传封面 `image_key`，否则缩略图永远灰色（脚本已自动提取第1帧）
+- **触发场景**：任何往飞书发 MP4 视频的任务
+
+## 2026-03-17 飞书发图用 feishu-send-image skill（长期）
+- OpenClaw `message` 工具发图有 Bug（#25200），filePath/media/path 只发文字不发图
+- **正确方式**：`python3 /Users/yuchuyang/.openclaw/workspace-miijia2/skills/feishu-send-image/scripts/send_image.py --image 图片路径或URL --chat-id "user:ou_xxx"`
+- 以后发图一律用这个脚本，不要再用 message 工具发图
+
+## 2026-03-18 首页一屏布局核心规则（长期，覆盖 03-17 旧方案）
+- **正常设备一屏展示，矮屏（iPhone SE）允许滚动**
+- **卡片高度驱动方案**（已验证）：
+  - 滚动容器用 `items-stretch`（flex 默认值），**不要用 items-start**
+  - 卡片只用 `aspect-[9/16] shrink-0`，**不要用 h-full**（在多层 flex 嵌套中 h-full 百分比解析失败，flexbugs #197）
+  - stretch 给卡片确定的 cross-size → aspect-ratio 从确定高度反推宽度
+- **卡片区域高度**：用 CSS max() 函数 `height: max(280px, calc(100dvh - 530px))`
+  - 530px ≈ Header(56) + Hero(260) + 趋势标题+Chips(104) + BottomNav(84) + buffer
+  - 大屏自动填满，矮屏保底 280px
+- **滚动容器**：用 `h-full`，**不要用 `absolute inset-0`**（absolute 子元素不撑开父容器，无法触发滚动）
+- **Section**：用 `shrink-0`，**不要用 `flex-1 min-h-0`**（flex-1 会压缩卡片区域）
+- **外层页面 div**：`overflow-y-auto hide-scrollbar`（允许矮屏滚动，隐藏滚动条）
+
+## 2026-03-18 Kimi K2.5 提示词最佳实践（长期，Boss确认）
+- **锁死文件范围**：每次只改一个文件，明确禁止动其他文件
+- **精确到行级**：给出"找到这段 → 替换为这段"的精确代码
+- **禁止项明确**：每条末尾加 ⚠️ 禁止列表
+- **改完贴确认行**：要求贴出修改后的关键行
+- **一次少量改动**：不塞太多改动，逐轮验收
+- **给成品代码**：米迦先改好代码，再让 K2.5 替换，不让它自由发挥（米迦改码能力更强）
+
+## 2026-03-17 全站响应式适配已完成（项目记录）
+- 根 layout：max-w-[430px] md:max-w-[768px] lg:max-w-[1200px]
+- 列表页网格：grid-cols-2 md:grid-cols-3 lg:grid-cols-4（plaza、works、similar）
+- 作品详情视频：max-w-[500px] mx-auto 居中
+- BottomNav：内容区跟随响应式 max-w 居中
+- 趋势页：保持不变（边栏+单列）
+- Settings：未改（低优先级）
+
+## 2026-03-17 广场详情页文字颜色修复（项目记录）
+- 底部信息区文字从 gray-900/500 改为白色系 + drop-shadow
+- 原因：深色渐变遮罩上灰色文字不可见
+
+## 2026-03-13 源码读取硬性规则（Boss明确要求，永久执行）
+- **禁止**：直接用 Read 工具读取本地项目文件（src/、components/ 等 MiiMii 项目代码）
+- **原因**：本地代码版本可能落后于云端，基于本地代码的判断不可信
+- **正确方式**：需要看源码时 → 生成提示词给 Boss → Boss copy 到 vibe-coding → AI 贴出云端代码 → 再分析
+- **附加规则**：我不自己在浏览器里操控 vibe-coding 发消息，只负责生成提示词
+- **触发场景**：任何"我来读一下源码"的念头出现时，必须先问自己：是本地读还是请Boss中转？
+
+## 2026-03-16 视频黑边终极修复方案（覆盖 03-12 旧方案）
+- **症状**：主视频两侧出现黑色/暗色竖线（模糊背景填充区域边界）
+- **根因**：GPU compositing 合成层边界 artifact，不是 blur 暗边问题
+- **所有失败方案**：负 inset、clip-path:inset(0)、scale(1.4)、overflow:hidden wrapper → 全部无效
+- **正确解法**：在主视频 wrapper div 加 `mask-image` 渐变：
+  ```jsx
+  maskImage: 'linear-gradient(to right, transparent 0px, black 8px, black calc(100% - 8px), transparent 100%)',
+  WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 8px, black calc(100% - 8px), transparent 100%)',
+  ```
+- **原理**：左右各 8px 渐变把 compositing artifact 溶解掉，与背景自然融合
+- **教训**：视频/图片边缘黑线 → 直接用 mask-image，不要试其他方法
+
+## 2026-03-12 广场详情页文件路径（长期）
+- **正确文件**：`src/app/[locale]/(main)/plaza/[id]/page.tsx`（main 路由组，不是 fullscreen）
+- **坑**：`(fullscreen)/works/[id]/page.tsx` 是"Your Stage Moment"自己的作品页，不是广场刷视频页
+- ShowcaseContent 组件：包含 currentIndex/translateY/swipe 手势逻辑 + 视频渲染
+
+## 2026-03-12 全局响应式策略升级（长期）
+- **原策略（路B）**：所有页面 430px 居中列（已实现 R1+R2）
+- **升级方向**：列表/浏览页去掉 430px 限制，iPad 上自动变 2 列，桌面 3 列
+  - 根 layout：`max-w-[430px] md:max-w-full` 或完全去掉
+  - 卡片网格：加 `sm:grid-cols-2 lg:grid-cols-3`
+- **广场详情页（全屏视频）**：YouTube Shorts 模糊背景，独立于 layout 改动
+
+## 2026-03-12 多 Agent 共享 Chrome tab 防干扰规则（长期）
+- **问题**：Alex Agent 用 `browser open` 开新 tab 时会替换/关闭米迦的 tab
+- **解法**：每次 browser 操作都传 `targetId` 参数，钉死到自己的 tab
+- **查当前 targetId**：`browser tabs` 或上次 `browser open` 的返回值
+- **提醒 Alex**：他的 browser 操作也应传自己的 targetId，避免覆盖其他 Agent 的 tab
+
 ## 2026-03-10 新协作链路 SOP（最新口径，覆盖旧版）
 
 ### 新协作循环（Boss手动发送版）
@@ -172,6 +273,21 @@ agent-browser close               # 关闭
 - 彻底修复：`rm -rf .next/cache/images` 清缓存后再用 next/image
 - 适用场景：logo、封面图等静态资源替换后不生效时
 
+## 2026-03-11 全局响应式适配方案（长期）
+- **策略**：路B（手机视口居中），参考 TikTok/Instagram Reels 网页版
+- 根 layout 加 `max-w-[430px] mx-auto` + 渐变背景填充两侧
+- 全局 `100vh` → `100dvh`（dynamic viewport，解决 iOS Safari 地址栏问题）
+- safe-area-inset-bottom 加在 BottomNav（原已有）
+- Toaster 需在 max-width 容器**外层**，否则被裁断
+- fullscreen fixed 页面（广场详情等）不受 max-width 影响，属正常行为
+
+## 2026-03-11 邀请系统完整链路（项目记录）
+- 邀请链接格式：`${origin}/${locale}/invite?code=${user.referralCode}&showcase=${showcase.id}`
+- `/invite` 中转页：Client Component，存 cookie `miimii_referral_code`（30天），跳转至 `/plaza/${showcaseId}`
+- Referral 状态流：注册→PENDING，完成首个作品→CONVERTED，每3个CONVERTED→REWARDED+发券
+- 关键文件：`task-poller.ts`（触发convertReferral）、`referral.ts`（checkAndRewardReferrer）
+- Server Component + redirect() + cookies() 在 Next.js 15 有兼容问题 → 用 Client Component
+
 ## 2026-03-11 前端分享按钮实现模式（长期可复用）
 - 分享链接 = `${window.location.origin}/plaza/${showcaseId}`（路由已存在，无需额外开发）
 - 复制：`navigator.clipboard.writeText(url)` + `document.execCommand('copy')` fallback
@@ -226,3 +342,40 @@ agent-browser close               # 关闭
 - 判责规则：
   - 回滚前后都500，优先看环境；
   - 回滚后消失，才继续二分功能改动。
+
+## 🎨 图片生成标准脚本（2026-03-16 全员统一，Boss强制）
+
+> **所有 Agent 生图必须走此脚本，禁止走 Gemini API（省钱，走公司扣子平台不计费）**
+
+- **脚本路径**：`/Users/yuchuyang/.openclaw/workspace/coze_image.py`
+- **基础调用**：
+```
+python3 /Users/yuchuyang/.openclaw/workspace/coze_image.py \
+    --prompt "图片描述" \
+    --output /tmp/output.jpg \
+    --ratio 9:16
+```
+- **ratio 选项**：`9:16`（竖图/小红书封面）/ `16:9`（横图）/ `1:1`（方图）
+- **捕获 URL 方式**：最后一行输出 `URL:https://...`，用 grep "^URL:" | cut -c5- 提取
+- **速度**：约 10 秒，电影级画质，走公司扣子平台，完全不计费
+- **统一视觉风格**（Boss确认）：电影级画质，暖色调，写实风格；图片上要带中文文字标注（核心观点）
+
+
+
+## 🎨 图片生成标准脚本（2026-03-16 全员统一，Boss强制）
+
+> **所有 Agent 生图必须走此脚本，禁止走 Gemini API（省钱，走公司扣子平台不计费）**
+
+- **脚本路径**：`/Users/yuchuyang/.openclaw/workspace/coze_image.py`
+- **基础调用**：
+```
+python3 /Users/yuchuyang/.openclaw/workspace/coze_image.py \
+    --prompt "图片描述" \
+    --output /tmp/output.jpg \
+    --ratio 9:16
+```
+- **ratio 选项**：`9:16`（竖图/小红书封面）/ `16:9`（横图）/ `1:1`（方图）
+- **捕获 URL 方式**：最后一行输出 `URL:https://...`，用 grep "^URL:" | cut -c5- 提取
+- **速度**：约 10 秒，电影级画质，走公司扣子平台，完全不计费
+- **统一视觉风格**（Boss确认）：电影级画质，暖色调，写实风格；图片上要带中文文字标注（核心观点）
+

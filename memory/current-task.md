@@ -1,7 +1,20 @@
-# 当前任务：无
+# 当前任务
 
-上一轮（2026-03-11 19:50）完成内容：
-- 广场详情页分享按钮：复制链接到剪贴板 + toast 提示（待 AI 执行确认）
-- "View in community" 跳转修复 + 消除闪现（loading.tsx + isNavigating 遮罩）
-- "View original stage" 路由修复
-- 作品详情页自动播放
+## 任务名
+记录并确认新 Skill：feishu-bot-history 的后续使用规范
+
+## 开始时间
+2026-03-23 08:52 EDT
+
+## 进度
+进行中：已读取 skill-vetter 与 feishu-bot-history 的 SKILL.md，准备写入长期记忆/工具说明并回复确认。
+
+## 已完成
+- 已检查相关记忆
+- 已读取 skill-vetter 规则
+- 已读取 feishu-bot-history 的 SKILL.md
+
+## 待完成
+- 写入 MEMORY.md
+- 写入 TOOLS.md
+- 回复确认后续使用口径
