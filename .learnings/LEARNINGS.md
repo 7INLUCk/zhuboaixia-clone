@@ -1,3 +1,33 @@
+## 2026-03-24 | 给网页 AI 的改码提示词：禁止过长，默认精确替换
+- 触发类型：Boss纠正 + 可复用新方法
+- 失误：我给网页 AI 的提示词写得太长，带了过多背景与过程描述，Boss 需要的是可直接复制的短提示词。
+- 根因：我在“分析完整性”与“执行效率”之间偏向了前者，没有把提示词收敛成补丁式替换指令。
+- 防呆规则：
+  1) 已知目标文件和改动片段时，提示词默认写成“精确替换版”；
+  2) 每个文件只交代三件事：改哪里、原来怎样、现在怎样；
+  3) 结尾固定补一句：只替换这部分，其他代码不要动；
+  4) 先检查 Boss 能否一眼复制发送，不能就继续删字。
+
+## 2026-03-24 | 网页 AI 回复读取：先 snapshot，后 screenshot（Boss纠正）
+- 触发类型：Boss纠正 + 执行方式不优
+- 失误：在“读取 Kimi 网页回复内容”场景里，本可继续用 browser snapshot 直接读文字，却额外用了多次 screenshot。
+- 根因：没有把“读文字内容”和“视觉取证”这两类动作分开，默认把 screenshot 当成通用补充步骤。
+- 防呆规则：
+  1) 目标是读文本/源码/逻辑时，优先 `browser snapshot`；
+  2) screenshot 只在 snapshot 读不到或需要视觉证据时使用；
+  3) 回复 Boss 时明确说明结论依据来自 snapshot 还是截图；
+  4) 若 Boss 问“你不是可以直接读吗”，先认错，再切回纯 snapshot 路径。
+
+## 2026-03-13 | 源码读取：禁止直接读本地项目文件（Boss硬性要求）
+- 触发类型：Boss纠正
+- 失误：昨晚直接用 Read 工具读取本地 src/ 目录下的 MiiMii 项目源码，未经 Boss 中转向云端确认，基于本地版本给出判断。
+- 根因：走了"方便"的捷径，默认本地代码和云端一致，这个假设不成立。
+- 防呆规则：
+  1. 任何需要看 MiiMii 项目源码的场景，禁止用 Read 工具直接读本地文件
+  2. 正确做法：生成提示词 → Boss copy 到 vibe-coding → AI 贴出云端代码 → 我再分析
+  3. 我不自己在浏览器里操控 vibe-coding 发消息
+  4. 脑内 checkpoint："这个源码我从哪读的？" 如果答案是本地，立即停止
+
 ## 2026-03-09 | 浏览器 tab 操作：禁止关闭已有会话 tab（高优先）
 - 触发类型：Boss纠正 + 执行失误
 - 失误：Boss 说"测试浏览器"，我调用了 `browser open(新URL)`，这会新开/覆盖 tab，导致原来 vibe-coding AI 助手的会话上下文完全丢失。
@@ -223,3 +253,70 @@
 
 ### 正确方案
 在目标元素上加 `translate-x-5` → 只改变该元素视觉位置，不影响布局和兄弟元素
+
+---
+
+## 2026-03-12 CSS blur 边缘暗边问题
+
+### 症状
+`filter: blur()` 在元素边缘产生暗色 halo，多次 `scale-N` 尝试均不能彻底解决。
+
+### 踩坑路径
+scale-110 → scale-150 → 仍有暗边 → 浪费多轮
+
+### 正确方案
+用负 inset 延伸元素超出容器：
+- `top/left/right/bottom: -[blur-radius]px`
+- `width: calc(100% + 2*radius); height: calc(100% + 2*radius)`
+- 父容器加 `overflow-hidden`
+
+### 下次直接用这个，跳过 scale 方案
+
+---
+
+## 2026-03-12 广场详情页文件路径坑
+
+### 症状
+误改 `(fullscreen)/works/[id]/page.tsx`，前端没有任何变化
+
+### 根因
+广场刷视频页实际在 `(main)/plaza/[id]/page.tsx`，不是 fullscreen 路由组
+识别特征：有 currentIndex/translateY/swipe 逻辑
+
+### 下次
+给 AI 找文件时必须先 `find + grep currentIndex` 验证，不能只凭路径猜测
+
+
+---
+
+## 2026-03-16 视频模糊背景黑边终极修复方案
+
+### 症状
+广场详情页（YouTube Shorts 风格），主视频两侧模糊背景区域出现黑色/暗色竖线。
+
+### 踩坑路径（每种方法都失败了）
+1. `filter: blur(40px)` + 负 inset 延伸（top:-40px 等） → 还有黑边
+2. `filter: blur(40px)` + `clip-path: inset(0)` → 还有黑边
+3. `filter: blur(40px)` + `transform: scale(1.4)` → 还有黑边
+4. 主视频加 wrapper div + `overflow: hidden` + `object-fit: cover` → 还有黑边
+
+### 根因
+**不是 blur 的暗边问题，而是 GPU compositing 合成层边界渲染 artifact。** 主视频容器（`overflow: hidden` + `position: relative`）创建了独立的 GPU 合成层，在该层边界处浏览器渲染引擎产生 1-5px 的暗色过渡带。
+
+### 正确修复方案（唯一有效）
+在主视频的 wrapper div style 里加上 `mask-image` 渐变，让边缘渐变为透明，与背景自然融合：
+
+```jsx
+style={{
+  // ...其他样式
+  maskImage: 'linear-gradient(to right, transparent 0px, black 8px, black calc(100% - 8px), transparent 100%)',
+  WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 8px, black calc(100% - 8px), transparent 100%)',
+}}
+```
+
+原理：左右各 8px 渐变区域从 transparent→black，把任何 compositing artifact 都"溶解"掉。
+
+### 教训
+- 遇到视频/图片元素边缘黑色竖线 → 直接用 `mask-image` 渐变，不要再浪费时间试 blur/clip/scale
+- `overflow: hidden` 容器边界 artifact 不能靠 overflow 或 clip-path 自身解决，要靠 mask
+

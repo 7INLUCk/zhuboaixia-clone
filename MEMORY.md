@@ -1,5 +1,17 @@
 # MEMORY.md
 
+## 2026-03-24 给网页 AI 的改码提示词默认用“精确替换版”（长期，Boss纠正）
+- 适用场景：Boss 让我给 vibe-coding / Kimi / 网页 AI 生成改码提示词，且我已经知道要改的两个或多个文件中的具体片段
+- 默认结构：只写 `文件路径/文件名` + `改哪一部分` + `原先是什么样` + `现在改成什么样` + `精准替换这部分，其他不要动`
+- 禁止事项：不要塞大段背景、过程分析、泛泛验收说明；提示词目标是让 Boss 能直接复制，网页 AI 能直接按片段替换
+- 预期效果：篇幅更短、范围更收敛、误改概率更低
+
+## 2026-03-24 读取 vibe-coding / 网页 AI 回复时，优先用 browser snapshot 直接读文本（长期，Boss纠正）
+- 适用场景：Boss 让我“读一下他回复的内容”“看能否读到源码/逻辑”等需要从网页 AI 对话区读取文字内容的任务
+- 默认路径：先用 `browser snapshot` / 结构化页面读取直接抓文本，不要默认走 screenshot
+- screenshot 仅作补充取证：只有在 snapshot 读不到、内容被截断或需要视觉证据时再用
+- 对外汇报口径：如果主要结论来自 snapshot，就直接说明“我已直接读到文字内容”，不要给人感觉是在靠截图 OCR 猜
+
 ## 2026-03-23 飞书聊天记录优先用 feishu-bot-history skill（长期，Boss通知）
 - **Skill 路径**：`/Users/yuchuyang/.agents/skills/feishu-bot-history`
 - **触发场景**：查飞书记录 / 上周说了什么 / 定位某条消息 / 查 bot 聊天历史 / message_id / chat_id / open_id
