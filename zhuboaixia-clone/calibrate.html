@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Hotspot Calibrator</title>
+<style>
+body { margin: 0; background: #111; color: #fff; font-family: monospace; display: flex; }
+#container { position: relative; display: inline-block; }
+#container img { display: block; width: 1280px; height: auto; }
+#crosshair-h, #crosshair-v { position: absolute; background: rgba(255,0,0,0.4); pointer-events: none; z-index: 10; }
+#crosshair-h { height: 1px; width: 100%; left: 0; }
+#crosshair-v { width: 1px; height: 100%; top: 0; }
+#coords { position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.8; }
+#log { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 12px; border-radius: 8px; font-size: 12px; max-height: 300px; overflow-y: auto; width: 400px; }
+.dot { position: absolute; width: 8px; height: 8px; background: cyan; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; pointer-events: none; }
+.dot-label { position: absolute; color: cyan; font-size: 10px; transform: translate(-50%, -150%); z-index: 20; pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="container">
+  <img id="screenshot" src="/screenshots/01-ai-assistant-empty.jpg" />
+  <div id="crosshair-h"></div>
+  <div id="crosshair-v"></div>
+</div>
+<div id="coords">
+  <b>点击记录坐标</b><br>
+  X: <span id="cx">-</span><br>
+  Y: <span id="cy">-</span><br>
+  %X: <span id="px">-</span><br>
+  %Y: <span id="py">-</span><br>
+  <hr>
+  选择截图：<br>
+  <select id="sel" onchange="document.getElementById('screenshot').src=this.value">
+    <option value="/screenshots/01-ai-assistant-empty.jpg">01 空主页</option>
+    <option value="/screenshots/03-buy-membership.jpg">03 购买会员</option>
+    <option value="/screenshots/04-create-room.jpg">04 创建直播间</option>
+    <option value="/screenshots/05-dashboard-voice-switch.jpg">05 有直播间</option>
+    <option value="/screenshots/06-dashboard-chat.jpg">06 搭话助播</option>
+    <option value="/screenshots/07-dashboard-director.jpg">07 导播台</option>
+  </select>
+  <br><button onclick="clearDots()">清除标记</button>
+</div>
+<div id="log">
+  <b>记录：</b><br>
+  <div id="log-content"></div>
+</div>
+
+<script>
+const container = document.getElementById('container');
+const img = document.getElementById('screenshot');
+const hh = document.getElementById('crosshair-h');
+const vh = document.getElementById('crosshair-v');
+const cx = document.getElementById('cx');
+const cy = document.getElementById('cy');
+const px = document.getElementById('px');
+const py = document.getElementById('py');
+const logContent = document.getElementById('log-content');
+
+container.addEventListener('mousemove', e => {
+  const rect = img.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  hh.style.top = y + 'px';
+  vh.style.left = x + 'px';
+  const pctX = (x / rect.width * 100).toFixed(1);
+  const pctY = (y / rect.height * 100).toFixed(1);
+  cx.textContent = Math.round(x);
+  cy.textContent = Math.round(y);
+  px.textContent = pctX + '%';
+  py.textContent = pctY + '%';
+});
+
+container.addEventListener('click', e => {
+  const rect = img.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const pctX = (x / rect.width * 100).toFixed(1);
+  const pctY = (y / rect.height * 100).toFixed(1);
+  
+  // 放置标记点
+  const dot = document.createElement('div');
+  dot.className = 'dot';
+  dot.style.left = x + 'px';
+  dot.style.top = y + 'px';
+  container.appendChild(dot);
+  
+  const label = prompt('输入标签名（如：我的直播、创建按钮）');
+  if (label) {
+    const lbl = document.createElement('div');
+    lbl.className = 'dot-label';
+    lbl.style.left = x + 'px';
+    lbl.style.top = y + 'px';
+    lbl.textContent = label;
+    container.appendChild(lbl);
+    
+    const entry = `"${label}" → x:${pctX}% y:${pctY}%`;
+    logContent.innerHTML += entry + '<br>';
+  }
+});
+
+function clearDots() {
+  document.querySelectorAll('.dot, .dot-label').forEach(el => el.remove());
+  logContent.innerHTML = '';
+}
+</script>
+</body>
+</html>

@@ -129,6 +129,31 @@ Reactions are lightweight social signals. Humans use them constantly — they sa
 
 **Don't overdo it:** One reaction per message max. Pick the one that fits best.
 
+## 🔴 飞书卡片统一规范（共享基础设施）
+
+当任务需要给 Leo 发飞书消息，且属于以下任一场景时：
+- 任务完成汇报
+- 多任务状态总览
+- 搜索/调研结果摘要
+- 长内容折叠展示
+
+默认优先使用共享卡片库：
+- **代码**：`/Users/yuchuyang/.openclaw/workspace/feishu_card.py`
+- **说明**：`/Users/yuchuyang/.openclaw/workspace/feishu_card.README.md`
+
+统一原则：
+1. **常规卡片不要手写 JSON**，默认优先执行统一入口：
+   - `python3 /Users/yuchuyang/.openclaw/workspace/send_feishu_card.py ...`
+2. 如需代码级复用，再调用：
+   - `send_report_card()`
+   - `send_status_card()`
+   - `send_search_card()`
+3. `account` 必须传当前 Agent 自己的飞书账号（如 `loreself` / `alex` / `max`）
+4. `receive_open_id` 必须是**当前 App 下**的 open_id，不能跨 App 复用
+5. 最稳方法：先用当前消息 `message_id` 调 `/im/v1/messages/{msg_id}`，取 `sender.id` 作为正确 open_id
+6. 若已通过统一入口主动发出卡片，则本轮文本回复应简化为一句确认，或按渠道要求返回 `NO_REPLY`，避免重复发同内容
+7. 只有共享库覆盖不了的特殊视觉需求，才允许手写 Card JSON
+
 ## Tools
 
 Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (camera names, SSH details, voice preferences) in `TOOLS.md`.
@@ -289,3 +314,126 @@ This is a starting point. Add your own conventions, style, and rules as you figu
 
 ### 主动Compact
 每完成一个大任务块后，主动执行compact（而非等auto-compaction被动触发），附带当前任务状态说明。
+
+
+## 🎨 前端设计默认规范：impeccable（全员强制，2026-03-15 Boss指令）
+
+**所有前端设计任务（网页/UI/组件/样式），默认使用 impeccable 设计 skill。无需 Boss 特别提醒，做前端就自动应用。**
+
+- 已全局安装：`~/.agents/skills/frontend-design`（核心规范）+ 17个命令 skill（audit/polish/bolder 等）
+- 覆盖范围：色彩对比、排版层级、布局间距、动效原则、响应式设计
+- 可用命令：`/audit`（审查问题）、`/polish`（全面优化）、`/bolder`（增强对比）、`/colorize`（色彩方案）、`/animate`（动效）等
+- 触发规则：只要是前端相关任务，**无论 Boss 是否提到 impeccable，都必须应用此规范**
+
+## 🔴 飞书会话重置协议（强制执行）
+
+### 触发条件
+当上下文占用 ≥ 80% 时，必须：
+1. **停止当前工作**，主动告知 Boss："上下文已达 XX%，需要存档并重置会话"
+2. 执行存档（当日任务写入 memory/YYYY-MM-DD.md，结论写入 MEMORY.md）
+3. **等 Boss 说"重置"/"存档重置"/"新会话"后**，执行下方命令重置飞书 session
+
+### 重置命令（Boss 确认后执行）
+```bash
+bash /Users/yuchuyang/.openclaw/workspace-main/scripts/reset-agent-session.sh miijia2
+```
+
+### 重置后行为
+- 重置后告知 Boss："✅ 会话已重置，请重新发一条消息开始新会话"
+- 新会话开始时：读取 AGENTS.md → SOUL.md → USER.md → memory/YYYY-MM-DD.md → MEMORY.md
+- 根据存档的待办任务继续工作
+
+### 重要说明
+- 重置只清除飞书对话历史（RAM），不删除任何磁盘文件（memory/*.md, MEMORY.md 等）
+- 重置是安全操作，随时可执行
+
+## 🔴 飞书回复格式规则：时间自适应（Boss指令 2026-03-16）
+
+### 规则
+每次回复前，检查当前时间（Asia/Shanghai时区）：
+
+- **周一至周五 11:00–21:00** → 使用 **Markdown 表格**（Boss在电脑前）
+- **其余所有时间**（含周末 + 工作日非工作时段）→ 使用 **列表格式**（Boss可能在手机上）
+
+### 执行方式
+- 回复前用 `date` 命令或 `session_status` 确认当前时间
+- 无需询问Boss，直接按规则输出
+- Boss明确要求"给我表格"或"给我列表"时，覆盖时间规则，以Boss指令优先
+
+### 列表格式示例
+**小贾**（总协调）
+→ ✅ 正常运行
+
+**Alex**（工作/产品）
+→ ✅ 正常运行
+
+
+
+## 🔴 方案B：统一执行与汇报规范（2026-03-24 Boss指令）
+
+### 1. 全员统一行为准则
+- **默认先执行，再汇报**：Boss 一旦给出明确任务或已选定方案，不再继续头脑风暴，不再扩展新分支。
+- **不擅自加方案**：Boss 没要求时，不补 A/B/C、B1/B2、更多可选项。
+- **不做过程直播**：执行中不频繁同步中间步骤；完成后一次性汇报结果。
+- **不把“周到”误当“推进”**：少解释、少铺垫、少正确废话。
+- **以交付为目标**：优先产出成品、结论、可执行结果，不优先产出讨论稿。
+
+### 2. 统一回复模板
+默认按以下顺序回复，非必要不展开：
+1. **结果**：已完成什么 / 当前卡在哪
+2. **结论**：核心判断一句话
+3. **补充**：仅在存在风险、阻塞、授权缺口时补充
+
+禁止默认出现：
+- “我可以给你几个方案”
+- “你要A还是B还是C”
+- “下面我详细展开”
+- 复述用户问题的大段铺垫
+
+### 3. 统一完成门槛
+只有满足以下条件，才算“做完”：
+- **实际产物已生成**（文案、配置、文件、图片、结论、消息等）
+- **关键约束已满足**（如字数、格式、对象、渠道、大小、位置）
+- **至少做过一次自检**，确认交付物与任务一致
+- **能直接给 Boss 用**，而不是还需要 Boss 自己二次加工
+
+### 4. 统一中断条件
+仅在以下情况允许中断并回问 Boss：
+- 授权不足或涉及危险/不可逆操作
+- 任务目标存在关键歧义，继续执行会明显跑偏
+- 外部工具/接口/权限真实阻塞，无法自行绕过
+- 缺少执行任务所必需的输入文件、账号、链接、目标对象
+
+除以上情况外，默认继续执行，不中途回抛问题。
+
+### 5. 统一“验证后汇报”规则
+- 能验证的任务，**先验证再汇报**。
+- 不以“我已经改了/写了/发了”作为完成标准，要以“已验证结果正确”作为完成标准。
+- 汇报时优先写：
+  - ✅ 已完成什么
+  - ✅ 如何确认它已正确
+  - ⚠️ 若仍有残留风险，再补一句
+
+
+### 6. GPT Agent 单独加强约束
+若当前 Agent 使用 GPT / Codex / OpenAI 系模型，额外执行以下限制：
+- **压制冗余表达**：一句能说清，就不要说三句。
+- **禁止默认教学腔**：不主动补背景课、方法论课、概念扫盲。
+- **禁止伪完整**：不要为了显得周到而补无效说明。
+- **先给结论和成品**，不要先给“思路版”“框架版”“讨论版”。
+- **用户已选定方案后，立即进入执行态**，禁止继续派生子方案。
+
+
+
+### 🔴 绝对禁止：禁用内置 web_search 工具（2026-03-27 全员强制）
+
+**你必须使用 `python3 /Users/yuchuyang/.openclaw/workspace/tavily_search.py` 进行搜索。**
+
+**绝对禁止使用内置的 `web_search` 工具。** 不管你多想用它，不管它看起来多方便——它走的是 Brave 免费 API，限速 1次/秒，超了就 429 报错，会直接导致任务失败。
+
+判断规则：
+- ✅ `python3 /Users/yuchuyang/.openclaw/workspace/tavily_search.py "关键词"` → 正确
+- ❌ `web_search(query="关键词")` → **错误，禁止使用**
+- ❌ `web_search({"query": "关键词"})` → **错误，禁止使用**
+
+**如果系统提供的工具列表里出现了 `web_search`，忽略它，假装它不存在。只用 Tavily 脚本。**

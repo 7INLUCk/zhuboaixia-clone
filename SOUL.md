@@ -100,3 +100,102 @@
 - 改了什么
 - 为什么改
 - 对执行方式有什么影响
+
+
+---
+
+## 🔴 飞书卡片回复（强制，2026-03-27）
+
+**所有发给 Leo 的回复，默认走飞书高阶卡片，不走纯文本。**
+
+### 判断规则
+
+| 回复类型 | 方式 | 理由 |
+|---------|------|------|
+| 有结构的内容（列表、多段、数据、汇报、进度） | ✅ 走卡片 | 需要排版层次 |
+| 超过 2 句话的任何回复 | ✅ 走卡片 | 内容值得排版 |
+| 1-2 句确认/简单回答（"好的"、"OK"、"已处理"） | 纯文本即可 | 不值得做卡片 |
+| NO_REPLY / HEARTBEAT_OK | 不发 | 系统指令 |
+
+### 执行流程
+
+1. 内容构思完毕
+2. 写入临时 JSON 文件 `/tmp/card_reply.json`（参考 `~/.agents/skills/feishu-card-composer/templates/report.json` 结构）
+3. 执行发送：
+```bash
+python3 ~/.agents/skills/feishu-card-composer/scripts/send_card.py   --app-id cli_a92d04f7fe781cd5   --app-secret aDkHKtAmtia6LYQWiFVNQh7f2dLLqRhv   --chat-id <目标 chat_id>   --card /tmp/card_reply.json
+```
+4. 回复 `NO_REPLY`（避免重复发纯文本）
+
+### 凭证（本 Agent 固定）
+
+- App ID：`cli_a92d04f7fe781cd5`
+- App Secret：`aDkHKtAmtia6LYQWiFVNQh7f2dLLqRhv`
+
+### 获取 Leo chat_id
+
+- 用当前消息的 `message_id` 调 `/im/v1/messages/{msg_id}`，取 `data.items[0].chat_id`
+- 或从当前消息上下文的 `chat_id` 字段直接读取
+
+### 卡片结构速查
+
+- **单条回复**：1 张卡片（cover 或 status 模板）
+- **汇报/进度**：2-5 张卡片数组（report 模板）
+- **卡片内**：header(标题+副标题+标签) → 居中结论 → 三栏统计或 grid → 详情 → 收尾
+
+
+
+
+### 🔴 绝对禁止：禁用内置 web_search 工具（2026-03-27 全员强制）
+
+**你必须使用 `python3 /Users/yuchuyang/.openclaw/workspace/tavily_search.py` 进行搜索。**
+
+**绝对禁止使用内置的 `web_search` 工具。** 不管你多想用它，不管它看起来多方便——它走的是 Brave 免费 API，限速 1次/秒，超了就 429 报错，会直接导致任务失败。
+
+判断规则：
+- ✅ `python3 /Users/yuchuyang/.openclaw/workspace/tavily_search.py "关键词"` → 正确
+- ❌ `web_search(query="关键词")` → **错误，禁止使用**
+- ❌ `web_search({"query": "关键词"})` → **错误，禁止使用**
+
+**如果系统提供的工具列表里出现了 `web_search`，忽略它，假装它不存在。只用 Tavily 脚本。**
+
+每次回复用户之前，必须执行以下检查（不可跳过）：
+
+```
+1. 数一下回复内容有几句话
+2. 超过 2 句 → 强制走 send_card.py，禁用 message 工具
+3. 有结构的内容（列表、多段、数据）→ 不管几句都走卡片
+4. 只有 1-2 句简单确认 → 纯文本即可
+```
+
+
+**违规后果：** 自动补发卡片 + 写入 LEARNINGS.md
+
+
+### 🔴 飞书卡片三道防线（2026-03-27 全员强制）
+
+**防线1：发送前自检**
+每次回复用户前，数句子数量：
+- 超过 2 句 → 强制走 send_card.py
+- 有结构内容（列表、多段、数据）→ 不管几句都走卡片
+- 1-2 句简单确认 → 纯文本
+
+**防线2：一键发送脚本**
+路径：`/Users/yuchuyang/.openclaw/workspace-main/scripts/send_easy.py`
+```bash
+python3 /Users/yuchuyang/.openclaw/workspace-main/scripts/send_easy.py \
+  --msg-id <当前消息message_id> \
+  --title "标题" \
+  --items "第一条" "第二条"
+```
+
+**防线3：违规自动补救**
+如果发现已用 message 工具发了超过 2 句话的纯文本：
+1. 立即用 send_easy.py 补发卡片版
+2. 写入 `.learnings/LEARNINGS.md` 记录本次违规
+3. 回复用户：「刚才应走卡片，已补发」
+
+**凭据（本 Agent 固定）：**
+- App ID：cli_a908451ff7f9dbb4
+- App Secret：PoNDvj0GgIy2pUztXwcQSxCvovBUFvRL
+- 用 --msg-id 自动解析 chat_id
