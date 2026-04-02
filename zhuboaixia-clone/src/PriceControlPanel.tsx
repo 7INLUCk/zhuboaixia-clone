@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { TabBar, C, PanelKey } from './shared'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 type PriceRule = { id: string; name: string; openCmd: string; warmupCmd: string; products: string[] }
 
@@ -12,7 +12,7 @@ const PRODUCTS = [
   { id: 'p4', label: '4号 手机三脚架', price: '¥27.90', stock: '1.63万', sold: 0, exposure: '0%', img: '📱' },
 ]
 
-export default function PriceControlPanel({ onClose, onSwitchPanel }: Props) {
+export default function PriceControlPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [rules, setRules] = useState<PriceRule[]>([
     { id: 'r1', name: '1号链接', openCmd: '三二一上链接', warmupCmd: '已经没有了', products: ['p1'] },
   ])
@@ -217,7 +217,7 @@ export default function PriceControlPanel({ onClose, onSwitchPanel }: Props) {
       {/* 底部按钮 */}
       <div style={{ padding: '12px 16px', background: C.card, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 10, flexShrink: 0 }}>
         <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 8, background: 'transparent', border: `1px solid ${C.border}`, color: C.textSec, fontSize: 14, cursor: 'pointer', fontFamily: C.font }}>取消</button>
-        <button style={{ flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 2px 8px rgba(51,112,255,0.3)' }}>确认配置</button>
+        <button onClick={onConfirmConfig} style={{ flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 2px 8px rgba(51,112,255,0.3)' }}>确认配置</button>
       </div>
     </div>
   )

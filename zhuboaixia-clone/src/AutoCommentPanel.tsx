@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { TabBar, C, Toggle, PanelKey } from './shared'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 // ============ 定时发评规则 ============
 type TimedRule = {
@@ -38,7 +38,7 @@ const DEFAULT_REPLY_RULES: ReplyRule[] = [
   },
 ]
 
-export default function AutoCommentPanel({ onClose, onSwitchPanel }: Props) {
+export default function AutoCommentPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   // 定时发评
   const [timedRules, setTimedRules] = useState<TimedRule[]>(DEFAULT_TIMED_RULES)
   // 自动回评
@@ -288,7 +288,7 @@ export default function AutoCommentPanel({ onClose, onSwitchPanel }: Props) {
           flex: 1, height: 42, borderRadius: 8, background: 'transparent',
           border: `1px solid ${C.border}`, color: C.textSec, fontSize: 14, cursor: 'pointer', fontFamily: C.font,
         }}>取消</button>
-        <button style={{
+        <button onClick={onConfirmConfig} style={{
           flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none',
           color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font,
           boxShadow: '0 2px 8px rgba(51,112,255,0.3)',

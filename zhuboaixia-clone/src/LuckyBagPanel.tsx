@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { TabBar, C, PanelKey } from './shared'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 type LuckyBag = { id: string; name: string; selected: boolean }
 
@@ -19,7 +19,7 @@ const MOCK_BAGS: LuckyBag[] = [
   { id: 'b3', name: '福袋C - 限时惊喜', selected: false },
 ]
 
-export default function LuckyBagPanel({ onClose, onSwitchPanel }: Props) {
+export default function LuckyBagPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [mode, setMode] = useState<'single' | 'multi' | 'none'>('single')
   const [interval, setIntervalVal] = useState(10)
   const [intervalUnit, setIntervalUnit] = useState<'秒' | '分钟'>('秒')

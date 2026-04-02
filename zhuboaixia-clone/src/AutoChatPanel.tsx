@@ -1,7 +1,7 @@
 import { TabBar, PanelKey } from './shared'
 import React, { useState } from 'react'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 const C = {
   blue: '#3370FF', blueLight: 'rgba(51,112,255,0.08)',
@@ -61,7 +61,7 @@ const TABS = [
   { key: 'autoChat' as const, label: '💬 智能搭话' },
             { key: 'sceneLayout' as const, label: '🎬 画面布局' },]
 
-export default function AutoChatPanel({ onClose, onSwitchPanel }: Props) {
+export default function AutoChatPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [enabled, setEnabled] = useState(true)
   const [specialNote, setSpecialNote] = useState('')
   const [frequency, setFrequency] = useState<'high' | 'mid' | 'low'>('high')
@@ -424,7 +424,7 @@ export default function AutoChatPanel({ onClose, onSwitchPanel }: Props) {
           flex: 1, height: 42, borderRadius: 8, background: 'transparent',
           border: `1px solid ${C.border}`, color: C.textSec, fontSize: 14, cursor: 'pointer', fontFamily: C.font,
         }}>取消</button>
-        <button style={{
+        <button onClick={onConfirmConfig} style={{
           flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none',
           color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font,
           boxShadow: '0 2px 8px rgba(51,112,255,0.3)',

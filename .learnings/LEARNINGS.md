@@ -47,3 +47,26 @@
 2. **主动 compact**：完成大任务块后主动存档 + 重置，不等被动触发
 3. **子 agent 避免密集 spawn**：生图等长时间任务走后台，不密集并行
 4. **关键决策即时写入**：不在对话历史里当临时便签，重要信息立即落文件
+
+---
+
+## 2026-04-02 10:25 - 飞书卡片 cross-app 错误（凭证匹配问题）
+
+### 事件
+- 回复超过2句，尝试用 send_card.py 发卡片
+- 报错：`open_id cross app`（用错 app-id/app-secret）
+- SOUL.md 里的凭证 `cli_a908451ff7f9dbb4` 和当前消息的 bot（miijia）不匹配
+
+### 根因
+- 每个飞书 bot 有自己的 app-id/app-secret
+- 用 A bot 的凭证给 B bot 的用户发消息 → cross-app 错误
+- 当前 inbound_meta 显示 account_id="miijia"，需要用 miijia 对应的凭证
+
+### 修复方向
+- 查找 miijia bot 的 app-id/app-secret（可能在工作目录配置或 skill 文件里）
+- 或用 inbound_meta 里的 chat_id 直接路由（OpenClaw 内部处理）
+
+### 教训
+- 飞书卡片发送前，先确认当前消息对应的 bot 凭证
+- inbound_meta.account_id 是关键标识
+- 优先用 OpenClaw 自动路由（不手动指定凭证）

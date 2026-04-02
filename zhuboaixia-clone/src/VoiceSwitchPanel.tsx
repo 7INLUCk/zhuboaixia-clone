@@ -1,7 +1,7 @@
 import { TabBar, PanelKey } from './shared'
 import React, { useState } from 'react'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 const C = {
   blue: '#3370FF', blueLight: 'rgba(51,112,255,0.08)',
@@ -56,7 +56,7 @@ const LIVE_PRODUCTS = [
 // 商品-造型绑定类型
 type ProductOutfitBinding = { productId: string; outfitId: string | null }
 
-export default function VoiceSwitchPanel({ onClose, onSwitchPanel }: Props) {
+export default function VoiceSwitchPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [enabled, setEnabled] = useState(true)
   // 弹品频率
   const [popupFreq, setPopupFreq] = useState<'always' | 'interval' | 'cycle'>('always')
@@ -458,7 +458,7 @@ export default function VoiceSwitchPanel({ onClose, onSwitchPanel }: Props) {
           border: `1px solid ${C.border}`, color: C.textSec, fontSize: 14,
           cursor: 'pointer', fontFamily: C.font,
         }}>取消</button>
-        <button style={{
+        <button onClick={onConfirmConfig} style={{
           flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none',
           color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
           fontFamily: C.font, boxShadow: '0 2px 8px rgba(51,112,255,0.3)',

@@ -50,7 +50,7 @@ function ChromaKeyImage({ src, alt, style, draggable }: {
   )
 }
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 // ============ 数据模型 ============
 type ActionItem = {
@@ -236,7 +236,7 @@ function CSModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-export default function AvatarLibraryPanel({ onClose, onSwitchPanel }: Props) {
+export default function AvatarLibraryPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [avatars] = useState(AVATARS)
   const [selectedId, setSelectedId] = useState('a1')
   const [filter, setFilter] = useState<'all' | 'public' | 'custom'>('all')
@@ -591,7 +591,7 @@ export default function AvatarLibraryPanel({ onClose, onSwitchPanel }: Props) {
         }}>
           取消
         </button>
-        <button style={{
+        <button onClick={onConfirmConfig} style={{
           flex: 2, height: 42, borderRadius: 8,
           background: C.blue, border: 'none',
           color: '#fff', fontSize: 14, fontWeight: 600,

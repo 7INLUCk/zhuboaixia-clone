@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { TabBar, C, Toggle, PanelKey } from './shared'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 const PRODUCTS = [
   { id: 'p1', label: '目视伦负离子光波时尚眼镜', price: '¥138.00', stock: '18.6万', sold: 0, exposure: '0%', img: '🎧' },
@@ -17,7 +17,7 @@ const SCENES = [
   { key: 'order', label: '🛒 下单', toggleDesc: '开启后直播间有观众下单并付款后，系统将自动在评论区发送一条感谢', placeholder: '感谢#观众 老板支持，为老板安排加急发货~' },
 ]
 
-export default function WelcomeThanksPanel({ onClose, onSwitchPanel }: Props) {
+export default function WelcomeThanksPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [scenes, setScenes] = useState<Record<string, { enabled: boolean; content: string }>>({
     enter: { enabled: true, content: '欢迎 #观众 进入直播间' },
     follow: { enabled: true, content: '感谢 #观众 的关注' },
@@ -122,7 +122,7 @@ export default function WelcomeThanksPanel({ onClose, onSwitchPanel }: Props) {
 
       <div style={{ padding: '12px 16px', background: C.card, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 10, flexShrink: 0 }}>
         <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 8, background: 'transparent', border: `1px solid ${C.border}`, color: C.textSec, fontSize: 14, cursor: 'pointer', fontFamily: C.font }}>取消</button>
-        <button style={{ flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 2px 8px rgba(51,112,255,0.3)' }}>确认配置</button>
+        <button onClick={onConfirmConfig} style={{ flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 2px 8px rgba(51,112,255,0.3)' }}>确认配置</button>
       </div>
     </div>
   )

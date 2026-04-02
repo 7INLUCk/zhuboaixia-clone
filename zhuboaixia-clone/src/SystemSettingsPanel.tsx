@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { TabBar, C, PanelKey } from './shared'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 type MicDevice = { id: string; name: string; isDefault: boolean }
 
@@ -26,7 +26,7 @@ const BG_OPTIONS: BgOption[] = [
   { key: 'blue', label: '蓝色背景', desc: '适合部分直播间灯光偏暖的场景', color: '#2979FF' },
 ]
 
-export default function SystemSettingsPanel({ onClose, onSwitchPanel }: Props) {
+export default function SystemSettingsPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [activeTab, setActiveTab] = useState<'audio' | 'camera'>('audio')
   const [selectedMic, setSelectedMic] = useState('m1')
   const [mics, setMics] = useState<MicDevice[]>(MOCK_MICS)
@@ -209,7 +209,7 @@ export default function SystemSettingsPanel({ onClose, onSwitchPanel }: Props) {
 
       <div style={{ padding: '12px 16px', background: C.card, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 10, flexShrink: 0 }}>
         <button onClick={onClose} style={{ flex: 1, height: 42, borderRadius: 8, background: 'transparent', border: `1px solid ${C.border}`, color: C.textSec, fontSize: 14, cursor: 'pointer', fontFamily: C.font }}>取消</button>
-        <button style={{ flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 2px 8px rgba(51,112,255,0.3)' }}>确认配置</button>
+        <button onClick={onConfirmConfig} style={{ flex: 2, height: 42, borderRadius: 8, background: C.blue, border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 2px 8px rgba(51,112,255,0.3)' }}>确认配置</button>
       </div>
     </div>
   )

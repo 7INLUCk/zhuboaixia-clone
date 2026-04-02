@@ -1,5 +1,103 @@
 # MEMORY.md
 
+## 🔴 2026-04-02 Gemini API 脚本已废弃（长期）
+
+### 决策
+- **2026-04-02 Boss 决定**：不再以 API 形式调用任何 Gemini 模型
+- **已删除**：`gemini_client.py` 主脚本 + 所有 agent workspace 副本 + 测试脚本
+- **已删除 API Key**：`AIzaSyDRcofdp25LL7XCvnbgsKZWyhGfiKYv2no`
+
+### 原因
+- Gemini API 不稳定，频繁超时
+- 有更好的替代方案（Tavily、Claude 等）
+
+---
+
+## 🔴 2026-04-01 双镜直播技术方案调研关键发现（长期）
+
+### 核心结论
+**阴影保留是双镜的核心差异化技术，学术界无成熟实时方案，为100%自研。**
+
+### 双镜直播技术来源判断
+| 技术 | 开源基础 | 自研程度 |
+|------|---------|---------|
+| 亚像素级抠像 | RVM架构 | 60% |
+| 阴影完整保留 | 无成熟方案 | **100%（核心差异化）** |
+| 影调融合 | DVH基础 | 70% |
+| 空间标定 | NVIDIA框架 | 50% |
+| CUDA光追 | NVIDIA SDK | 30% |
+| NDI传输 | NDI SDK | 0% |
+
+### 开源对标清单
+- ✅ **RobustVideoMatting（RVM）** - 字节跳动，4K 76FPS，实时抠像，可用
+- ✅ **PortraitRelighting** - CVPR 2024，45FPS重照明，可用（需RTX 4090）
+- ✅ **BackgroundMattingV2** - HD 30FPS，高分辨率抠像，可用
+- ⚠️ **Shadow Matting** - UW 2003，阴影合成，无实时版
+- ⚠️ **IC-Light** - lllyasviel，静态图片重照明
+- ⚠️ **Deep Video Harmonization** - IJCAI 2022，色调融合，需实时化改进
+
+### 国内竞品
+- 励得数码 U-Studio：光追色键+阴影保留，广电级
+- 蓝海创意云 vLive：发丝级抠像+云端渲染，企业直播
+- 绿幕助手：发丝级实时抠像+AI数字人，个人主播
+- NVIDIA Omniverse：RTX实时渲染，影视虚拟制片
+
+### 可行替代方案
+- **方案A**：RVM抠像 + PortraitRelighting重照明 + NDI传输（阴影保留需自研）
+- **方案B**：购买CyanMirror青镜SDK（商业集成，完整能力）
+- **方案C**：RVM + 自研阴影模块（参考Shadow Matting论文，开发周期2-3个月）
+
+### GPU部署要求
+- PortraitRelighting：RTX 4090 24GB（推荐），最低RTX 3060 12GB，AutoDL ¥1.56-1.98/小时
+- RVM：GTX 1080 Ti可达4K 76FPS，本地部署即可
+
+---
+
+## 🔴 2026-04-01 绿幕抠图优化项目关键发现（长期）
+
+### Coze Media Generation Skill（四个工作流统一封装）
+- **位置**：`~/.agents/skills/coze-media-generation`
+- **Token**：`pat_S9JEK3AHHUfllNAupHRVNuxw4ZBkqUziZOeGpaUR5meX50Q5iSKZPzHc7b4xBVXk`
+- **API**：`https://api.coze.cn/v1/workflow/stream_run`
+
+| 序号 | 能力 | 工作流ID |
+|------|------|----------|
+| 1 | 文生图 | 7613291266000240674 |
+| 2 | 图生图 | 7542895543548657704 |
+| 3 | 文生视频 | 7530928627820068910 |
+| 4 | 图生视频 | 7589158640256614436 |
+
+**调用命令**：
+```bash
+# 文生图
+python3 ~/.agents/skills/coze-media-generation/scripts/coze_media.py \
+  text2image --prompt "描述" --ratio 9:16 --size 2K --output output.jpg
+
+# 图生视频（支持1080p，继承输入图片比例）
+python3 ~/.agents/skills/coze-media-generation/scripts/coze_media.py \
+  image2video --image "https://..." --prompt "动作描述" --duration 10 --resolution 1080p --output video.mp4
+```
+
+**最佳实践**：文生图(9:16) → 图生视频(1080p)，两步走更可控
+
+### 专业绿幕打光关键参数（Gemini分析结论）
+- **L型夹角**：圆角过渡（弧度半径15-25cm），非直角
+- **人物距离**：距绿幕≥1.5米，避免影子投射到背景
+- **打光**：
+  - 主光：左前方30-45度，高度2-2.5米
+  - 辅光：右前方，光比1:1-1.5:1
+  - 轮廓光：背后高处，俯角60-70度（**关键！人物与背景分离**）
+  - 色温：5500K-5600K
+- **脚下阴影**：双阴影（蝴蝶状），主阴影投右后方45度
+- **绿幕照明**：需要专用灯单独照亮，确保均匀无渐变
+
+### 常见问题与解决方案
+- **轮廓光缺失**：导致头发死黑，抠像边缘问题 → 增加顶后/侧后方轮廓光
+- **影子过长**：人物距绿幕太近 → 拉开至1.5米以上
+- **绿幕不均匀**：单灯兼顾人物与背景 → 分区布光，绿幕专用灯
+
+---
+
 ## 🔴 2026-03-30 晚间会话丢失事件（模型超时导致）
 
 ### 事件
@@ -521,3 +619,68 @@ python3 /Users/yuchuyang/.openclaw/workspace/coze_image.py \
 - **速度**：约 10 秒，电影级画质，走公司扣子平台，完全不计费
 - **统一视觉风格**（Boss确认）：电影级画质，暖色调，写实风格；图片上要带中文文字标注（核心观点）
 
+
+
+---
+
+## 🔴 2026-04-01 原型交互规则 + GPU 部署（长期）
+
+### 确认配置按钮逻辑
+- **入口**：默认页（BuyinControlPanel empty状态）点击「开始配置」→ 进入配置面板
+- **确认配置**：任意配置面板点击「确认配置」→ 跳转到 BuyinLivePreviewPanel（主播站位+伴播形象+「开始直播」按钮）
+- **文件**：`BuyinLivePreviewPanel.tsx`（从备份 `src_backup_03300600/BuyinControlPanel.tsx` 复制）
+
+### GPU 部署决策（关键）
+- **平台**：AutoDL（稳定，¥1.56-1.98/小时）
+- **GPU**：RTX 4090 24GB（租用），最低要求 RTX 3060 12GB
+- **技术方案**：PortraitRelighting（32fps，CVPR 2024）是**唯一可行的实时重照明方案**
+- **IC-Light/Lumen 不适合直播**（diffusion 模型，每帧几秒）
+- **部署状态**：checkpoints 已下载（3.9GB），BFM 目录正在下载
+
+### 镜像选择
+- 框架：PyTorch 2.8.0
+- Python：3.12
+- CUDA：12.8
+
+### SSH 凭证（AutoDL）
+- 命令：`sshpass IB8YdRELgKzN ssh -p 18411 root@connect.nmb1.seetacloud.com`
+- 代理：mihomo (127.0.0.1:7890)
+- PYTHONPATH：需包含 `/root/PortraitRelighting/third_party/CropPose`
+
+---
+
+## 🔴 2026-04-01 视频合成真实感优化发现（长期）
+
+### Gemini 3.1 Pro 分析结论
+**核心问题**：漂浮感严重，人物像贴纸浮在背景上
+
+**四维度评分**：
+| 维度 | 评分 | 关键问题 |
+|------|------|---------|
+| 空间融合感 | 3/10 | 接触阴影缺失，透视不匹配 |
+| 光影效果 | 4/10 | 光包裹缺失，光照方向不一致 |
+| 写实效果 | 3/10 | 边缘闪烁（绿黑毛边），色调冷暖不匹配 |
+
+### 可执行改进方向
+1. **阴影重建**
+   - 接触阴影：鞋底极窄黑色区域
+   - 投射阴影：顶光逻辑，近实远虚
+
+2. **光包裹（Light Wrap）**
+   - 2-4px 背景光吃进人物边缘
+   - 叠加模式（Screen/Add）
+
+3. **色彩统一**
+   - 人物向暖色偏移
+   - 黑白场匹配背景
+   - 统一噪点层
+
+### AI 视频分析模型排名（2026-04-01，Tavily 搜索）
+1. **Gemini 2.5 Pro** - 视频理解最强，原生处理 3-6 小时视频
+2. **Claude Opus 4.6** - 综合第一（ELO 1503），需截图
+3. **GPT-5.4** - 综合强，视频能力弱于 Gemini
+
+### 素材生成关键发现
+- AI 生成的绿幕视频有绿色反光问题
+- 需在提示词中强调"无绿色反光"和"纯 chroma key 绿色背景"
+- 背景图需预留干净地面区域（下半 1/3）

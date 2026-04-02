@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 type PanelKey = 'avatar' | 'voice' | 'voiceSwitch' | 'autoChat' | 'sceneLayout' | 'autoComment' | 'welcomeThanks' | 'priceControl' | 'coupons' | 'luckyBag' | 'systemSettings'
-type Props = { onClose: () => void; onSwitchPanel?: (panel: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (panel: PanelKey) => void; onConfirmConfig?: () => void }
 
 const C = {
   blue: '#3370FF', blueLight: 'rgba(51,112,255,0.08)',

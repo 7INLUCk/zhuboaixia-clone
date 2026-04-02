@@ -1,7 +1,7 @@
 import { TabBar, PanelKey } from './shared'
 import React, { useState, useRef, useEffect } from 'react'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 
 // ============ 数据模型 ============
 type VoiceItem = {
@@ -65,7 +65,7 @@ function PlayButton({ playing, onClick, color, size }: { playing: boolean; onCli
   )
 }
 
-export default function VoiceLibraryPanel({ onClose, onSwitchPanel }: Props) {
+export default function VoiceLibraryPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [playingId, setPlayingId] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'female' | 'male'>('all')
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -286,7 +286,7 @@ export default function VoiceLibraryPanel({ onClose, onSwitchPanel }: Props) {
           background: 'transparent', border: `1px solid ${C.border}`,
           color: C.textSec, fontSize: 14, cursor: 'pointer', fontFamily: C.font,
         }}>取消</button>
-        <button style={{
+        <button onClick={onConfirmConfig} style={{
           flex: 2, height: 42, borderRadius: 8,
           background: C.blue, border: 'none', color: '#fff',
           fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font,

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { TabBar, C, Toggle, PanelKey } from './shared'
 
-type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void }
+type Props = { onClose: () => void; onSwitchPanel?: (p: PanelKey) => void; onConfirmConfig?: () => void }
 type SubTab = 'scene' | 'voiceSwitch'
 
 // ============ 声控切镜数据模型 ============
@@ -432,7 +432,7 @@ function AddMaterialModal({ onClose, onAdd }: { onClose: () => void; onAdd: (m: 
 }
 
 // ============ 主组件 ============
-export default function SceneEditorPanel({ onClose, onSwitchPanel }: Props) {
+export default function SceneEditorPanel({ onClose, onSwitchPanel, onConfirmConfig }: Props) {
   const [scenes, setScenes] = useState<Scene[]>([createDefaultScene()])
   const [activeSceneId, setActiveSceneId] = useState('default')
   const [selectedMatId, setSelectedMatId] = useState<string | null>(null)
@@ -797,7 +797,7 @@ export default function SceneEditorPanel({ onClose, onSwitchPanel }: Props) {
           padding: '8px 20px', borderRadius: 8, background: 'transparent',
           border: `1px solid ${C.border}`, color: C.textSec, fontSize: 13, cursor: 'pointer', fontFamily: C.font,
         }}>取消</button>
-        <button style={{
+        <button onClick={onConfirmConfig} style={{
           padding: '8px 24px', borderRadius: 8, background: C.blue, border: 'none',
           color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font,
           boxShadow: '0 2px 8px rgba(51,112,255,0.3)',
