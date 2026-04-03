@@ -1,5 +1,131 @@
 # MEMORY.md
 
+## 🔴 2026-04-02 伴播原型备份与分支保护（项目记录）
+
+### 执行内容
+1. **备份分支**：创建 `backup/snapshot-2026-04-02` 分支并推送到 GitHub
+2. **新分支 b**：创建 b 分支用于后续改动
+3. **Production Branch 保护**：用 Cloudflare API 将 `miaobo-prototype` 项目的 Production Branch 改为 `backup/snapshot-2026-04-02`
+
+### Cloudflare 凭证
+- **账号**：406658769@qq.com
+- **Account ID**：`427d5435008bb748a730f457175eeb9b`
+- **API Token**：`cfut_kGpVAxSgkSLZ9AZOcV5IayKEnZ66HxNnf06GbQAQ70b1407b`（存储在 `zhuboaixia-clone/deploy.sh`）
+- **部署脚本**：`cd zhuboaixia-clone && ./deploy.sh`
+
+### 当前状态
+- **方案 A 地址**：https://miaobo-prototype.pages.dev（锁定到 backup/snapshot 分支，不变）
+- **方案 B 地址**：https://miaobo-b.pages.dev（锁定到 b 分支，2026-04-03 部署）
+- **GitHub 仓库**：https://github.com/7INLUCk/zhuboaixia-clone
+
+### 分支列表
+- `main` — 主分支（已不作为 Production Branch）
+- `backup/snapshot-2026-04-02` — 备份快照（方案 A Production Branch）
+- `b` — 方案 B 开发分支（方案 B Production Branch）
+
+### 部署脚本
+- 方案 A：`./deploy.sh`（项目名 `miaobo-prototype`）
+- 方案 B：`./deploy-b.sh`（项目名 `miaobo-b`）
+
+---
+
+## 🔴 2026-04-02 飞书私聊发图关键发现（长期）
+
+### 正确方法（已验证）
+```bash
+# 1. 获取 token
+TOKEN=$(curl -s -X POST "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal" \
+  -H "Content-Type: application/json" \
+  -d '{"app_id":"cli_xxx","app_secret":"xxx"}' | jq -r '.tenant_access_token')
+
+# 2. 上传图片获取 image_key
+IMAGE_KEY=$(curl -s -X POST "https://open.feishu.cn/open-apis/im/v1/images" \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "image_type=message" \
+  -F "image=@/path/to/image.jpg" | jq -r '.data.image_key')
+
+# 3. 发送图片（关键：receive_id_type=open_id）
+curl -X POST "https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=open_id" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"receive_id":"ou_xxx","msg_type":"image","content":"{\"image_key\":\"img_v3_xxx\"}"}'
+```
+
+### 核心要点
+- **私聊发图**：必须指定 `receive_id_type=open_id`
+- **群聊发图**：可以用 feishu-send-image 脚本（chat_id 用 oc_xxx 格式）
+- **message 工具**：可能没有正确传递 receive_id_type，返回成功但实际没发送
+
+### 凭证（miijia bot）
+- App ID：cli_a92d04f7fe781cd5
+- App Secret：aDkHKtAmtia6LYQWiFVNQh7f2dLLqRhv
+
+---
+
+## 🔴 2026-04-02 图生图实践记录
+
+### 任务
+将原图中的成年女性替换为5岁小女孩，保留打光和阴影。
+
+### 执行过程
+1. 上传原图到 Cloudflare Pages（main.miaobo-prototype.pages.dev）
+2. 调用 Coze 图生图工作流（ID: 7542895543548657704）
+3. 提示词：将图片中的成年女性替换为5岁小女孩，保持打光方向和阴影，身高按5岁儿童比例调矮，保留背景和构图
+4. 参数：ratio=9:16, size=2K
+5. 耗时：约42秒
+
+### 技术要点
+- 图生图需要可访问的图片 URL（不能用本地路径）
+- 临时图床方案：Cloudflare Pages 部署
+- 发图用 feishu-send-image skill（--agent miijia）
+
+---
+
+## 🔴 2026-04-02 绿幕抠图保留阴影关键发现（长期）
+
+### 核心结论
+**Premiere 不是唯一能保留阴影的方案，DaVinci Resolve 效果甚至更好。**
+
+### 算法对比
+| 软件 | 算法 | 原理 | 阴影保留方式 |
+|------|------|------|-------------|
+| Premiere Ultra Key | Chroma Key | HSV 空间色度分割 | Shadows 滑块调整暗部 |
+| DaVinci Delta Keyer | Color Difference | RGB 三通道差异计算 | Balance/Tuning 调整 |
+| After Effects Keylight | Chroma Key | 色度分割 | Shadow/Highlight 参数 |
+
+### 阴影保留原理
+所有算法都可以通过调整暗部参数来保留阴影：
+- **Premiere**：Ultra Key → Shadows 滑块（提高保留暗部细节）
+- **DaVinci**：Delta Keyer → 降低 Balance + 调整 Tuning
+- **After Effects**：Shadow Catcher 图层或 Hold Shadow Dropper
+
+### 实测结论（来源：Reddit + YouTube）
+- DaVinci Resolve Delta Keyer 被评为 "best in general"
+- YouTube 评测："Keying in DaVinci Resolve Destroys Adobe Premiere"
+- DaVinci 免费版即可使用，效果优于 Premiere
+
+### 建议
+- 已有 Premiere → 直接用 Ultra Key，调 Shadows 滑块
+- 想学更好的工具 → DaVinci Resolve（免费）
+- 批量处理 → Python/OpenCV 脚本自动化
+
+### DaVinci Resolve 自动化能力（关键发现）
+- **支持 Python 脚本 API**：完整文档 https://resolvedevdoc.readthedocs.io
+- **社区工具**：
+  - pydavinci（封装库）
+  - socratica/davinci-resolve（GitHub 仓库）
+  - Rembg-Fuse（AI 抠像插件）
+- **可自动化**：
+  - 批量导入视频
+  - 自动应用 Delta Keyer
+  - 批量调整阴影参数
+  - 自动导出结果
+- **两种方案**：
+  - 方案A：DaVinci Python 脚本（可视化调参）
+  - 方案B：纯 OpenCV（完全自动化，无 GUI）
+
+---
+
 ## 🔴 2026-04-02 Gemini API 脚本已废弃（长期）
 
 ### 决策
@@ -174,6 +300,18 @@ python3 ~/.agents/skills/coze-media-generation/scripts/coze_media.py \
 - **一键部署**：`cd zhuboaixia-clone && ./deploy.sh`
 - **最新部署地址**：https://44ed5119.miaobo-prototype.pages.dev（文案统一+声控切镜版）
 - **关键发现**：助播虾实际产品名"秒播"，远程前端lnsee.com，官网miaoboai.com
+
+### PRD 文档
+- **链接**：https://vqz9o07xyt.feishu.cn/docx/LYJgdNgxFoFVITxDaqOc1gw9nNb
+- **版本**：v1.0（2026-03-31，Leo）
+- **图片数量**：11张
+- **核心内容**：
+  - 产品定位：AI 伴播形象与真人主播同屏互动
+  - 用户路径：入口 → 创建直播间 → 配置面板 → 启动伴播
+  - 10大模块：核心配置（5个）+ 直播工具（6个）
+  - 形象三级架构：形象主体 → 造型 → 默认状态&动作
+  - 音色锁定：动作素材配置后自动锁定音色
+  - 场景装修：默认带入主播占位 + 伴播形象（不可删除）
 
 ### 当前架构
 - **全局**：深蓝渐变背景 + 1280x832圆角窗口 + macOS红绿灯装饰

@@ -1,30 +1,28 @@
-# 当前任务：无
+# 当前任务
 
-## 状态：空闲
-## 更新时间：2026-04-01 22:50
+## 任务名
+伴播能力整合到助播虾配置面板
 
----
+## 开始时间
+2026-04-03 17:10
 
-## 今日已完成任务
+## 进度
+- [x] 理解需求：摒弃方案B独立面板，把伴播能力合并到助播虾原生面板
+- [x] 复习代码：所有 Panel 组件 + 路由 + 布局
+- [x] 输出改动方案 v1（5 张卡片已发给 Boss）
+- [x] Boss 反馈：改成交互式开关 + 独立配置面板（v2）
+- [x] 输出改动方案 v2（4 张卡片已发给 Boss）
+- [x] Boss 确认：形象/配音→伴播总开关、右侧滑出、截图存参考
+- [x] 保存参考截图到 public/screenshots/15-config-smart-dialog.jpg
+- [x] 已 spawn 子 agent 执行编码（BuyinControlPanel.tsx 改造）
 
-### 任务一：绿幕抠图优化项目（素材生成）
-- ✅ Gemini分析参考图打光参数
-- ✅ Coze文生图 → 背景图（9:16，写实直播间）
-- ✅ Coze图生视频 → 人物动态视频（10s，1080p，绿幕背景）
-- ✅ 发送给 Boss 验收
+## 待做
+- 子 agent 编码完成 → 验证部署结果 → 汇报 Boss
 
-### 任务二：双镜直播技术方案深度调研
-- ✅ 搜索10组关键词
-- ✅ 对标8个开源项目
-- ✅ 分析5家国内竞品
-- ✅ 飞书卡片发送6张报告
-- **核心发现**：阴影保留是双镜核心差异化技术（100%自研，学术界无成熟实时方案）
-
----
-
-## 下次待办
-
-1. 决策：选择替代方案（开源组合 vs 商业集成 vs 重点自研）
-2. 如选开源方案，先验证RVM抠像效果
-3. 阴影保留模块设计（参考Shadow Matting论文）
-4. GPU部署PortraitRelighting（如需重照明功能）
+## 关键上下文
+- 助播虾配置面板顶部有「形象」「配音」两个入口按钮 → 用来打开伴播面板
+- 保留 4 个伴播模块：形象库、音色、智能对话、声控切屏
+- 丢弃：场景装修、管理广场、创建向导、Banbo 相关页面
+- 8 个原生 Tab 保持不变
+- 需修改：BuyinControlPanel.tsx、App.tsx、ShellLayout.tsx
+- 可删除：BanboHomePage/CreatePage/DashboardPage/PanelPage、SetupWizard、SceneEditorPanel、SceneLayoutPanel、BuyinLivePreviewPanel

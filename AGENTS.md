@@ -25,11 +25,12 @@ Don't ask permission. Just do it.
 ```
 python3 /Users/yuchuyang/.openclaw/workspace/tavily_search.py "关键词" --include-answer
 ```
-**Step 2：补充源（至少1个）**
+**Step 2：Brave Search（第二搜索源，2026-04-03 Boss 允许）**
 ```
-web_fetch("https://www.baidu.com/s?wd=关键词")
-web_fetch("https://duckduckgo.com/html/?q=keyword")
+web_search(query="关键词")
 ```
+**双重搜索流程**：先 Tavily → 再 Brave → 对比交叉验证 → 再回答
+**注意**：Brave 限速 1次/秒，不要连续密集调用
 **例外**：纯数学计算 / 不涉及真实产品的纯创作
 **禁止**：❌ 凭记忆直接回答 ❌ 只搜一个来源
 
@@ -129,30 +130,54 @@ Reactions are lightweight social signals. Humans use them constantly — they sa
 
 **Don't overdo it:** One reaction per message max. Pick the one that fits best.
 
-## 🔴 飞书卡片统一规范（共享基础设施）
+## 🔴 飞书卡片规范（强制，2026-04-03 统一）
 
-当任务需要给 Leo 发飞书消息，且属于以下任一场景时：
-- 任务完成汇报
-- 多任务状态总览
-- 搜索/调研结果摘要
-- 长内容折叠展示
+**所有发给 Leo 的飞书回复，默认走 feishu-card-composer 卡片，不走纯文本。**
 
-默认优先使用共享卡片库：
-- **代码**：`/Users/yuchuyang/.openclaw/workspace/feishu_card.py`
-- **说明**：`/Users/yuchuyang/.openclaw/workspace/feishu_card.README.md`
+### Skill 路径
+- **SKILL.md**：`~/.agents/skills/feishu-card-composer/SKILL.md`
+- **模板目录**：`~/.agents/skills/feishu-card-composer/templates/`
+- **发送脚本**：`~/.agents/skills/feishu-card-composer/scripts/send_card.py`
 
-统一原则：
-1. **常规卡片不要手写 JSON**，默认优先执行统一入口：
-   - `python3 /Users/yuchuyang/.openclaw/workspace/send_feishu_card.py ...`
-2. 如需代码级复用，再调用：
-   - `send_report_card()`
-   - `send_status_card()`
-   - `send_search_card()`
-3. `account` 必须传当前 Agent 自己的飞书账号（如 `loreself` / `alex` / `max`）
-4. `receive_open_id` 必须是**当前 App 下**的 open_id，不能跨 App 复用
-5. 最稳方法：先用当前消息 `message_id` 调 `/im/v1/messages/{msg_id}`，取 `sender.id` 作为正确 open_id
-6. 若已通过统一入口主动发出卡片，则本轮文本回复应简化为一句确认，或按渠道要求返回 `NO_REPLY`，避免重复发同内容
-7. 只有共享库覆盖不了的特殊视觉需求，才允许手写 Card JSON
+### 可用模板
+
+| 模板 | 卡片数 | 用途 |
+|------|--------|------|
+| `report.json` | 5张 | 结构化汇报（封面→grid→发现→待办→总结），最常用 |
+| `status.json` | 1张 | 三栏状态板（✅/🟡/🔴） |
+| `checklist.json` | 1张 | 待办清单 |
+| `search.json` | 1张 | 搜索结果展示 |
+| `cover.json` | 1张 | 单卡封面/概览 |
+
+### 触发规则
+- **必须走卡片**：超过 2 句话 / 有结构内容（列表、多段、数据、汇报、进度）/ 搜索结果
+- **可纯文本**：1-2 句简单确认（"好的"、"OK"、"已处理"）
+- **不发**：NO_REPLY / HEARTBEAT_OK
+
+### 执行流程
+1. 构思回复内容
+2. 选模板：1-3 条信息 → `cover.json` 或 `status.json`；4+ 条或有分类 → `report.json`
+3. 替换模板占位内容，保存为 `/tmp/card_reply.json`
+4. 发送：
+```bash
+python3 ~/.agents/skills/feishu-card-composer/scripts/send_card.py \
+  --app-id <当前 App ID> \
+  --app-secret <当前 App Secret> \
+  --chat-id <目标 chat_id> \
+  --card /tmp/card_reply.json
+```
+5. 回复 `NO_REPLY`（避免重复）
+
+### 三道防线
+- **防线1 - 发送前自检**：数句子，超2句强制走卡片
+- **防线2 - 一键脚本**：`send_card.py` + 模板
+- **防线3 - 违规补救**：发现已发纯文本超2句 → 立即补发卡片 → 写入 `.learnings/LEARNINGS.md`
+
+### 设计原则（v4.1 Boss 确认）
+- 颜色克制：大面积 grey，彩色只做 emoji 或 header
+- 文字层次：normal+bold 标题 / notation+italic 补充
+- 信息密度：每条不超过两行
+- 多卡片拆分：不要把所有内容塞进一张卡片
 
 ## Tools
 
@@ -316,14 +341,36 @@ This is a starting point. Add your own conventions, style, and rules as you figu
 每完成一个大任务块后，主动执行compact（而非等auto-compaction被动触发），附带当前任务状态说明。
 
 
-## 🎨 前端设计默认规范：impeccable（全员强制，2026-03-15 Boss指令）
+## 🎨 设计 Skills 自动触发（全员强制，2026-04-03 Boss指令）
 
-**所有前端设计任务（网页/UI/组件/样式），默认使用 impeccable 设计 skill。无需 Boss 特别提醒，做前端就自动应用。**
+**所有产品设计/前端/UI/UX 任务，以下 skill 自动生效，无需 Boss 提醒。**
 
-- 已全局安装：`~/.agents/skills/frontend-design`（核心规范）+ 17个命令 skill（audit/polish/bolder 等）
-- 覆盖范围：色彩对比、排版层级、布局间距、动效原则、响应式设计
-- 可用命令：`/audit`（审查问题）、`/polish`（全面优化）、`/bolder`（增强对比）、`/colorize`（色彩方案）、`/animate`（动效）等
-- 触发规则：只要是前端相关任务，**无论 Boss 是否提到 impeccable，都必须应用此规范**
+### 已安装 Skills 清单
+
+| Skill | 路径 | 侧重 | 自动触发场景 |
+|-------|------|------|-------------|
+| **frontend-design** (impeccable) | `~/.agents/skills/frontend-design` | 创意 UI 设计、布局/主题/动效/实现 | 所有前端设计任务 |
+| **superdesign** | `skills/superdesign` | 现代 UI 设计指南（landing/dashboard） | 设计新页面/组件时 |
+| **ui-ux-design** | `skills/ui-ux-design` | Mobile-first、WCAG 2.2、Tailwind+Shadcn | 移动端/响应式/UI系统 |
+| **accessibility** | `skills/accessibility` | WCAG 2.1 AA 合规实现 | 所有 UI 产出必须检查无障碍 |
+| **ui-ux-pro-max-plus** | `skills/ui-ux-pro-max-plus` | 50+设计风格、100+配色、字体配对、UX模式 | 选配色/字体/设计风格时 |
+| **web-design** | `skills/web-design` | CSS 实现模式（Grid/Flex/排版/响应式） | CSS 编码阶段 |
+| **frontend-design-pro** | `skills/frontend-design-pro` | 中文设计规范、反模式清单、audit/polish | 设计审查/中文场景 |
+
+### 自动应用规则
+1. **做产品设计/UX 规划时**：默认参考 `superdesign` + `ui-ux-design` + `ui-ux-pro-max-plus`（方法论+配色+风格库）
+2. **写前端代码时**：默认参考 `frontend-design` + `web-design` + `frontend-design-pro`（创意+CSS实现+反模式规避）
+3. **所有 UI 产出**：必须过 `accessibility` 检查（WCAG 合规为硬性要求）
+4. **设计审查时**：用 `frontend-design-pro` 的 `/audit` + `/polish` 命令做质量把关
+5. **选配色/字体时**：用 `ui-ux-pro-max-plus` 的 references 资源库（100+配色方案、字体配对）
+
+### 核心设计铁律（跨 skill 统一）
+- **色彩**：用 OKLCH，禁止纯灰纯黑，中性色带色调
+- **字体**：禁止 Inter/system-ui（太通用），选有个性的字体
+- **间距**：4px/8px 基准系统，留白创造呼吸感
+- **对比度**：文字 4.5:1，焦点指示器 3:1
+- **响应式**：Mobile-first，320px 起步
+- **无障碍**：语义化 HTML、ARIA、键盘导航、屏幕阅读器支持
 
 ## 🔴 飞书会话重置协议（强制执行）
 
@@ -425,15 +472,4 @@ bash /Users/yuchuyang/.openclaw/workspace-main/scripts/reset-agent-session.sh mi
 
 
 
-### 🔴 绝对禁止：禁用内置 web_search 工具（2026-03-27 全员强制）
 
-**你必须使用 `python3 /Users/yuchuyang/.openclaw/workspace/tavily_search.py` 进行搜索。**
-
-**绝对禁止使用内置的 `web_search` 工具。** 不管你多想用它，不管它看起来多方便——它走的是 Brave 免费 API，限速 1次/秒，超了就 429 报错，会直接导致任务失败。
-
-判断规则：
-- ✅ `python3 /Users/yuchuyang/.openclaw/workspace/tavily_search.py "关键词"` → 正确
-- ❌ `web_search(query="关键词")` → **错误，禁止使用**
-- ❌ `web_search({"query": "关键词"})` → **错误，禁止使用**
-
-**如果系统提供的工具列表里出现了 `web_search`，忽略它，假装它不存在。只用 Tavily 脚本。**

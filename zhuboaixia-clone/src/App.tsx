@@ -189,7 +189,7 @@ export default function App() {
   const [page, setPage] = useState<PageId>('home-empty')
   const [debug, setDebug] = useState(false)
   const [hover, setHover] = useState<string | null>(null)
-  const [showBuyinOverlay, setShowBuyinOverlay] = useState(false)
+  const [showBuyinOverlay, setShowBuyinOverlay] = useState(true)
 
   const switchMode = (m: Mode) => {
     setMode(m)
