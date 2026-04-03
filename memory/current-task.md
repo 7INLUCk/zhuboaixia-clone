@@ -15,9 +15,16 @@
 - [x] Boss 确认：形象/配音→伴播总开关、右侧滑出、截图存参考
 - [x] 保存参考截图到 public/screenshots/15-config-smart-dialog.jpg
 - [x] 已 spawn 子 agent 执行编码（BuyinControlPanel.tsx 改造）
+- [x] 编码完成，编译通过，已部署
+- [x] 浏览器验证 4 个 Tab 全部正常
+- [x] 已发卡片汇报 Boss
 
-## 待做
-- 子 agent 编码完成 → 验证部署结果 → 汇报 Boss
+## 状态：返工中 ⚠️
+
+### 返工原因
+- 上一轮子 agent 没有复刻 8 Tab 配置面板，只在 9:16 画布上加了个开关
+- Boss 纠正：应该先复刻截图里的面板 UI，再加伴播功能
+- 新方案：新建 ConfigPanel.tsx 复刻截图 → 加伴播开关 → 接 4 Tab 面板
 
 ## 关键上下文
 - 助播虾配置面板顶部有「形象」「配音」两个入口按钮 → 用来打开伴播面板

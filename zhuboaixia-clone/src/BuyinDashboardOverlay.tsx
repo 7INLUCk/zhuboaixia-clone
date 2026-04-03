@@ -12,9 +12,10 @@ import PriceControlPanel from './PriceControlPanel'
 import CouponPanel from './CouponPanel'
 import LuckyBagPanel from './LuckyBagPanel'
 import SystemSettingsPanel from './SystemSettingsPanel'
+import ConfigPanel from './ConfigPanel'
 import { PanelKey } from './shared'
 
-type ActivePanel = 'none' | 'main' | 'livePreview' | PanelKey
+type ActivePanel = 'none' | 'main' | 'livePreview' | 'config' | PanelKey
 
 export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void }) {
   const [activePanel, setActivePanel] = useState<ActivePanel>('main')
@@ -30,12 +31,16 @@ export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void
         {/* 按钮点击热区（视觉已画在截图上） */}
         <rect x="1195" y="5" width="130" height="28" rx="4" fill="transparent"
           style={{ cursor: 'pointer' }} onClick={() => setActivePanel(panelOpen ? 'none' : 'main')} />
+        {/* 配置按钮热区（右上角） */}
+        {!panelOpen && <rect x="1100" y="40" width="80" height="28" rx="4" fill="transparent"
+          style={{ cursor: 'pointer' }} onClick={() => setActivePanel('config')} />}
         {!panelOpen && <rect x="1370" y="8" width="60" height="22" fill="transparent"
           style={{ cursor: 'pointer' }} onClick={onClose} />}
       </svg>
 
       {activePanel === 'main' && <BuyinControlPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
       {activePanel === 'livePreview' && <BuyinLivePreviewPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
+      {activePanel === 'config' && <ConfigPanel onClose={() => setActivePanel('none')} />}
       {activePanel === 'avatar' && <AvatarLibraryPanel onClose={() => setActivePanel('main')} onSwitchPanel={switchPanel} onConfirmConfig={() => setActivePanel('livePreview')} />}
       {activePanel === 'voice' && <VoiceLibraryPanel onClose={() => setActivePanel('main')} onSwitchPanel={switchPanel} onConfirmConfig={() => setActivePanel('livePreview')} />}
       {activePanel === 'voiceSwitch' && <VoiceSwitchPanel onClose={() => setActivePanel('main')} onSwitchPanel={switchPanel} onConfirmConfig={() => setActivePanel('livePreview')} />}
