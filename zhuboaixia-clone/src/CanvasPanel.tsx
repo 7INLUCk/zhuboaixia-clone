@@ -269,24 +269,24 @@ const DEFAULT_STATES: NormalState[] = [
 // 每个形象的事件态动作（口令触发）
 const EVENT_ACTIONS: Record<string, EventAction[]> = {
   av1: [
-    { id: 'ea1', label: '灌篮表演', command: '来一个灌篮', duration: 12 },
-    { id: 'ea2', label: '运球秀', command: '展示运球', duration: 10 },
+    { id: 'ea1', label: '灌篮表演', command: '', duration: 12 },
+    { id: 'ea2', label: '运球秀', command: '', duration: 10 },
   ],
   av2: [
-    { id: 'ea1', label: '三分投篮', command: '投一个三分', duration: 12 },
-    { id: 'ea2', label: '胯下运球', command: '胯下运球', duration: 10 },
+    { id: 'ea1', label: '三分投篮', command: '', duration: 12 },
+    { id: 'ea2', label: '胯下运球', command: '', duration: 10 },
   ],
   av5: [
-    { id: 'ea1', label: 'T台走秀', command: '走个秀', duration: 15 },
+    { id: 'ea1', label: 'T台走秀', command: '', duration: 15 },
   ],
   av6: [
-    { id: 'ea1', label: '旋转展示', command: '转一圈', duration: 20 },
-    { id: 'ea2', label: '跳跃', command: '跳一个', duration: 10 },
+    { id: 'ea1', label: '旋转展示', command: '', duration: 20 },
+    { id: 'ea2', label: '跳跃', command: '', duration: 10 },
   ],
 }
 const DEFAULT_EVENT_ACTIONS: EventAction[] = [
-  { id: 'ea1', label: '打招呼', command: '打个招呼', duration: 8 },
-  { id: 'ea2', label: '展示', command: '展示一下', duration: 10 },
+  { id: 'ea1', label: '打招呼', command: '', duration: 8 },
+  { id: 'ea2', label: '展示', command: '', duration: 10 },
 ]
 
 const PRODUCTS: ProductItem[] = [
@@ -393,8 +393,8 @@ function TimelineLeftBar({
     // 滚动商品列表中选中项到可见
     setTimeout(() => {
       productItemRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      // 滚动预览区对应卡片到可见
-      previewCardRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      // 滚动预览区对应卡片到可见（snap 对齐）
+      previewCardRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 50)
   }
 
@@ -450,17 +450,20 @@ function TimelineLeftBar({
               <div key={p.id} ref={el => { productItemRefs.current[p.id] = el }} onClick={() => handleSelectProduct(p.id)} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '4px 8px', borderRadius: 4, height: 26, flexShrink: 0,
-                background: isSelected ? 'rgba(96,165,250,0.15)' : 'transparent',
-                border: isSelected ? '1px solid rgba(96,165,250,0.3)' : '1px solid transparent',
+                background: isSelected ? 'rgba(96,165,250,0.25)' : 'transparent',
+                border: isSelected ? '1px solid rgba(96,165,250,0.4)' : '1px solid transparent',
+                borderLeft: isSelected ? '3px solid #60A5FA' : '3px solid transparent',
                 cursor: 'pointer', transition: 'all 0.15s',
               }}>
                 <span style={{
                   fontSize: 8, padding: '1px 4px', borderRadius: 2,
-                  background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
+                  background: isSelected ? 'rgba(96,165,250,0.2)' : 'rgba(255,255,255,0.1)',
+                  color: isSelected ? '#93BBFC' : 'rgba(255,255,255,0.6)',
                   flexShrink: 0,
                 }}>{p.linkNum}号</span>
                 <span style={{
-                  fontSize: 10, color: isSelected ? '#fff' : 'rgba(255,255,255,0.7)',
+                  fontSize: 10, color: isSelected ? '#fff' : 'rgba(255,255,255,0.6)',
+                  fontWeight: isSelected ? 600 : 400,
                   flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{p.name}</span>
                 <span style={{
@@ -474,7 +477,7 @@ function TimelineLeftBar({
       </div>
 
       {/* 形象视频预览区 */}
-      <div ref={previewAreaRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', minHeight: 0 }}>
+      <div ref={previewAreaRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', minHeight: 0, scrollSnapType: 'y mandatory' }}>
         {boundAvatars.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {boundAvatars.map(({ product, avatar, normalStates, eventActions }) => {
@@ -486,7 +489,8 @@ function TimelineLeftBar({
                   background: isSelected ? 'rgba(96,165,250,0.12)' : 'rgba(255,255,255,0.05)',
                   borderRadius: 8,
                   padding: 8,
-                  border: isSelected ? '1px solid rgba(96,165,250,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                  border: isSelected ? '2px solid rgba(96,165,250,0.6)' : '1px solid rgba(255,255,255,0.08)',
+                  boxShadow: isSelected ? '0 0 12px rgba(96,165,250,0.2)' : 'none',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                 }}>
@@ -1349,7 +1353,7 @@ function UnifiedBanboPanel({
           )}
 
           {/* ===== Step 2：设定出场和退场 ===== */}
-          <StepHeader step={2} title="设定出场和退场" desc="主播说什么模特就出来 / 退场" done={step2Confirmed} />
+          <StepHeader step={2} title="设定出场和退场" desc="展示口令=出场+切品，退场口令=离场" done={step2Confirmed} />
           {expandedSteps[2] && (
             <div style={{
               margin: '0 12px', padding: '12px',
@@ -1362,13 +1366,20 @@ function UnifiedBanboPanel({
                 </div>
               ) : !step2Confirmed ? (
                 <div>
-                  <div style={{ fontSize: 10, color: C.textSec, marginBottom: 10, lineHeight: 1.5 }}>
-                    💡 我们已经帮你填好了默认口令，你可以直接确认或改成自己的说法
+                  <div style={{
+                    fontSize: 10, color: C.textSec, marginBottom: 10, lineHeight: 1.6,
+                    padding: '8px 10px', borderRadius: 6,
+                    background: '#F0F4FF', border: '1px solid rgba(96,165,250,0.15)',
+                  }}>
+                    💡 「展示口令」有两种效果：<br />
+                    <b style={{ color: C.text }}>伴播不在场</b> → 播放入场动画登场<br />
+                    <b style={{ color: C.text }}>伴播已在场</b> → 原地换装，切换到当前商品<br />
+                    所以展示口令同时也是「切品口令」
                   </div>
                   {commands.map(cmd => {
                     const cfg = cmd.type === 'show'
-                      ? { icon: '🎭', label: '出场口令', desc: '主播说这个 → 模特登场展示', bg: '#E8F5E9' }
-                      : { icon: '🚪', label: '退场口令', desc: '主播说这个 → 模特下场', bg: '#FFF3E0' }
+                      ? { icon: '🎭', label: '展示口令（出场+切品）', desc: cmd.desc, bg: '#E8F5E9' }
+                      : { icon: '🚪', label: '退场口令', desc: cmd.desc, bg: '#FFF3E0' }
                     const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
                     const isEditing = editingCmdId === cmd.id
                     return (
@@ -1439,7 +1450,7 @@ function UnifiedBanboPanel({
                   </div>
                   {commands.map(cmd => {
                     const cfg = cmd.type === 'show'
-                      ? { icon: '🎭', label: '出场口令', bg: '#E8F5E9' }
+                      ? { icon: '🎭', label: '展示口令（出场+切品）', bg: '#E8F5E9' }
                       : { icon: '🚪', label: '退场口令', bg: '#FFF3E0' }
                     const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
                     const isEditing = editingCmdId === cmd.id
@@ -1482,6 +1493,18 @@ function UnifiedBanboPanel({
                       </div>
                     )
                   })}
+                  {/* 异常提示规则 */}
+                  <div style={{
+                    marginTop: 8, padding: '8px 10px', borderRadius: 6,
+                    background: '#FFF7E6', border: '1px solid #FFE58F',
+                  }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: '#B8860B', marginBottom: 4 }}>⚠️ 异常兜底规则</div>
+                    <div style={{ fontSize: 9, color: '#8B6914', lineHeight: 1.7 }}>
+                      • 展示口令无对应链接形象 → 画面不变 + 提示「无该链接伴播模特」<br />
+                      • 退场口令但伴播不在场 → 画面不变 + 提示「无需退场」<br />
+                      • 统一原则：无匹配时画面不变化，仅工作台提示，不阻断直播
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -1538,11 +1561,12 @@ function UnifiedBanboPanel({
                           {isEnabled && (
                             <div>
                               <div style={{ fontSize: 9, color: C.textSec, marginBottom: 4 }}>
-                                触发口令（主播说这个就播放）
+                                触发口令（主播说类似的话就会触发，支持模糊匹配）
                               </div>
                               {isEditing ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                   <input value={eventEditValue} onChange={e => setEventEditValue(e.target.value)}
+                                    placeholder="请输入触发口令，如：走一个"
                                     style={{
                                       flex: 1, height: 26, padding: '0 8px', borderRadius: 4,
                                       border: `1px solid ${C.blue}`, fontSize: 11, fontFamily: C.font,
@@ -1553,7 +1577,7 @@ function UnifiedBanboPanel({
                                     background: C.blue, color: '#fff', fontSize: 10, fontFamily: C.font, cursor: 'pointer',
                                   }}>保存</button>
                                 </div>
-                              ) : (
+                              ) : ev.command ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                   <span style={{
                                     fontSize: 11, fontWeight: 600, color: C.orange,
@@ -1564,6 +1588,12 @@ function UnifiedBanboPanel({
                                     background: '#fff', color: C.blue, fontSize: 9, fontFamily: C.font, cursor: 'pointer',
                                   }}>改口令</button>
                                 </div>
+                              ) : (
+                                <button onClick={() => startEditEvent(ev)} style={{
+                                  padding: '4px 12px', borderRadius: 6, border: `1px dashed ${C.orange}`,
+                                  background: '#FFFBF0', color: C.orange, fontSize: 10, fontFamily: C.font, cursor: 'pointer',
+                                  width: '100%',
+                                }}>⚙️ 配置触发口令</button>
                               )}
                             </div>
                           )}
@@ -1576,7 +1606,7 @@ function UnifiedBanboPanel({
                     background: '#F0F4FF', borderRadius: 6, lineHeight: 1.5,
                     border: '1px solid rgba(96,165,250,0.15)',
                   }}>
-                    💡 口令采用模糊匹配：主播原样念出或简单改几个字都能触发，但字数改动过大时大概率匹配失败，建议用简短易记的口令
+                    💡 请为每个动作配置触发口令。口令采用模糊匹配：主播原样念出或简单改几个字都能触发，但字数改动过大时大概率匹配失败，建议用简短易记的短语
                   </div>
                 </div>
               ) : (
