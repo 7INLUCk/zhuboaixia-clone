@@ -1,0 +1,22 @@
+{
+  "av1_idle": {
+    "path": "/Users/yuchuyang/.openclaw/workspace-miijia2/zhuboaixia-clone/public/avatars/generated/av1_idle.mp4",
+    "ok": true
+  },
+  "av5_idle": {
+    "path": "/Users/yuchuyang/.openclaw/workspace-miijia2/zhuboaixia-clone/public/avatars/generated/av5_idle.mp4",
+    "ok": true
+  },
+  "av6_idle": {
+    "path": "/Users/yuchuyang/.openclaw/workspace-miijia2/zhuboaixia-clone/public/avatars/generated/av6_idle.mp4",
+    "ok": true
+  },
+  "av5_event": {
+    "path": "/Users/yuchuyang/.openclaw/workspace-miijia2/zhuboaixia-clone/public/avatars/generated/av5_event.mp4",
+    "ok": true
+  },
+  "av6_event": {
+    "path": "/Users/yuchuyang/.openclaw/workspace-miijia2/zhuboaixia-clone/public/avatars/generated/av6_event.mp4",
+    "ok": true
+  }
+}

@@ -210,8 +210,8 @@ const LIVE_PRODUCTS = [
 ]
 
 // ============ 商品伴播管理数据（三级结构） ============
-type NormalState = { id: string; label: string; icon: string; duration: number }
-type EventAction = { id: string; label: string; command: string; duration: number }
+type NormalState = { id: string; label: string; icon: string; duration: number; videoUrl?: string }
+type EventAction = { id: string; label: string; command: string; duration: number; videoUrl?: string }
 type AvatarLibItem = { id: string; name: string; preview: string; category: 'public' | 'custom'; voiceTier: 'standard' | 'premium' }
 // 搭话规则（主播口令 → avatar 回复内容，1:1 精确触发）
 type ChatRule = { id: string; trigger: string; response: string }
@@ -224,20 +224,20 @@ type ProductItem = {
 
 // 形象库（用户从中选择绑定）
 const AVATAR_LIBRARY: AvatarLibItem[] = [
-  { id: 'av1', name: '篮球小子-蓝', preview: '/avatars/basketball-boy-blue.jpg', category: 'public', voiceTier: 'standard' },
-  { id: 'av2', name: '篮球小子-红', preview: '/avatars/basketball-boy-red.jpg', category: 'public', voiceTier: 'standard' },
-  { id: 'av3', name: '篮球小子-黑', preview: '/avatars/basketball-boy-black.jpg', category: 'public', voiceTier: 'premium' },
-  { id: 'av4', name: '篮球小子-白', preview: '/avatars/basketball-boy-white.jpg', category: 'public', voiceTier: 'standard' },
-  { id: 'av5', name: '小小碎花裙', preview: '/avatars/xiaoxiao-dress.jpg', category: 'public', voiceTier: 'premium' },
-  { id: 'av6', name: '榴莲宝贝3D', preview: '/avatars/durian-3d.jpg', category: 'custom', voiceTier: 'premium' },
-  { id: 'av7', name: '卡通小猫', preview: '/avatars/cartoon-cat.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av1', name: '篮球小子-蓝', preview: '/avatars/generated/av1.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av2', name: '篮球小子-红', preview: '/avatars/generated/av2.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av3', name: '篮球小子-黑', preview: '/avatars/generated/av3.jpg', category: 'public', voiceTier: 'premium' },
+  { id: 'av4', name: '篮球小子-白', preview: '/avatars/generated/av4.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av5', name: '小小碎花裙', preview: '/avatars/generated/av5.jpg', category: 'public', voiceTier: 'premium' },
+  { id: 'av6', name: '榴莲宝贝3D', preview: '/avatars/generated/av6.jpg', category: 'custom', voiceTier: 'premium' },
+  { id: 'av7', name: '卡通小猫', preview: '/avatars/generated/av7.jpg', category: 'public', voiceTier: 'standard' },
 ]
 
 // 每个形象的常规态（6个基底动作，直播时随机轮播）
 const NORMAL_STATES: Record<string, NormalState[]> = {
   av1: [
     { id: 'ns1', label: '挠挠头', icon: '🤕', duration: 6 },
-    { id: 'ns2', label: '摇摇身子', icon: '💃', duration: 8 },
+    { id: 'ns2', label: '摇摇身子', icon: '💃', duration: 8, videoUrl: '/avatars/generated/av1_idle.mp4' },
     { id: 'ns3', label: '拍拍球', icon: '🏀', duration: 7 },
     { id: 'ns4', label: '擦擦汗', icon: '😅', duration: 5 },
     { id: 'ns5', label: '伸伸腰', icon: '🙆', duration: 6 },
@@ -252,12 +252,20 @@ const NORMAL_STATES: Record<string, NormalState[]> = {
     { id: 'ns6', label: '喝水', icon: '🥤', duration: 5 },
   ],
   av5: [
-    { id: 'ns1', label: '转圈圈', icon: '🌀', duration: 8 },
+    { id: 'ns1', label: '转圈圈', icon: '🌀', duration: 8, videoUrl: '/avatars/generated/av5_idle.mp4' },
     { id: 'ns2', label: '摆裙摆', icon: '👗', duration: 7 },
     { id: 'ns3', label: '挥挥手', icon: '👋', duration: 6 },
     { id: 'ns4', label: '蹦蹦跳', icon: '🐰', duration: 5 },
     { id: 'ns5', label: '比心', icon: '💕', duration: 6 },
     { id: 'ns6', label: '歪头', icon: '🤔', duration: 5 },
+  ],
+  av6: [
+    { id: 'ns1', label: '摇晃身体', icon: '💃', duration: 6, videoUrl: '/avatars/generated/av6_idle.mp4' },
+    { id: 'ns2', label: '眨眨眼', icon: '😉', duration: 5 },
+    { id: 'ns3', label: '拍拍手', icon: '👏', duration: 7 },
+    { id: 'ns4', label: '转转头', icon: '🔄', duration: 5 },
+    { id: 'ns5', label: '伸伸腰', icon: '🙆', duration: 6 },
+    { id: 'ns6', label: '蹦蹦跳', icon: '🐰', duration: 5 },
   ],
 }
 // 其他形象复用默认6态
@@ -281,10 +289,10 @@ const EVENT_ACTIONS: Record<string, EventAction[]> = {
     { id: 'ea2', label: '胯下运球', command: '', duration: 10 },
   ],
   av5: [
-    { id: 'ea1', label: 'T台走秀', command: '', duration: 15 },
+    { id: 'ea1', label: 'T台走秀', command: '', duration: 15, videoUrl: '/avatars/generated/av5_event.mp4' },
   ],
   av6: [
-    { id: 'ea1', label: '旋转展示', command: '', duration: 20 },
+    { id: 'ea1', label: '旋转展示', command: '', duration: 20, videoUrl: '/avatars/generated/av6_event.mp4' },
     { id: 'ea2', label: '跳跃', command: '', duration: 10 },
   ],
 }
@@ -529,14 +537,48 @@ function TimelineLeftBar({
                     background: '#1a1a2e', marginBottom: 4,
                     position: 'relative',
                   }}>
-                    <div style={{
-                      width: '100%', height: '100%',
-                      display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', justifyContent: 'center', gap: 4,
-                    }}>
-                      <span style={{ fontSize: 28 }}>🎬</span>
-                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>等待上传视频</span>
-                    </div>
+                    {(() => {
+                      // 找到当前要播放的视频 URL
+                      let currentVideoUrl: string | undefined
+                      if (previewEventId) {
+                        const ev = eventActions.find(e => e.id === previewEventId)
+                        currentVideoUrl = ev?.videoUrl
+                      } else if (previewStateId) {
+                        const st = normalStates.find(s => s.id === previewStateId)
+                        currentVideoUrl = st?.videoUrl
+                      }
+                      // 如果没有指定，找第一个有视频的常态
+                      if (!currentVideoUrl && !previewStateId && !previewEventId) {
+                        const firstVideo = normalStates.find(s => s.videoUrl)
+                        currentVideoUrl = firstVideo?.videoUrl
+                      }
+
+                      if (currentVideoUrl) {
+                        return (
+                          <video
+                            src={currentVideoUrl}
+                            autoPlay
+                            loop={!previewEventId}
+                            muted
+                            playsInline
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onEnded={() => {
+                              if (previewEventId) setPreviewEventId(null)
+                            }}
+                          />
+                        )
+                      }
+                      return (
+                        <div style={{
+                          width: '100%', height: '100%',
+                          display: 'flex', flexDirection: 'column',
+                          alignItems: 'center', justifyContent: 'center', gap: 4,
+                        }}>
+                          <ChromaKeyImage src={avatar.preview} alt={avatar.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                        </div>
+                      )
+                    })()}
                     {/* 状态标签 */}
                     <div style={{
                       position: 'absolute', top: 6, left: 6,

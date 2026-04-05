@@ -16,10 +16,15 @@
 - **方案 B 地址**：https://miaobo-b.pages.dev（锁定 b 分支）
 - **PRD**：https://vqz9o07xyt.feishu.cn/docx/LYJgdNgxFoFVITxDaqOc1gw9nNb
 
-### 伴播面板 UX 改造（UX v3 已部署，持续优化中）
-- **当前状态**：UX v3 已部署到 miaobo-b.pages.dev，待 Boss 验收
-- **核心设计**：三步引导向导（选模特→确认口令→选动作）
-- **关键决策**：每步必须有用户操作，不能系统自动完成
+### 伴播面板 UX 改造（UX v4 + 搭话能力分层 已部署，持续优化中）
+- **当前状态**：UX v4 + 搭话能力分层已部署到 miaobo-b.pages.dev，待 Boss 验收
+- **核心设计**：三步引导向导（选模特→确认口令→选动作）+ 搭话能力分层
+- **关键决策**：
+  - 每步必须有用户操作，不能系统自动完成
+  - voiceTier: standard/premium，形象能力徽标 🔵可搭话/🟢标准
+  - 搭话优先策略：口令同时命中搭话和动作时，优先搭话
+  - 动作无嘴型训练 → 不能合并执行
+  - 口令是 LLM 语义匹配 → 不能文本检测冲突
 - **分支**：b 分支直接提交，最新 commit 0ab2430
 - **Issue #7** 已完成，PR #8 已合并
 - 详情见 memory/current-task.md
