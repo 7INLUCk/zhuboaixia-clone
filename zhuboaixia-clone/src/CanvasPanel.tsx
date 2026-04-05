@@ -319,6 +319,21 @@ function TimelineLeftBar({
   onSelectProduct: (id: string) => void; banboEnabled: boolean; onToggleBanbo: () => void;
 }) {
   const totalDuration = 60 // 60秒时间轴
+  const productItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const previewCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const productListRef = useRef<HTMLDivElement>(null)
+  const previewAreaRef = useRef<HTMLDivElement>(null)
+
+  // 点击商品 → 滚动对应预览卡片到可见区域 + 选中项滚动到可见
+  const handleSelectProduct = (id: string) => {
+    onSelectProduct(id)
+    // 滚动商品列表中选中项到可见
+    setTimeout(() => {
+      productItemRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      // 滚动预览区对应卡片到可见
+      previewCardRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, 50)
+  }
 
   // 收集所有已绑定的形象
   const boundAvatars = products
@@ -353,22 +368,21 @@ function TimelineLeftBar({
       </div>
 
       {/* 商品完成度列表 */}
-      <div style={{
+      <div ref={productListRef} style={{
         padding: '6px 8px', flexShrink: 0,
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         background: 'rgba(0,0,0,0.15)',
+        maxHeight: 130, overflowY: 'auto',
       }}>
         <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 4, padding: '0 4px' }}>商品配置</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {products.map(p => {
             const isSelected = selectedProductId === p.id
             const comp = getStepCompletion(products, p.id)
-            const statusColor = comp.status === 'ready' ? '#34D399'
-              : comp.status === 'partial' ? '#FBBF24' : '#EF4444'
             const statusLabel = comp.status === 'ready' ? '🟢'
               : comp.status === 'partial' ? '🟡' : '🔴'
             return (
-              <div key={p.id} onClick={() => onSelectProduct(p.id)} style={{
+              <div key={p.id} ref={el => { productItemRefs.current[p.id] = el }} onClick={() => handleSelectProduct(p.id)} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '4px 8px', borderRadius: 4,
                 background: isSelected ? 'rgba(96,165,250,0.15)' : 'transparent',
@@ -392,7 +406,7 @@ function TimelineLeftBar({
       </div>
 
       {/* 形象视频预览区 */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', minHeight: 0 }}>
+      <div ref={previewAreaRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', minHeight: 0 }}>
         {boundAvatars.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {boundAvatars.map(({ product, avatar, normalStates, eventActions }) => {
@@ -400,7 +414,7 @@ function TimelineLeftBar({
               const normalDuration = normalStates.reduce((sum, s) => sum + s.duration, 0)
               const eventDuration = eventActions.length > 0 ? eventActions[0].duration : 0
               return (
-                <div key={avatar.id} onClick={() => onSelectProduct(product.id)} style={{
+                <div key={avatar.id} ref={el => { previewCardRefs.current[product.id] = el }} onClick={() => handleSelectProduct(product.id)} style={{
                   background: isSelected ? 'rgba(96,165,250,0.12)' : 'rgba(255,255,255,0.05)',
                   borderRadius: 8,
                   padding: 8,
