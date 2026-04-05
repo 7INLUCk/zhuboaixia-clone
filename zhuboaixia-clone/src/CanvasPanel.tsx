@@ -298,12 +298,11 @@ const PRODUCTS: ProductItem[] = [
 ]
 
 // ============ 商品伴播管理组件 ============
-function ProductAvatarContent() {
+function ProductAvatarContent({ banboEnabled, onToggleBanbo }: { banboEnabled: boolean; onToggleBanbo: () => void }) {
   const [products, setProducts] = useState(PRODUCTS)
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
-  const [previewStateId, setPreviewStateId] = useState<string | null>(null) // 当前预览的常规态
-  const [previewEventId, setPreviewEventId] = useState<string | null>(null) // 当前预览的事件态
-  const [bindingMode, setBindingMode] = useState(false) // 是否在绑定模式
+  const [previewStateId, setPreviewStateId] = useState<string | null>(null)
+  const [previewEventId, setPreviewEventId] = useState<string | null>(null)
 
   const selectedProduct = products.find(p => p.id === selectedProductId)
   const boundAvatar = selectedProduct?.boundAvatarId
@@ -322,7 +321,6 @@ function ProductAvatarContent() {
     setProducts(prev => prev.map(p =>
       p.id === selectedProductId ? { ...p, boundAvatarId: avatarId } : p
     ))
-    setBindingMode(false)
     setPreviewStateId(null)
     setPreviewEventId(null)
   }
@@ -338,24 +336,21 @@ function ProductAvatarContent() {
 
   return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minWidth: 0 }}>
-      {/* 左侧：商品列表 */}
+      {/* 左栏：商品列表（180px） */}
       <div style={{
-        width: 140, borderRight: `1px solid ${C.border}`,
+        width: 180, borderRight: `1px solid ${C.border}`,
         overflowY: 'auto', display: 'flex', flexDirection: 'column', flexShrink: 0,
       }}>
-        {/* 顶部统计 */}
         <div style={{
           padding: '10px 12px', borderBottom: `1px solid ${C.border}`,
           background: C.blueLight, flexShrink: 0,
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 4 }}>📦 商品列表</div>
           <div style={{ display: 'flex', gap: 8, fontSize: 10, color: C.textSec }}>
-            <span>已绑定 <b style={{ color: C.green }}>{configuredCount}</b></span>
-            <span>待绑定 <b style={{ color: C.orange }}>{products.length - configuredCount}</b></span>
+            <span>已绑 <b style={{ color: C.green }}>{configuredCount}</b></span>
+            <span>待绑 <b style={{ color: C.orange }}>{products.length - configuredCount}</b></span>
           </div>
         </div>
-
-        {/* 商品列表 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '6px 8px' }}>
           {products.map(prod => {
             const isBound = prod.boundAvatarId !== null
@@ -364,7 +359,6 @@ function ProductAvatarContent() {
             return (
               <div key={prod.id} onClick={() => {
                 setSelectedProductId(prod.id)
-                setBindingMode(false)
                 setPreviewStateId(null)
                 setPreviewEventId(null)
               }} style={{
@@ -385,31 +379,29 @@ function ProductAvatarContent() {
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
                   }}>{prod.name}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {isBound && avatar ? (
-                    <>
-                      <div style={{
-                        width: 20, height: 20, borderRadius: '50%', overflow: 'hidden',
-                        background: '#f0f0f0', flexShrink: 0,
-                      }}>
-                        <ChromaKeyImage src={avatar.preview} alt={avatar.name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
-                      </div>
-                      <span style={{ fontSize: 10, color: C.green, fontWeight: 500 }}>{avatar.name}</span>
-                    </>
-                  ) : (
-                    <span style={{ fontSize: 10, color: C.orange }}>⚠ 未绑定形象</span>
-                  )}
-                </div>
+                {isBound && avatar ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%', overflow: 'hidden',
+                      background: '#f0f0f0', flexShrink: 0,
+                    }}>
+                      <ChromaKeyImage src={avatar.preview} alt={avatar.name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                    </div>
+                    <span style={{ fontSize: 10, color: C.green, fontWeight: 500 }}>{avatar.name}</span>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: 10, color: C.orange }}>⚠ 未绑定</span>
+                )}
               </div>
             )
           })}
         </div>
       </div>
 
-      {/* 中间：视频预览 + 状态/事件条 */}
+      {/* 右栏：预览 + 状态 + 形象库（纵向排列） */}
       <div style={{
-        flex: 1, overflowY: 'auto', padding: '10px 12px',
+        flex: 1, overflowY: 'auto', overflowX: 'hidden',
         display: 'flex', flexDirection: 'column',
         minWidth: 0,
       }}>
@@ -417,8 +409,8 @@ function ProductAvatarContent() {
           <>
             {/* 商品信息头 */}
             <div style={{
-              padding: '8px 12px', borderRadius: 8,
-              background: C.card, border: `1px solid ${C.border}`, marginBottom: 10,
+              padding: '8px 12px', margin: '10px 12px 0',
+              borderRadius: 8, background: C.card, border: `1px solid ${C.border}`,
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
               <span style={{
@@ -431,14 +423,14 @@ function ProductAvatarContent() {
 
             {boundAvatar ? (
               <>
-                {/* 形象名 + 已绑定 */}
+                {/* 形象绑定状态 */}
                 <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
-                  padding: '6px 10px', borderRadius: 6,
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  margin: '8px 12px 0', padding: '6px 10px', borderRadius: 6,
                   background: '#E8F5E9', border: `1px solid ${C.green}30`,
                 }}>
                   <div style={{
-                    width: 28, height: 28, borderRadius: '50%', overflow: 'hidden',
+                    width: 24, height: 24, borderRadius: '50%', overflow: 'hidden',
                     background: '#fff', flexShrink: 0,
                   }}>
                     <ChromaKeyImage src={boundAvatar.preview} alt={boundAvatar.name}
@@ -447,7 +439,7 @@ function ProductAvatarContent() {
                   <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{boundAvatar.name}</span>
                   <span style={{
                     fontSize: 9, padding: '2px 6px', borderRadius: 3,
-                    background: '#C8E6C9', color: '#2E7D32', fontWeight: 600, marginLeft: 4,
+                    background: '#C8E6C9', color: '#2E7D32', fontWeight: 600,
                   }}>已绑定</span>
                   <button onClick={handleUnbind} style={{
                     marginLeft: 'auto', padding: '2px 8px', borderRadius: 4,
@@ -456,63 +448,92 @@ function ProductAvatarContent() {
                   }}>解绑</button>
                 </div>
 
-                {/* 视频预览区 */}
+                {/* 视频预览区（居中） */}
                 <div style={{
-                  width: '100%', maxWidth: 240, aspectRatio: '9/16', maxHeight: 260,
-                  borderRadius: 8, margin: '0 auto 12px',
-                  background: '#1a1a2e', border: `1px solid ${C.border}`,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  gap: 6, position: 'relative', overflow: 'hidden',
+                  display: 'flex', justifyContent: 'center',
+                  padding: '12px',
                 }}>
-                  {/* 预览内容：根据选中的状态/事件显示 */}
-                  {previewEventId ? (
-                    (() => {
-                      const ev = eventActions.find(e => e.id === previewEventId)
-                      return ev ? (
-                        <>
-                          <span style={{ fontSize: 28 }}>🟠</span>
-                          <span style={{ fontSize: 11, color: '#F59E0B', fontWeight: 600 }}>{ev.label}</span>
-                          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>🎬 事件视频占位</span>
-                          <span style={{
-                            position: 'absolute', bottom: 6, right: 8,
-                            fontSize: 9, background: 'rgba(0,0,0,0.6)', color: '#fff',
-                            padding: '2px 6px', borderRadius: 3,
-                          }}>{ev.duration}s</span>
-                        </>
-                      ) : null
-                    })()
-                  ) : previewStateId ? (
-                    (() => {
-                      const st = normalStates.find(s => s.id === previewStateId)
-                      return st ? (
-                        <>
-                          <span style={{ fontSize: 28 }}>{st.icon}</span>
-                          <span style={{ fontSize: 11, color: '#60A5FA', fontWeight: 600 }}>{st.label}</span>
-                          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>🎬 基底视频占位</span>
-                          <span style={{
-                            position: 'absolute', bottom: 6, right: 8,
-                            fontSize: 9, background: 'rgba(0,0,0,0.6)', color: '#fff',
-                            padding: '2px 6px', borderRadius: 3,
-                          }}>{st.duration}s</span>
-                        </>
-                      ) : null
-                    })()
-                  ) : (
-                    <>
-                      <span style={{ fontSize: 32 }}>▶️</span>
-                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>
-                        点击下方状态条预览视频
-                      </span>
-                    </>
-                  )}
+                  <div style={{
+                    width: 160, aspectRatio: '9/16', maxHeight: 240,
+                    borderRadius: 10,
+                    background: '#1a1a2e', border: `1px solid ${C.border}`,
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    gap: 6, position: 'relative', overflow: 'hidden',
+                  }}>
+                    {previewEventId ? (
+                      (() => {
+                        const ev = eventActions.find(e => e.id === previewEventId)
+                        return ev ? (
+                          <>
+                            <span style={{ fontSize: 28 }}>🟠</span>
+                            <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>{ev.label}</span>
+                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>🎬 事件视频占位</span>
+                            <span style={{
+                              position: 'absolute', bottom: 6, right: 8,
+                              fontSize: 9, background: 'rgba(0,0,0,0.6)', color: '#fff',
+                              padding: '2px 6px', borderRadius: 3,
+                            }}>{ev.duration}s</span>
+                          </>
+                        ) : null
+                      })()
+                    ) : previewStateId ? (
+                      (() => {
+                        const st = normalStates.find(s => s.id === previewStateId)
+                        return st ? (
+                          <>
+                            <span style={{ fontSize: 28 }}>{st.icon}</span>
+                            <span style={{ fontSize: 12, color: '#60A5FA', fontWeight: 600 }}>{st.label}</span>
+                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>🎬 基底视频占位</span>
+                            <span style={{
+                              position: 'absolute', bottom: 6, right: 8,
+                              fontSize: 9, background: 'rgba(0,0,0,0.6)', color: '#fff',
+                              padding: '2px 6px', borderRadius: 3,
+                            }}>{st.duration}s</span>
+                          </>
+                        ) : null
+                      })()
+                    ) : (
+                      <>
+                        <span style={{ fontSize: 32 }}>▶️</span>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '0 8px' }}>
+                          点击下方状态条预览视频
+                        </span>
+                      </>
+                    )}
+                    {/* 开启伴播按钮叠在预览上 */}
+                    <div style={{
+                      position: 'absolute', bottom: 0, left: 0, right: 0,
+                      padding: '8px',
+                      background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+                    }}>
+                      <button onClick={onToggleBanbo} style={{
+                        width: '100%', padding: '6px',
+                        borderRadius: 6, border: 'none',
+                        background: banboEnabled
+                          ? 'linear-gradient(135deg, #34D399, #10B981)'
+                          : 'linear-gradient(135deg, #60A5FA, #3B82F6)',
+                        color: '#fff', fontSize: 12, fontWeight: 700,
+                        cursor: 'pointer', fontFamily: C.font,
+                      }}>
+                        {banboEnabled ? '✅ 伴播已开启' : '▶ 开启伴播'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 常规状态条（6个） */}
-                <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: C.blue, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    🔵 常规状态 <span style={{ fontSize: 10, fontWeight: 400, color: C.textSec }}>({normalStates.length}个 · 直播时随机轮播)</span>
+                {/* 常规状态（3×2 网格） */}
+                <div style={{ padding: '0 12px', marginBottom: 12 }}>
+                  <div style={{
+                    fontSize: 11, fontWeight: 600, color: C.blue, marginBottom: 6,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
+                    🔵 常规状态
+                    <span style={{ fontSize: 10, fontWeight: 400, color: C.textSec }}>
+                      ({normalStates.length}个 · 直播时随机轮播)
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
                     {normalStates.map(st => {
                       const isActive = previewStateId === st.id
                       return (
@@ -520,29 +541,33 @@ function ProductAvatarContent() {
                           setPreviewStateId(st.id)
                           setPreviewEventId(null)
                         }} style={{
-                          padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
+                          padding: '8px 6px', borderRadius: 6, cursor: 'pointer',
                           background: isActive ? '#DDE3F0' : '#F5F6FA',
                           border: isActive ? `1.5px solid ${C.blue}` : `1px solid ${C.border}`,
-                          display: 'flex', alignItems: 'center', gap: 4,
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                           transition: 'all 0.15s',
                         }}>
-                          <span style={{ fontSize: 14 }}>{st.icon}</span>
-                          <div>
-                            <div style={{ fontSize: 10, fontWeight: 600, color: C.text }}>{st.label}</div>
-                            <div style={{ fontSize: 8, color: C.textSec }}>{st.duration}s</div>
-                          </div>
+                          <span style={{ fontSize: 16 }}>{st.icon}</span>
+                          <span style={{ fontSize: 10, fontWeight: 600, color: C.text }}>{st.label}</span>
+                          <span style={{ fontSize: 8, color: C.textSec }}>{st.duration}s</span>
                         </div>
                       )
                     })}
                   </div>
                 </div>
 
-                {/* 事件动作条 */}
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: C.orange, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    🟠 触发动作 <span style={{ fontSize: 10, fontWeight: 400, color: C.textSec }}>({eventActions.length}个 · 口令触发)</span>
+                {/* 触发动作（口令卡片） */}
+                <div style={{ padding: '0 12px', marginBottom: 12 }}>
+                  <div style={{
+                    fontSize: 11, fontWeight: 600, color: C.orange, marginBottom: 6,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
+                    🟠 触发动作
+                    <span style={{ fontSize: 10, fontWeight: 400, color: C.textSec }}>
+                      ({eventActions.length}个 · 口令触发)
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {eventActions.map(ev => {
                       const isActive = previewEventId === ev.id
                       return (
@@ -550,24 +575,58 @@ function ProductAvatarContent() {
                           setPreviewEventId(ev.id)
                           setPreviewStateId(null)
                         }} style={{
-                          padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
+                          padding: '10px 12px', borderRadius: 6, cursor: 'pointer',
                           background: isActive ? '#FFF0E0' : '#FFFAF5',
                           border: isActive ? `1.5px solid ${C.orange}` : `1px solid ${C.border}`,
-                          flex: 1, minWidth: 120,
+                          display: 'flex', alignItems: 'center', gap: 8,
                           transition: 'all 0.15s',
                         }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                            <span style={{ fontSize: 12 }}>🎬</span>
-                            <span style={{ fontSize: 11, fontWeight: 600, color: C.text }}>{ev.label}</span>
+                          <span style={{ fontSize: 16 }}>🎬</span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: C.text }}>{ev.label}</div>
+                            <div style={{
+                              fontSize: 10, color: C.orange, fontWeight: 500, marginTop: 2,
+                            }}>口令：「{ev.command}」</div>
                           </div>
+                          <span style={{ fontSize: 10, color: C.textSec }}>{ev.duration}s</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* 形象库（底部网格） */}
+                <div style={{
+                  padding: '10px 12px', borderTop: `1px solid ${C.border}`,
+                  background: '#FAFAFA',
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: C.text, marginBottom: 8 }}>
+                    🎭 形象库 <span style={{ fontSize: 10, fontWeight: 400, color: C.textSec }}>(点击可更换绑定)</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 6 }}>
+                    {AVATAR_LIBRARY.map(av => {
+                      const isCurrent = selectedProduct?.boundAvatarId === av.id
+                      const boundToOther = products.some(p => p.id !== selectedProductId && p.boundAvatarId === av.id)
+                      return (
+                        <div key={av.id} onClick={() => {
+                          if (!isCurrent && !boundToOther) handleBind(av.id)
+                        }} style={{
+                          padding: '6px', borderRadius: 6, cursor: isCurrent || boundToOther ? 'default' : 'pointer',
+                          background: isCurrent ? '#E8F5E9' : C.card,
+                          border: isCurrent ? `1.5px solid ${C.green}` : `1px solid ${C.border}`,
+                          opacity: boundToOther ? 0.4 : 1,
+                          textAlign: 'center', transition: 'all 0.15s',
+                        }}>
                           <div style={{
-                            fontSize: 10, color: C.orange, fontWeight: 500,
-                            padding: '3px 6px', borderRadius: 4,
-                            background: 'rgba(255,125,0,0.08)',
+                            width: '100%', aspectRatio: '1', borderRadius: 4, overflow: 'hidden',
+                            background: '#f0f0f0', marginBottom: 4,
                           }}>
-                            口令：「{ev.command}」
+                            <ChromaKeyImage src={av.preview} alt={av.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
                           </div>
-                          <div style={{ fontSize: 9, color: C.textSec, marginTop: 3 }}>{ev.duration}s</div>
+                          <div style={{ fontSize: 9, fontWeight: 600, color: C.text }}>{av.name}</div>
+                          {isCurrent && <div style={{ fontSize: 8, color: C.green, marginTop: 1 }}>✅</div>}
+                          {boundToOther && <div style={{ fontSize: 8, color: C.textSec, marginTop: 1 }}>已绑</div>}
                         </div>
                       )
                     })}
@@ -583,19 +642,42 @@ function ProductAvatarContent() {
                 <div style={{
                   width: '100%', maxWidth: 320,
                   background: '#FFF8F0', borderRadius: 10,
-                  padding: '16px 16px 14px', border: `1px solid ${C.orange}20`,
+                  padding: '16px', border: `1px solid ${C.orange}20`,
                 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 10, textAlign: 'center' }}>
                     🎭 未绑定伴播形象
                   </div>
                   <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', marginBottom: 12, lineHeight: 1.6 }}>
-                    该商品还没有绑定伴播形象<br />请从右侧形象库中选择一个形象绑定
+                    该商品还没有绑定伴播形象<br />请从下方形象库中选择
                   </div>
-                  <button onClick={() => setBindingMode(true)} style={{
-                    width: '100%', padding: '8px', borderRadius: 6,
-                    background: C.blue, border: 'none', color: '#fff',
-                    fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: C.font,
-                  }}>🎭 去选择形象</button>
+                  {/* 形象库直接展示 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 }}>
+                    {AVATAR_LIBRARY.map(av => {
+                      const boundToOther = products.some(p => p.boundAvatarId === av.id)
+                      return (
+                        <div key={av.id} onClick={() => {
+                          if (!boundToOther) handleBind(av.id)
+                        }} style={{
+                          padding: '6px', borderRadius: 6,
+                          cursor: boundToOther ? 'default' : 'pointer',
+                          background: C.card,
+                          border: `1px solid ${C.border}`,
+                          opacity: boundToOther ? 0.4 : 1,
+                          textAlign: 'center',
+                        }}>
+                          <div style={{
+                            width: '100%', aspectRatio: '1', borderRadius: 4, overflow: 'hidden',
+                            background: '#f0f0f0', marginBottom: 3,
+                          }}>
+                            <ChromaKeyImage src={av.preview} alt={av.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                          </div>
+                          <div style={{ fontSize: 9, fontWeight: 600, color: C.text }}>{av.name}</div>
+                          {boundToOther && <div style={{ fontSize: 8, color: C.textSec }}>已绑</div>}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             )}
@@ -609,7 +691,7 @@ function ProductAvatarContent() {
             <div style={{
               width: '100%', maxWidth: 320,
               background: '#F0F4FF', borderRadius: 10,
-              padding: '16px 16px 14px', border: `1px solid ${C.blue}20`,
+              padding: '16px', border: `1px solid ${C.blue}20`,
             }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 10, textAlign: 'center' }}>
                 🚀 快速开始
@@ -635,264 +717,6 @@ function ProductAvatarContent() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* 右侧：形象库 + 绑定操作 */}
-      <div style={{
-        width: 120, borderLeft: `1px solid ${C.border}`,
-        overflowY: 'auto', display: 'flex', flexDirection: 'column', flexShrink: 0,
-      }}>
-        <div style={{
-          padding: '10px 12px', borderBottom: `1px solid ${C.border}`,
-          background: '#F0FFF0', flexShrink: 0,
-        }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 2 }}>🎭 形象库</div>
-          <div style={{ fontSize: 10, color: C.textSec }}>
-            {selectedProduct ? '点击形象绑定到当前商品' : '请先选择商品'}
-          </div>
-        </div>
-
-        <div style={{ flex: 1, overflowY: 'auto', padding: '6px 8px' }}>
-          {AVATAR_LIBRARY.map(av => {
-            const isBoundToCurrent = selectedProduct?.boundAvatarId === av.id
-            // 检查是否绑到了其他商品
-            const boundToOther = products.some(p => p.id !== selectedProductId && p.boundAvatarId === av.id)
-            return (
-              <div key={av.id} onClick={() => {
-                if (!selectedProduct || isBoundToCurrent) return
-                handleBind(av.id)
-              }} style={{
-                padding: '8px', borderRadius: 8, marginBottom: 6,
-                cursor: selectedProduct && !isBoundToCurrent ? 'pointer' : 'default',
-                background: isBoundToCurrent ? '#E8F5E9' : boundToOther ? '#F5F5F5' : C.card,
-                border: isBoundToCurrent ? `1.5px solid ${C.green}` : `1px solid ${C.border}`,
-                opacity: boundToOther && !isBoundToCurrent ? 0.5 : 1,
-                transition: 'all 0.15s',
-              }}>
-                <div style={{
-                  width: '100%', aspectRatio: '1', borderRadius: 6, overflow: 'hidden',
-                  background: '#f0f0f0', marginBottom: 6,
-                }}>
-                  <ChromaKeyImage src={av.preview} alt={av.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: C.text, textAlign: 'center' }}>{av.name}</div>
-                <div style={{ fontSize: 9, color: C.textSec, textAlign: 'center' }}>
-                  {av.category === 'custom' ? '🎨 定制' : '🌐 公共'}
-                </div>
-                {isBoundToCurrent && (
-                  <div style={{
-                    fontSize: 9, color: C.green, fontWeight: 600, textAlign: 'center', marginTop: 2,
-                  }}>✅ 当前绑定</div>
-                )}
-                {boundToOther && !isBoundToCurrent && (
-                  <div style={{
-                    fontSize: 9, color: C.textSec, textAlign: 'center', marginTop: 2,
-                  }}>已绑定其他商品</div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============ 时间轴预览组件 ============
-function TimelinePreview({ products, banboEnabled, onToggleBanbo }: {
-  products: ProductItem[], banboEnabled: boolean, onToggleBanbo: () => void
-}) {
-  // 收集所有已绑定形象的商品
-  const boundProducts = products
-    .filter(p => p.boundAvatarId)
-    .map(p => ({
-      product: p,
-      avatar: AVATAR_LIBRARY.find(a => a.id === p.boundAvatarId)!,
-      normalStates: NORMAL_STATES[p.boundAvatarId!] || DEFAULT_STATES,
-      eventActions: EVENT_ACTIONS[p.boundAvatarId!] || DEFAULT_EVENT_ACTIONS,
-    }))
-  const totalDuration = 60 // 60秒时间轴
-  const avgNormalDuration = 7 // 平均常规态时长用于时间轴条
-
-  return (
-    <div style={{
-      width: 220, flexShrink: 0,
-      background: '#111827',
-      display: 'flex', flexDirection: 'column',
-      position: 'relative', overflow: 'hidden',
-    }}>
-      {/* 顶部标题 */}
-      <div style={{
-        padding: '10px 12px',
-        background: 'rgba(0,0,0,0.3)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        flexShrink: 0,
-      }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 2 }}>📹 伴播预览</div>
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>
-          直播全程 · {boundProducts.length} 个形象
-        </div>
-      </div>
-
-      {/* 形象视频预览区 */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px' }}>
-        {boundProducts.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {boundProducts.map(({ product, avatar, normalStates: ns, eventActions: ea }) => (
-              <div key={avatar.id} style={{
-                background: 'rgba(255,255,255,0.05)',
-                borderRadius: 8,
-                padding: 8,
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}>
-                {/* 形象名 + 商品 */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6,
-                }}>
-                  <div style={{
-                    width: 24, height: 24, borderRadius: '50%', overflow: 'hidden',
-                    border: '1.5px solid rgba(255,255,255,0.2)', flexShrink: 0,
-                    background: '#333',
-                  }}>
-                    <ChromaKeyImage src={avatar.preview} alt={avatar.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: 11, fontWeight: 600, color: '#fff',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>{avatar.name}</div>
-                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.45)' }}>
-                      {product.linkNum}号 · {product.name}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 常规态视频预览 */}
-                <div style={{
-                  width: '100%', aspectRatio: '9/16', maxHeight: 180,
-                  borderRadius: 6, overflow: 'hidden',
-                  background: '#1a1a2e', marginBottom: 4,
-                  position: 'relative',
-                }}>
-                  <div style={{
-                    width: '100%', height: '100%',
-                    display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center', gap: 4,
-                  }}>
-                    <span style={{ fontSize: 28 }}>🎬</span>
-                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>
-                      {ns.length}个状态 · 随机轮播
-                    </span>
-                  </div>
-                  {/* 状态标签 */}
-                  <div style={{
-                    position: 'absolute', top: 6, left: 6,
-                    display: 'flex', gap: 4,
-                  }}>
-                    <span style={{
-                      fontSize: 9, padding: '2px 6px', borderRadius: 3,
-                      background: banboEnabled ? 'rgba(16,185,129,0.8)' : 'rgba(255,255,255,0.15)',
-                      color: '#fff', fontWeight: 600,
-                    }}>{banboEnabled ? 'LIVE' : '待开启'}</span>
-                  </div>
-                </div>
-
-                {/* 时间轴条 */}
-                <div style={{ marginTop: 4 }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3,
-                  }}>
-                    <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>🔵 常规</span>
-                    <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{ns.length}个状态随机</span>
-                  </div>
-                  <div style={{
-                    height: 8, borderRadius: 4,
-                    background: 'rgba(255,255,255,0.08)',
-                    overflow: 'hidden', position: 'relative',
-                  }}>
-                    {Array.from({ length: Math.ceil(totalDuration / avgNormalDuration) }).map((_, i) => (
-                      <div key={i} style={{
-                        position: 'absolute',
-                        left: `${(i * avgNormalDuration / totalDuration) * 100}%`,
-                        width: `${(avgNormalDuration / totalDuration) * 100}%`,
-                        height: '100%',
-                        background: i % 2 === 0 ? 'rgba(96,165,250,0.6)' : 'rgba(96,165,250,0.3)',
-                        borderRadius: 2,
-                      }} />
-                    ))}
-                  </div>
-                  {ea.map((ev, idx) => (
-                    <div key={ev.id}>
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: 4, marginTop: 4,
-                      }}>
-                        <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>🟠 {ev.label}</span>
-                        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{ev.duration}s · 触发</span>
-                      </div>
-                      <div style={{
-                        height: 8, borderRadius: 4,
-                        background: 'rgba(255,255,255,0.08)',
-                        overflow: 'hidden', position: 'relative',
-                        marginTop: 2,
-                      }}>
-                        <div style={{
-                          position: 'absolute',
-                          left: `${10 + idx * 15}%`, width: `${(ev.duration / totalDuration) * 100}%`,
-                          height: '100%',
-                          background: 'rgba(245,158,11,0.6)',
-                          borderRadius: 2,
-                        }} />
-                        <span style={{
-                          position: 'absolute', left: `${7 + idx * 15}%`, top: -1,
-                          fontSize: 7, color: 'rgba(255,255,255,0.5)',
-                        }}>触发点 ▸</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{
-            padding: '32px 16px', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 32, marginBottom: 10 }}>🎭</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 6 }}>
-              暂无伴播形象
-            </div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
-              在右侧「形象配置」中<br />为商品添加伴播形象
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 底部：开启伴播按钮 */}
-      <div style={{
-        padding: '10px 12px',
-        background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
-        flexShrink: 0,
-      }}>
-        <button onClick={onToggleBanbo} style={{
-          width: '100%', padding: '10px',
-          borderRadius: 8, border: 'none',
-          background: banboEnabled
-            ? 'linear-gradient(135deg, #34D399, #10B981)'
-            : 'linear-gradient(135deg, #60A5FA, #3B82F6)',
-          color: '#fff', fontSize: 14, fontWeight: 700,
-          cursor: 'pointer', fontFamily: C.font,
-        }}>
-          {banboEnabled ? '✅ 伴播已开启' : '▶ 开启伴播'}
-        </button>
-        <div style={{
-          fontSize: 9, color: 'rgba(255,255,255,0.5)',
-          textAlign: 'center', marginTop: 6, lineHeight: 1.5,
-        }}>
-          输出透明底视频 → 导入抖音直播伴侣
-        </div>
       </div>
     </div>
   )
@@ -2297,74 +2121,60 @@ export default function CanvasPanel({ onClose }: Props) {
 
       {/* ===== 伴播模式 ===== */}
       {activeMode === 'banbo' && (
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0 }}>
-          {/* 左侧：时间轴预览 */}
-          <TimelinePreview
-            products={PRODUCTS}
-            banboEnabled={banboEnabled}
-            onToggleBanbo={() => setBanboEnabled(!banboEnabled)}
-          />
-
-          {/* 右侧：4 Tab 配置区 */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+          {/* 3 Tab Bar */}
           <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
-            borderLeft: `1px solid ${C.border}`,
-            minWidth: 0, overflow: 'hidden',
+            padding: '8px 8px 0', background: C.card,
+            borderBottom: `1px solid ${C.border}`,
+            display: 'flex', gap: 2, flexShrink: 0,
           }}>
-            {/* 3 Tab Bar */}
-            <div style={{
-              padding: '8px 8px 0', background: C.card,
-              borderBottom: `1px solid ${C.border}`,
-              display: 'flex', gap: 2, flexShrink: 0,
-            }}>
-              {BANBO_TABS.map(tab => (
-                <button key={tab.key} onClick={() => setBanboTab(tab.key)} style={{
-                  flex: 1, padding: '8px 0 6px', borderRadius: 0, border: 'none',
-                  fontSize: 13, whiteSpace: 'nowrap', textAlign: 'center',
-                  fontWeight: banboTab === tab.key ? 600 : 400,
-                  background: 'transparent',
-                  color: banboTab === tab.key ? C.blue : C.textSec,
-                  cursor: 'pointer', fontFamily: f,
-                  borderBottom: banboTab === tab.key ? `2.5px solid ${C.blue}` : '2.5px solid transparent',
-                }}>
-                  {tab.label}
-                  {banboTab === tab.key && (
-                    <div style={{ fontSize: 10, fontWeight: 400, color: C.textSec, marginTop: 2 }}>{tab.desc}</div>
-                  )}
-                </button>
-              ))}
-            </div>
+            {BANBO_TABS.map(tab => (
+              <button key={tab.key} onClick={() => setBanboTab(tab.key)} style={{
+                flex: 1, padding: '8px 0 6px', borderRadius: 0, border: 'none',
+                fontSize: 13, whiteSpace: 'nowrap', textAlign: 'center',
+                fontWeight: banboTab === tab.key ? 600 : 400,
+                background: 'transparent',
+                color: banboTab === tab.key ? C.blue : C.textSec,
+                cursor: 'pointer', fontFamily: f,
+                borderBottom: banboTab === tab.key ? `2.5px solid ${C.blue}` : '2.5px solid transparent',
+              }}>
+                {tab.label}
+                {banboTab === tab.key && (
+                  <div style={{ fontSize: 10, fontWeight: 400, color: C.textSec, marginTop: 2 }}>{tab.desc}</div>
+                )}
+              </button>
+            ))}
+          </div>
 
-            {/* Tab 内容（渲染对应子组件） */}
-            <div style={{
-              flex: 1, overflow: 'hidden',
-              position: 'relative',
-            }}>
-              {banboTab === 'productAvatar' && <ProductAvatarContent />}
-              {banboTab === 'command' && <CommandContent />}
-              {banboTab === 'sysSettings' && <SystemSettingsContent />}
-            </div>
+          {/* Tab 内容 */}
+          <div style={{
+            flex: 1, overflow: 'hidden',
+            position: 'relative',
+          }}>
+            {banboTab === 'productAvatar' && <ProductAvatarContent banboEnabled={banboEnabled} onToggleBanbo={() => setBanboEnabled(!banboEnabled)} />}
+            {banboTab === 'command' && <CommandContent />}
+            {banboTab === 'sysSettings' && <SystemSettingsContent />}
+          </div>
 
-            {/* 底部操作 */}
-            <div style={{
-              padding: '10px 12px', borderTop: `1px solid ${C.border}`,
-              background: C.card, flexShrink: 0,
-              display: 'flex', gap: 8,
-            }}>
-              <button style={{
-                flex: 1, padding: '10px',
-                borderRadius: 8, border: `1px solid ${C.border}`,
-                background: '#fff', color: C.textSec,
-                fontSize: 13, cursor: 'pointer', fontFamily: f,
-              }}>重置</button>
-              <button style={{
-                flex: 2, padding: '10px',
-                borderRadius: 8, border: 'none',
-                background: 'linear-gradient(135deg, #60A5FA, #3B82F6)', color: '#fff',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: f,
+          {/* 底部操作 */}
+          <div style={{
+            padding: '10px 12px', borderTop: `1px solid ${C.border}`,
+            background: C.card, flexShrink: 0,
+            display: 'flex', gap: 8, justifyContent: 'center',
+          }}>
+            <button style={{
+              padding: '10px 24px',
+              borderRadius: 8, border: `1px solid ${C.border}`,
+              background: '#fff', color: C.textSec,
+              fontSize: 13, cursor: 'pointer', fontFamily: f,
+            }}>重置</button>
+            <button style={{
+              padding: '10px 32px',
+              borderRadius: 8, border: 'none',
+              background: 'linear-gradient(135deg, #60A5FA, #3B82F6)', color: '#fff',
+              fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: f,
                 boxShadow: '0 2px 8px rgba(59,130,246,0.3)',
               }}>💾 保存配置</button>
-            </div>
           </div>
         </div>
       )}
