@@ -324,6 +324,7 @@ function TimelineLeftBar({
       display: 'flex', flexDirection: 'column',
       position: 'relative', overflow: 'hidden',
       boxShadow: '20px 0 30px -10px rgba(0,0,0,0.25)',
+      minHeight: 0,
     }}>
       {/* 顶部标题 */}
       <div style={{
@@ -339,7 +340,7 @@ function TimelineLeftBar({
       </div>
 
       {/* 形象视频预览区 */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', minHeight: 0 }}>
         {boundAvatars.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {boundAvatars.map(({ product, avatar, normalStates, eventActions }) => {
@@ -545,7 +546,7 @@ function ProductAvatarContent({
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minWidth: 0 }}>
+    <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minWidth: 0, minHeight: 0 }}>
       {selectedProduct ? (
         <>
           {/* 商品信息头 */}
@@ -2143,7 +2144,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
       {/* ===== 助播模式 ===== */}
       {activeMode === 'assist' && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
           {/* 8 子 Tab */}
           <div style={{
             padding: '0 4px', background: C.card,
@@ -2200,7 +2201,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
       {/* ===== 伴播模式 ===== */}
       {activeMode === 'banbo' && (
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0 }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0, minHeight: 0 }}>
           {/* Timeline 左栏（固定 280px，永远可见） */}
           <TimelineLeftBar
             products={products}
