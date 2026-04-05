@@ -1,27 +1,32 @@
 # current-task.md
 
-## 当前任务
-伴播面板 UX 重做（第二轮完成，待验收）
+## 伴播面板 Timeline 回归改造（Issue #2）— 进行中
 
-## 进度
-- ✅ **卡死根因修复**：MEMORY.md 45KB→6KB
-- ✅ **第一轮 UX 重做**：时间轴预览+Tab改名+首次引导（Git: 9cad07c）
-- ✅ **第二轮：商品绑定一对一**
-  - 商品列表：6个mock商品（左侧200px）
-  - 形象库：7个形象可选（右侧180px）
-  - 视频预览区：点击常规态6状态/事件态口令切换预览
-  - 绑定逻辑：一对一，已绑定的形象标灰不可重复
-  - Git: 5d64aff, Issue #1, 分支 codex/issue-1-product-avatar-binding
-- ✅ **已部署**：https://miaobo-b.pages.dev
-- ❌ **待 Boss 验收**：新设计看效果，根据反馈调整
-- ❌ PR 合并到 main
-- ❌ 废弃组件清理（VoiceContent / AutoChatContent / VoiceSwitchContent）
-- ❌ SystemSettingsContent 内容实现（版本分级+NDI+设备状态）
-- ❌ 底部侧边按钮整合到 Tab
+### 当前状态
+- ✅ TimelineLeftBar 组件已重写（深色风格，复用 9cad07c 样式）
+- ✅ 多对多绑定逻辑已实现
+- ✅ 事件态口令已移到动作设置 Tab
+- ✅ 已 commit + push + 部署到 miaobo-b.pages.dev
+- ⏳ **等待 Boss 选择整体配色方案**（发了 3 个方案的飞书卡片）
 
-## 关键文件
-- `src/CanvasPanel.tsx`（~2300行）
-  - 新数据结构: 行 212-310（NORMAL_STATES, EVENT_ACTIONS, AVATAR_LIBRARY, PRODUCTS）
-  - ProductAvatarContent: 三栏布局（商品列表+预览+形象库）
-  - TimelinePreview: 适配一对一绑定模型
-- 部署：`bash deploy-b.sh`
+### 待 Boss 确认
+整体样式方案（深色 Timeline + 白色配置区的违和感处理）：
+- **方案 A**：右侧改深灰底（暗调统一）— 我推荐这个
+- **方案 B**：右侧改暖灰底（过渡缓冲）
+- **方案 C**：渐变过渡带（低成本快速修）
+
+Boss 确认后立即执行选定方案。
+
+### 待办
+- [ ] Boss 确认配色方案 → 执行改造
+- [ ] PR 创建 + 合并
+- [ ] 废弃组件清理（VoiceContent / AutoChatContent / VoiceSwitchContent）
+- [ ] SystemSettingsContent 实现（版本分级+NDI+设备状态）
+- [ ] 底部侧边按钮整合
+
+### 关键信息
+- 分支：`codex/issue-2-timeline-regression`
+- Issue：#2
+- 最新 commit：`647937e` fix: Timeline恢复深色风格+可视化时间轴条
+- 预览：https://miaobo-b.pages.dev
+- 文件：`zhuboaixia-clone/src/CanvasPanel.tsx` (~2300行)

@@ -84,3 +84,4 @@ function TabBar({ active, onSwitch }: { active: PanelKey; onSwitch?: (p: PanelKe
 
 export { TabBar, CORE_TABS, TOOL_TABS, C, Toggle }
 export type { PanelKey, Props }
+

@@ -323,6 +323,7 @@ function TimelineLeftBar({
       background: '#111827',
       display: 'flex', flexDirection: 'column',
       position: 'relative', overflow: 'hidden',
+      boxShadow: '20px 0 30px -10px rgba(0,0,0,0.25)',
     }}>
       {/* 顶部标题 */}
       <div style={{
@@ -2197,7 +2198,7 @@ export default function CanvasPanel({ onClose }: Props) {
       {/* ===== 伴播模式 ===== */}
       {activeMode === 'banbo' && (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0 }}>
-          {/* Timeline 左栏（固定 240px，永远可见） */}
+          {/* Timeline 左栏（固定 280px，永远可见） */}
           <TimelineLeftBar
             products={products}
             selectedProductId={selectedProductId}
@@ -2211,7 +2212,7 @@ export default function CanvasPanel({ onClose }: Props) {
           />
 
           {/* 右侧：Tab + 内容 */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, boxShadow: 'inset 8px 0 16px -8px rgba(0,0,0,0.06)' }}>
             {/* 3 Tab Bar */}
             <div style={{
               padding: '8px 8px 0', background: C.card,

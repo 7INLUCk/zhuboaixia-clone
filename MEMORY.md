@@ -16,15 +16,12 @@
 - **方案 B 地址**：https://miaobo-b.pages.dev（锁定 b 分支）
 - **PRD**：https://vqz9o07xyt.feishu.cn/docx/LYJgdNgxFoFVITxDaqOc1gw9nNb
 
-### 伴播面板二轮改造（UX重做，第一轮完成待验收）
-- Tab 精简为 3：形象配置 / 动作设置 / 高级设置（带描述文字）
-- 左侧预览：从静态照片 → 视频时间轴预览（🔵常规/🟠事件时间条）
-- 右侧面板：去商品信息重复、常规态→「直播中（自动循环）」、事件态→「活动触发」
-- 首次引导：🚀 快速开始 3 步卡片
-- 底部按钮：重置 + 💾 保存配置
-- 关键文件：`src/CanvasPanel.tsx`（~2300行，**读取时用 offset/limit 分段，不要一次全读**）
-- 部署：`bash deploy-b.sh`
-- Git: `9cad07c`（UX重做）, `40cd2d8`（三级结构）
+### 伴播面板二轮改造（进行中，待下个会话执行）
+- 方案已确认：Timeline 回归左栏固定240px + 商品列表合并
+- 形象配置 Tab 删商品列表，由 Timeline 统一承载
+- 事件态口令放动作设置 Tab（与进出场口令一起）
+- 多对多绑定不锁定 + 未绑定橙色提示但不阻断
+- 详情见 memory/current-task.md
 
 ### 直播间合成系统（stream-compositor）
 - **路径**：`/Users/yuchuyang/.openclaw/workspace-miijia2/stream-compositor/`
