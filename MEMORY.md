@@ -16,11 +16,15 @@
 - **方案 B 地址**：https://miaobo-b.pages.dev（锁定 b 分支）
 - **PRD**：https://vqz9o07xyt.feishu.cn/docx/LYJgdNgxFoFVITxDaqOc1gw9nNb
 
-### 伴播面板二轮改造（进行中，待下个会话执行）
-- 方案已确认：Timeline 回归左栏固定240px + 商品列表合并
+### 伴播面板二轮改造（Issue #2，进行中）
+- Timeline 回归左栏 280px 深色风格（复用 9cad07c 样式）
+- 每个已绑定形象一张卡片：头像+视频预览+LIVE标签+可视化时间轴条
 - 形象配置 Tab 删商品列表，由 Timeline 统一承载
 - 事件态口令放动作设置 Tab（与进出场口令一起）
 - 多对多绑定不锁定 + 未绑定橙色提示但不阻断
+- 方案C渐变过渡带已落地（深→白交界柔化）
+- 分支：`codex/issue-2-timeline-regression`，3 commits
+- 下个会话：PR创建+合并 + 废弃组件清理 + SystemSettingsContent
 - 详情见 memory/current-task.md
 
 ### 直播间合成系统（stream-compositor）
@@ -99,6 +103,11 @@
 - **已修复**：MEMORY.md 45KB→6KB，删除 BOOTSTRAP.md，总注入 79KB→33KB
 - **预防**：MEMORY.md 保持 <20KB，读大文件用 offset/limit 分段
 - mimo 的 maxTokens 只有 5000（其他模型是 8192），也是限制因素之一
+
+### 2026-04-05 Vite 构建 hash 不变
+- 源码改动但 build 产出 hash 不变 → Cloudflare 不上传新文件
+- **根因**：Vite 内容哈希确定性，相同大小的输出产生相同 hash
+- **解法**：修改 CSS（如 `letter-spacing: 0.01px`）或改 UI 文本（如加 "V2"）→ 改变输出大小 → hash 变化 → Cloudflare 上传
 
 ### 2026-03-31
 - PIL 字体路径：用 `/System/Library/Fonts/STHeiti Light.ttc`，不要用 PingFang.ttc（不存在）

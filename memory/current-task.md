@@ -2,31 +2,28 @@
 
 ## 伴播面板 Timeline 回归改造（Issue #2）— 进行中
 
-### 当前状态
-- ✅ TimelineLeftBar 组件已重写（深色风格，复用 9cad07c 样式）
-- ✅ 多对多绑定逻辑已实现
-- ✅ 事件态口令已移到动作设置 Tab
-- ✅ 已 commit + push + 部署到 miaobo-b.pages.dev
-- ⏳ **等待 Boss 选择整体配色方案**（发了 3 个方案的飞书卡片）
+### 已完成
+- ✅ TimelineLeftBar 深色风格（复用 9cad07c 样式）
+- ✅ 可视化时间轴条（🔵蓝色交替段 + 🟠橙色触发段）
+- ✅ 每个已绑定形象独立卡片（头像+名称+视频预览+LIVE标签）
+- ✅ 多对多绑定逻辑
+- ✅ 事件态口令移到动作设置 Tab
+- ✅ 方案 C 渐变过渡带已落地
+- ✅ 伴播触发机制设计确认（v2：口令即切品，无独立切品机制）
+- ✅ 动作设置面板改造方案（3口令→2口令：展示/退场）
+- ✅ 所有改动已 commit + push + 部署
 
-### 待 Boss 确认
-整体样式方案（深色 Timeline + 白色配置区的违和感处理）：
-- **方案 A**：右侧改深灰底（暗调统一）— 我推荐这个
-- **方案 B**：右侧改暖灰底（过渡缓冲）
-- **方案 C**：渐变过渡带（低成本快速修）
-
-Boss 确认后立即执行选定方案。
-
-### 待办
-- [ ] Boss 确认配色方案 → 执行改造
-- [ ] PR 创建 + 合并
+### 下个会话待办
+- [ ] Boss 确认面板改造方案后执行（2口令版：展示+退场）
+- [ ] PR 创建 + 合并（codex/issue-2-timeline-regression → b）
 - [ ] 废弃组件清理（VoiceContent / AutoChatContent / VoiceSwitchContent）
 - [ ] SystemSettingsContent 实现（版本分级+NDI+设备状态）
 - [ ] 底部侧边按钮整合
+- [ ] 动作设置面板改造：3口令→2口令（展示+退场）
 
 ### 关键信息
 - 分支：`codex/issue-2-timeline-regression`
 - Issue：#2
-- 最新 commit：`647937e` fix: Timeline恢复深色风格+可视化时间轴条
+- 最新 commit：`44e22eb` style: Timeline右侧渐变过渡带
 - 预览：https://miaobo-b.pages.dev
 - 文件：`zhuboaixia-clone/src/CanvasPanel.tsx` (~2300行)

@@ -741,13 +741,12 @@ function ProductAvatarContent({
 }
 
 // ============ 进退场指令组件 ============
-type CommandType = 'enter' | 'exit' | 'change'
-type CommandItem = { id: string; type: CommandType; label: string; defaultPhrase: string; customPhrase: string }
+type CommandType = 'show' | 'exit'
+type CommandItem = { id: string; type: CommandType; label: string; desc: string; defaultPhrase: string; customPhrase: string }
 
 const DEFAULT_COMMANDS: CommandItem[] = [
-  { id: 'c1', type: 'enter', label: '进场', defaultPhrase: '来，我们看下上身效果', customPhrase: '' },
-  { id: 'c2', type: 'change', label: '换装', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
-  { id: 'c3', type: 'exit', label: '退场', defaultPhrase: '请模特先下场', customPhrase: '' },
+  { id: 'c1', type: 'show', label: '展示口令', desc: '伴播不在场 → 播放入场动画，穿着对应商品登场\n伴播已在场 → 原地换装（无进出动画）', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
+  { id: 'c2', type: 'exit', label: '退场口令', desc: '伴播播放退场动画离场。需要再次展示时，用展示口令重新登场', defaultPhrase: '请模特先下场', customPhrase: '' },
 ]
 
 function CommandContent() {
@@ -770,30 +769,27 @@ function CommandContent() {
   }
 
   const typeConfig: Record<CommandType, { icon: string; color: string; bg: string }> = {
-    enter: { icon: '🚶', color: C.green, bg: '#E8F5E9' },
-    change: { icon: '👗', color: C.blue, bg: '#E8F3FF' },
+    show: { icon: '🎭', color: C.green, bg: '#E8F5E9' },
     exit: { icon: '🚪', color: C.orange, bg: '#FFF3E0' },
   }
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
-      {/* 说明 */}
+      {/* 顶部说明 */}
       <div style={{
         padding: '10px 12px', borderRadius: 8,
-        background: C.blueLight, border: `1px solid #D4E0FF`, marginBottom: 10,
+        background: C.blueLight, border: `1px solid #D4E0FF`, marginBottom: 12,
       }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.blue, marginBottom: 3 }}>🎤 语音指令控制</div>
-        <div style={{ fontSize: 10, color: C.textSec, lineHeight: 1.6 }}>
-          主播说出对应口令 → 系统识别 → 触发进场/换装/退场<br />
-          口令可自定义，但必须包含链接号信息（换装场景）
+        <div style={{ fontSize: 11, color: C.textSec, lineHeight: 1.7 }}>
+          主播说出下方口令，AI 伴播会自动配合动作。<br />
+          口令可自定义，<b style={{ color: C.orange }}>必须包含商品链接号</b>（{`{N}`} 会替换成实际链接号）。
         </div>
       </div>
 
       {/* 指令列表 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {commands.map(cmd => {
           const cfg = typeConfig[cmd.type]
-          const isActive = cmd.customPhrase !== ''
           const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
           const isEditing = editingId === cmd.id
 
@@ -802,15 +798,22 @@ function CommandContent() {
               padding: '12px', borderRadius: 8,
               border: `1px solid ${C.border}`, background: C.card,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                 <span style={{ fontSize: 16 }}>{cfg.icon}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{cmd.label}口令</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{cmd.label}</span>
                 {cmd.customPhrase && (
                   <span style={{
                     fontSize: 8, padding: '1px 4px', borderRadius: 3,
                     background: 'rgba(255,125,0,0.08)', color: '#FF7D00', fontWeight: 600,
                   }}>已自定义</span>
                 )}
+              </div>
+              {/* 内联行为说明 */}
+              <div style={{
+                fontSize: 10, color: C.textSec, lineHeight: 1.6, marginBottom: 8, paddingLeft: 2,
+                whiteSpace: 'pre-line',
+              }}>
+                {cmd.desc}
               </div>
 
               {isEditing ? (
@@ -872,9 +875,9 @@ function CommandContent() {
       }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: '#B8860B', marginBottom: 6 }}>⚠️ 异常提示规则</div>
         <div style={{ fontSize: 10, color: '#8B6914', lineHeight: 1.8 }}>
-          • 换装时无对应链接形象 → 画面不变 + 提示「无N号链接服饰的伴播模特」<br />
-          • 退场时无伴播在场 → 画面不变 + 提示「无伴播模特在场，无需退场」<br />
-          • 进场时无可用形象 → 画面不变 + 提示
+          • 展示口令无对应链接形象 → 画面不变 + 提示「无N号链接服饰的伴播模特」<br />
+          • 退场口令但伴播不在场 → 画面不变 + 提示「无需退场」<br />
+          • 统一原则：无匹配时画面不变化，仅工作台提示，不阻断直播流程
         </div>
       </div>
 
