@@ -1,6 +1,5 @@
 # TOOLS.md - Local Notes
 
-Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
 
 ## MiiMii 项目地址
 
@@ -31,9 +30,6 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 | agent-browser | 公开页面截图/验证，wait 事件 | 无登录态，不能访问 dashboard |
 
 ---
-
-Add whatever helps you do your job. This is your cheat sheet.
-
 
 ## 飞书聊天记录（feishu-bot-history skill，优先）
 - **Skill**：`/Users/yuchuyang/.agents/skills/feishu-bot-history/SKILL.md`

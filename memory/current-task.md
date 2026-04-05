@@ -1,35 +1,34 @@
-# 当前任务
+# current-task.md
 
-## 任务名
-伴播能力整合到助播虾配置面板
-
-## 开始时间
-2026-04-03 17:10
+## 当前任务
+伴播面板 UX 重做（第一轮完成，待验收调整）
 
 ## 进度
-- [x] 理解需求：摒弃方案B独立面板，把伴播能力合并到助播虾原生面板
-- [x] 复习代码：所有 Panel 组件 + 路由 + 布局
-- [x] 输出改动方案 v1（5 张卡片已发给 Boss）
-- [x] Boss 反馈：改成交互式开关 + 独立配置面板（v2）
-- [x] 输出改动方案 v2（4 张卡片已发给 Boss）
-- [x] Boss 确认：形象/配音→伴播总开关、右侧滑出、截图存参考
-- [x] 保存参考截图到 public/screenshots/15-config-smart-dialog.jpg
-- [x] 已 spawn 子 agent 执行编码（BuyinControlPanel.tsx 改造）
-- [x] 编码完成，编译通过，已部署
-- [x] 浏览器验证 4 个 Tab 全部正常
-- [x] 已发卡片汇报 Boss
+- ✅ **卡死根因修复**：MEMORY.md 45KB→6KB，删除 BOOTSTRAP.md，总注入 79KB→33KB
+- ✅ **ProductAvatarContent 三级结构 UI**：常规态/事件态视频预览卡片（Git: 40cd2d8）
+- ✅ **SystemSettingsContent 占位组件**：编译通过（内容待实现）
+- ✅ **左侧预览重做**：静态照片 → 视频时间轴预览（每个形象一行 + 🔵常规/🟠事件时间条）
+- ✅ **Tab 改名**：形象配置 / 动作设置 / 高级设置（带描述文字）
+- ✅ **右侧面板优化**：去商品信息重复、状态改名、首次引导
+- ✅ **底部按钮重构**：重置 + 💾 保存配置
+- ✅ **已部署**：https://miaobo-b.pages.dev
+- ❌ **待 Boss 验收**：新设计看效果，根据反馈调整
+- ❌ 废弃组件清理（VoiceContent / AutoChatContent / VoiceSwitchContent）
+- ❌ SystemSettingsContent 内容实现（版本分级+NDI+设备状态）
+- ❌ 底部侧边按钮整合到 Tab
 
-## 状态：返工中 ⚠️
+## 关键文件
+- `src/CanvasPanel.tsx`（~2300行，改造中）
+  - ProductAvatarContent: 行 268-549（三级结构UI）
+  - TimelinePreview: 行 551-706（时间轴预览组件，新增）
+  - CommandContent: 行 713-844
+  - SystemSettingsContent: 行 845-860（占位）
+  - CanvasPanel 主布局: 行 1999+（伴播模式部分已重写）
+- 部署：`bash deploy-b.sh`（在 zhuboaixia-clone 目录）
 
-### 返工原因
-- 上一轮子 agent 没有复刻 8 Tab 配置面板，只在 9:16 画布上加了个开关
-- Boss 纠正：应该先复刻截图里的面板 UI，再加伴播功能
-- 新方案：新建 ConfigPanel.tsx 复刻截图 → 加伴播开关 → 接 4 Tab 面板
-
-## 关键上下文
-- 助播虾配置面板顶部有「形象」「配音」两个入口按钮 → 用来打开伴播面板
-- 保留 4 个伴播模块：形象库、音色、智能对话、声控切屏
-- 丢弃：场景装修、管理广场、创建向导、Banbo 相关页面
-- 8 个原生 Tab 保持不变
-- 需修改：BuyinControlPanel.tsx、App.tsx、ShellLayout.tsx
-- 可删除：BanboHomePage/CreatePage/DashboardPage/PanelPage、SetupWizard、SceneEditorPanel、SceneLayoutPanel、BuyinLivePreviewPanel
+## Git 提交记录
+```
+9cad07c feat: 伴播面板UX重做 - 时间轴预览+Tab改名+首次引导+去信息重复
+40cd2d8 checkpoint: ProductAvatarContent三级结构+SystemSettingsContent占位
+999bda6 feat: 伴播Tab改造-商品伴播管理+进退场指令组件
+```
