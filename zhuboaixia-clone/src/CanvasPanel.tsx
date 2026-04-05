@@ -435,10 +435,9 @@ function TimelineLeftBar({
         padding: '6px 8px', flexShrink: 0,
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         background: 'rgba(0,0,0,0.15)',
-        maxHeight: 97, overflowY: 'auto',
       }}>
         <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 4, padding: '0 4px' }}>商品配置</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, height: 97, overflowY: 'auto' }}>
           {products.map(p => {
             const isSelected = selectedProductId === p.id
             const comp = getStepCompletion(products, p.id)
