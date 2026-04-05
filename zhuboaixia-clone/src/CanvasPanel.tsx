@@ -284,12 +284,12 @@ type ProductItem = {
 
 // 形象库（用户从中选择绑定）
 const AVATAR_LIBRARY: AvatarLibItem[] = [
-  { id: 'av1', name: '篮球小子-蓝', preview: '/avatars/generated/av1.jpg', category: 'public', voiceTier: 'standard' },
-  { id: 'av2', name: '篮球小子-红', preview: '/avatars/generated/av2.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av1', name: '篮球小子-蓝', preview: '/avatars/chroma-keyed/av1.png', category: 'public', voiceTier: 'standard' },
+  { id: 'av2', name: '篮球小子-红', preview: '/avatars/chroma-keyed/av2.png', category: 'public', voiceTier: 'standard' },
   { id: 'av3', name: '篮球小子-黑', preview: '/avatars/generated/av3.jpg', category: 'public', voiceTier: 'premium' },
   { id: 'av4', name: '篮球小子-白', preview: '/avatars/generated/av4.jpg', category: 'public', voiceTier: 'standard' },
   { id: 'av5', name: '小小碎花裙', preview: '/avatars/generated/av5.jpg', category: 'public', voiceTier: 'premium' },
-  { id: 'av6', name: '榴莲宝贝3D', preview: '/avatars/generated/av6.jpg', category: 'custom', voiceTier: 'premium' },
+  { id: 'av6', name: '榴莲宝贝3D', preview: '/avatars/chroma-keyed/av6.png', category: 'custom', voiceTier: 'premium' },
   { id: 'av7', name: '卡通小猫', preview: '/avatars/generated/av7.jpg', category: 'public', voiceTier: 'standard' },
 ]
 
