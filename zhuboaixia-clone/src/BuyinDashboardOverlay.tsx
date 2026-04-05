@@ -13,6 +13,7 @@ import CouponPanel from './CouponPanel'
 import LuckyBagPanel from './LuckyBagPanel'
 import SystemSettingsPanel from './SystemSettingsPanel'
 import ConfigPanel from './ConfigPanel'
+import CanvasPanel from './CanvasPanel'
 import { PanelKey } from './shared'
 
 type ActivePanel = 'none' | 'main' | 'livePreview' | 'config' | PanelKey
@@ -38,7 +39,7 @@ export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void
           style={{ cursor: 'pointer' }} onClick={onClose} />}
       </svg>
 
-      {activePanel === 'main' && <BuyinControlPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
+      {activePanel === 'main' && <CanvasPanel onClose={() => setActivePanel('none')} />}
       {activePanel === 'livePreview' && <BuyinLivePreviewPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
       {activePanel === 'config' && <ConfigPanel onClose={() => setActivePanel('none')} />}
       {activePanel === 'avatar' && <AvatarLibraryPanel onClose={() => setActivePanel('main')} onSwitchPanel={switchPanel} onConfirmConfig={() => setActivePanel('livePreview')} />}
