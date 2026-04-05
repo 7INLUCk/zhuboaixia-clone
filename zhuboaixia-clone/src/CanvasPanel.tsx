@@ -314,15 +314,78 @@ function getStepCompletion(products: ProductItem[], selectedProductId: string | 
 // ============ Timeline 左栏组件（深色风格） ============
 function TimelineLeftBar({
   products, selectedProductId, onSelectProduct, banboEnabled, onToggleBanbo,
+  previewStateId, setPreviewStateId, previewEventId, setPreviewEventId,
 }: {
   products: ProductItem[]; selectedProductId: string | null;
   onSelectProduct: (id: string) => void; banboEnabled: boolean; onToggleBanbo: () => void;
+  previewStateId: string | null; setPreviewStateId: (id: string | null) => void;
+  previewEventId: string | null; setPreviewEventId: (id: string | null) => void;
 }) {
   const totalDuration = 60 // 60秒时间轴
   const productItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const previewCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const productListRef = useRef<HTMLDivElement>(null)
   const previewAreaRef = useRef<HTMLDivElement>(null)
+  const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // 自动轮播逻辑：banboEnabled 时随机选中常态片段
+  useEffect(() => {
+    if (!banboEnabled || !selectedProductId) {
+      if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null }
+      return
+    }
+    const product = products.find(p => p.id === selectedProductId)
+    if (!product?.boundAvatarId) return
+    const states = NORMAL_STATES[product.boundAvatarId] || DEFAULT_STATES
+    if (states.length === 0) return
+    // 立即随机选一个
+    const pick = () => {
+      const idx = Math.floor(Math.random() * states.length)
+      setPreviewStateId(states[idx].id)
+      setPreviewEventId(null)
+    }
+    pick()
+    const avgDuration = states.reduce((s, st) => s + st.duration, 0) / states.length
+    autoPlayTimerRef.current = setInterval(pick, avgDuration * 1000)
+    return () => { if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null } }
+  }, [banboEnabled, selectedProductId])
+
+  // 手动点击时间轴块
+  const handleTimelineBlockClick = (stateId: string) => {
+    // 停止自动轮播（用户手动控制）
+    if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null }
+    setPreviewStateId(stateId)
+    setPreviewEventId(null)
+  }
+
+  // 手动点击事件块
+  const handleEventBlockClick = (eventId: string) => {
+    if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null }
+    setPreviewEventId(eventId)
+    setPreviewStateId(null)
+    // 事件播放一次后自动恢复轮播
+    const product = products.find(p => p.id === selectedProductId)
+    if (!product?.boundAvatarId) return
+    const eventActions = EVENT_ACTIONS[product.boundAvatarId] || DEFAULT_EVENT_ACTIONS
+    const ev = eventActions.find(e => e.id === eventId)
+    if (!ev) return
+    setTimeout(() => {
+      setPreviewEventId(null)
+      // 恢复自动轮播
+      if (banboEnabled) {
+        const states = NORMAL_STATES[product.boundAvatarId!] || DEFAULT_STATES
+        if (states.length > 0) {
+          const pick = () => {
+            const idx = Math.floor(Math.random() * states.length)
+            setPreviewStateId(states[idx].id)
+          }
+          pick()
+          const avgDuration = states.reduce((s, st) => s + st.duration, 0) / states.length
+          autoPlayTimerRef.current = setInterval(pick, avgDuration * 1000)
+        }
+      }
+    }, ev.duration * 1000)
+  }
 
   // 点击商品 → 滚动对应预览卡片到可见区域 + 选中项滚动到可见
   const handleSelectProduct = (id: string) => {
@@ -479,71 +542,88 @@ function TimelineLeftBar({
                     </div>
                   </div>
 
-                  {/* 时间轴条 */}
+                  {/* 分区时间轴 */}
                   <div style={{ marginTop: 4 }}>
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3,
                     }}>
-                      <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>直播中（自动轮播）</span>
+                      <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>
+                        {previewEventId ? '🎬 事件播放中' : '直播中（自动轮播）'}
+                      </span>
                       <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{normalDuration}s 循环</span>
                     </div>
-                    {/* 时间标注 */}
+                    {/* 常态分区块：按动作切分，可点击 */}
                     <div style={{
-                      display: 'flex', justifyContent: 'space-between',
-                      marginBottom: 2, padding: '0 1px',
+                      display: 'flex', gap: 2, height: 20, borderRadius: 4,
+                      overflow: 'hidden',
                     }}>
-                      {['0s', '15s', '30s', '45s', '60s'].map(t => (
-                        <span key={t} style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>{t}</span>
-                      ))}
-                    </div>
-                    <div style={{
-                      height: 8, borderRadius: 4,
-                      background: 'rgba(255,255,255,0.08)',
-                      overflow: 'hidden', position: 'relative',
-                    }}>
-                      {Array.from({ length: Math.ceil(totalDuration / normalDuration) }).map((_, i) => (
-                        <div key={i} style={{
-                          position: 'absolute',
-                          left: `${(i * normalDuration / totalDuration) * 100}%`,
-                          width: `${(normalDuration / totalDuration) * 100}%`,
-                          height: '100%',
-                          background: i % 2 === 0 ? 'rgba(96,165,250,0.6)' : 'rgba(96,165,250,0.3)',
-                          borderRadius: 2,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                          {i === 0 && <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>轮播</span>}
-                        </div>
-                      ))}
+                      {normalStates.map(st => {
+                        const isActive = previewStateId === st.id && !previewEventId
+                        const isDimmed = previewEventId !== null // 事件态播放时默认态变暗
+                        return (
+                          <div key={st.id} onClick={() => handleTimelineBlockClick(st.id)} style={{
+                            flex: st.duration,
+                            height: '100%',
+                            borderRadius: 2,
+                            cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            gap: 2,
+                            background: isActive
+                              ? 'rgba(96,165,250,0.7)'
+                              : 'rgba(96,165,250,0.15)',
+                            opacity: isDimmed ? 0.3 : 1,
+                            boxShadow: isActive ? '0 0 6px rgba(96,165,250,0.5)' : 'none',
+                            transition: 'all 0.2s',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                          }}>
+                            <span style={{ fontSize: 8 }}>{st.icon}</span>
+                            <span style={{
+                              fontSize: 7, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
+                              fontWeight: isActive ? 600 : 400,
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            }}>{st.label}</span>
+                          </div>
+                        )
+                      })}
                     </div>
 
+                    {/* 事件态分区块 */}
                     {eventActions.length > 0 && (
                       <>
                         <div style={{
-                          display: 'flex', alignItems: 'center', gap: 4, marginTop: 4,
+                          display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, marginBottom: 3,
                         }}>
-                          <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>口令触发</span>
-                          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{eventDuration}s 触发</span>
+                          <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>⚡ 口令触发（点击播放）</span>
                         </div>
                         <div style={{
-                          height: 8, borderRadius: 4,
-                          background: 'rgba(255,255,255,0.08)',
-                          overflow: 'hidden', position: 'relative',
-                          marginTop: 2,
+                          display: 'flex', gap: 2, height: 18, borderRadius: 4,
+                          overflow: 'hidden',
                         }}>
-                          <div style={{
-                            position: 'absolute',
-                            left: '10%', width: `${(eventDuration / totalDuration) * 100}%`,
-                            height: '100%',
-                            background: 'rgba(245,158,11,0.6)',
-                            borderRadius: 2,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          }}>
-                            <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>触发</span>
-                          </div>
-                          <span style={{
-                            position: 'absolute', left: '3%', top: -1,
-                            fontSize: 7, color: 'rgba(255,255,255,0.5)',
-                          }}>触发点 ▸</span>
+                          {eventActions.map(ev => {
+                            const isActive = previewEventId === ev.id
+                            return (
+                              <div key={ev.id} onClick={() => handleEventBlockClick(ev.id)} style={{
+                                flex: ev.duration,
+                                height: '100%',
+                                borderRadius: 2,
+                                cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                gap: 2,
+                                background: isActive
+                                  ? 'rgba(245,158,11,0.7)'
+                                  : 'rgba(245,158,11,0.15)',
+                                boxShadow: isActive ? '0 0 6px rgba(245,158,11,0.5)' : 'none',
+                                transition: 'all 0.2s',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                              }}>
+                                <span style={{ fontSize: 7 }}>🎬</span>
+                                <span style={{
+                                  fontSize: 7, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
+                                  fontWeight: isActive ? 600 : 400,
+                                }}>{ev.label}</span>
+                              </div>
+                            )
+                          })}
                         </div>
                       </>
                     )}
@@ -2797,6 +2877,10 @@ export default function CanvasPanel({ onClose }: Props) {
             }}
             banboEnabled={banboEnabled}
             onToggleBanbo={() => setBanboEnabled(!banboEnabled)}
+            previewStateId={previewStateId}
+            setPreviewStateId={setPreviewStateId}
+            previewEventId={previewEventId}
+            setPreviewEventId={setPreviewEventId}
           />
 
           {/* 右侧：统一配置面板 */}
