@@ -90,6 +90,66 @@ function ChromaKeyImage({ src, alt, style, draggable }: {
   )
 }
 
+// ============ 绿幕视频组件 ============
+function ChromaKeyVideo({ src, style, autoPlay, loop, muted, playsInline, onEnded }: {
+  src: string; style?: React.CSSProperties; autoPlay?: boolean; loop?: boolean; muted?: boolean; playsInline?: boolean; onEnded?: () => void
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const rafRef = useRef<number>(0)
+
+  const processFrame = useCallback(() => {
+    const canvas = canvasRef.current
+    const video = videoRef.current
+    if (!canvas || !video || video.paused || video.ended || !video.videoWidth) {
+      rafRef.current = requestAnimationFrame(processFrame)
+      return
+    }
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    ctx.drawImage(video, 0, 0)
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const d = imageData.data
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2]
+      if ((g > 80 && g > r * 1.1 && g > b * 1.1) ||
+          (g > 100 && g > r + 15 && g > b + 15) ||
+          (g > 60 && r < 120 && b < 120 && g > r * 1.3)) {
+        const greenness = Math.min(1, (g - Math.max(r, b)) / (g + 1))
+        d[i + 3] = greenness > 0.5 ? 0 : Math.round((1 - greenness * 1.5) * 255)
+      }
+    }
+    ctx.putImageData(imageData, 0, 0)
+    rafRef.current = requestAnimationFrame(processFrame)
+  }, [])
+
+  useEffect(() => {
+    rafRef.current = requestAnimationFrame(processFrame)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [processFrame])
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%', ...style }}>
+      <video
+        ref={videoRef}
+        src={src}
+        autoPlay={autoPlay}
+        loop={loop}
+        muted={muted ?? true}
+        playsInline={playsInline}
+        onEnded={onEnded}
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0 }}
+      />
+      <canvas
+        ref={canvasRef}
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+    </div>
+  )
+}
+
 // ============ 播放按钮 ============
 function PlayButton({ playing, onClick, color, size }: { playing: boolean; onClick: () => void; color: string; size?: number }) {
   const s = size || 32
@@ -555,13 +615,13 @@ function TimelineLeftBar({
 
                       if (currentVideoUrl) {
                         return (
-                          <video
+                          <ChromaKeyVideo
                             src={currentVideoUrl}
                             autoPlay
                             loop={!previewEventId}
                             muted
                             playsInline
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ width: '100%', height: '100%' }}
                             onEnded={() => {
                               if (previewEventId) setPreviewEventId(null)
                             }}
