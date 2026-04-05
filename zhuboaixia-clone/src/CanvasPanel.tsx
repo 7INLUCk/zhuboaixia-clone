@@ -865,7 +865,7 @@ function ProductAvatarContent({
                           background: '#f0f0f0', marginBottom: 4,
                         }}>
                           <ChromaKeyImage src={av.preview} alt={av.name}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }} draggable={false} />
                         </div>
                         <div style={{ fontSize: 9, fontWeight: 600, color: C.text }}>{av.name}</div>
                         {isCurrent && <div style={{ fontSize: 8, color: C.green, marginTop: 1 }}>✅ 当前</div>}
@@ -909,7 +909,7 @@ function ProductAvatarContent({
                         background: '#f0f0f0', marginBottom: 3,
                       }}>
                         <ChromaKeyImage src={av.preview} alt={av.name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }} draggable={false} />
                       </div>
                       <div style={{ fontSize: 9, fontWeight: 600, color: C.text }}>{av.name}</div>
                     </div>
@@ -1406,7 +1406,7 @@ function UnifiedBanboPanel({
                         </div>
                         <div style={{ width: '100%', aspectRatio: '1', borderRadius: 6, overflow: 'hidden', background: '#f0f0f0', marginBottom: 4 }}>
                           <ChromaKeyImage src={av.preview} alt={av.name}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }} draggable={false} />
                         </div>
                         <div style={{ fontSize: 10, fontWeight: 600, color: C.text }}>{av.name}</div>
                       </div>
