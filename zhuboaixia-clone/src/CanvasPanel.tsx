@@ -546,7 +546,7 @@ function ProductAvatarContent({
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minWidth: 0, minHeight: 0 }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden', padding: '10px 12px' }}>
       {selectedProduct ? (
         <>
           {/* 商品信息头 */}
@@ -775,7 +775,7 @@ function CommandContent() {
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px', minHeight: 0 }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', padding: '10px 12px' }}>
       {/* 顶部说明 */}
       <div style={{
         padding: '10px 12px', borderRadius: 8,
