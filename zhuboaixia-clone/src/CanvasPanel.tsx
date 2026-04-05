@@ -3,7 +3,7 @@ import { C, Toggle } from './shared'
 
 type Props = { onClose: () => void }
 type Mode = 'assist' | 'banbo'
-type BanboTab = 'avatar' | 'voice' | 'autoChat' | 'voiceSwitch'
+type BanboTab = 'productAvatar' | 'voice' | 'command' | 'voiceSwitch'
 type AssistTab = 'voiceProduct' | 'chatAssist' | 'director' | 'comment' | 'voicePrice' | 'welcome' | 'coupons' | 'luckyBag' | 'sysSettings'
 
 const ASSIST_TABS: { key: AssistTab; label: string }[] = [
@@ -19,10 +19,10 @@ const ASSIST_TABS: { key: AssistTab; label: string }[] = [
 ]
 
 const BANBO_TABS: { key: BanboTab; label: string }[] = [
-  { key: 'avatar', label: '🎭 形象库' },
+  { key: 'productAvatar', label: '📦 商品伴播' },
   { key: 'voice', label: '🔊 音色' },
-  { key: 'autoChat', label: '💬 智能对话' },
-  { key: 'voiceSwitch', label: '🎙 声控切屏' },
+  { key: 'command', label: '🎤 进退场指令' },
+  { key: 'voiceSwitch', label: '🎙 换装触发' },
 ]
 
 const SIDEBAR_BUTTONS = [
@@ -208,6 +208,375 @@ const LIVE_PRODUCTS = [
   { id: 'p3', name: '补光灯套装', price: '¥299', linkNum: 3 },
   { id: 'p4', name: '声卡直播设备', price: '¥1599', linkNum: 4 },
 ]
+
+// ============ 商品伴播管理数据 ============
+type ProductAvatar = { id: string; name: string; preview: string; actionCount: number; maxActions: number }
+type ProductItem = { id: string; linkNum: number; name: string; price: string; avatars: ProductAvatar[] }
+
+const PRODUCTS: ProductItem[] = [
+  {
+    id: 'p1', linkNum: 1, name: '女童春款碎花连衣裙', price: '¥129',
+    avatars: [
+      { id: 'pa1', name: '小小', preview: '/avatars/xiaoxiao-dress.jpg', actionCount: 4, maxActions: 6 },
+    ],
+  },
+  {
+    id: 'p2', linkNum: 2, name: '男童纯棉印花T恤', price: '¥89',
+    avatars: [
+      { id: 'pa2', name: '篮球小子', preview: '/avatars/basketball-boy.jpg', actionCount: 3, maxActions: 6 },
+    ],
+  },
+  {
+    id: 'p3', linkNum: 3, name: '儿童防晒衣外套', price: '¥159',
+    avatars: [],
+  },
+  {
+    id: 'p4', linkNum: 4, name: '女童百褶半身裙', price: '¥99',
+    avatars: [
+      { id: 'pa3', name: '榴莲宝贝', preview: '/avatars/durian-3d.jpg', actionCount: 6, maxActions: 12 },
+    ],
+  },
+]
+
+// ============ 商品伴播管理组件 ============
+function ProductAvatarContent() {
+  const [products] = useState(PRODUCTS)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = products.find(p => p.id === selectedId)
+
+  const totalAvatars = products.reduce((s, p) => s + p.avatars.length, 0)
+  const configuredCount = products.filter(p => p.avatars.length > 0).length
+
+  return (
+    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      {/* 左侧：商品列表 */}
+      <div style={{
+        width: '50%', borderRight: `1px solid ${C.border}`,
+        overflowY: 'auto', display: 'flex', flexDirection: 'column',
+      }}>
+        {/* 顶部统计 */}
+        <div style={{
+          padding: '10px 12px', borderBottom: `1px solid ${C.border}`,
+          background: C.blueLight, flexShrink: 0,
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 4 }}>📦 商品伴播管理</div>
+          <div style={{ display: 'flex', gap: 12, fontSize: 11, color: C.textSec }}>
+            <span>商品 <b style={{ color: C.text }}>{products.length}</b></span>
+            <span>已配置 <b style={{ color: C.green }}>{configuredCount}</b></span>
+            <span>待配置 <b style={{ color: C.orange }}>{products.length - configuredCount}</b></span>
+            <span>形象 <b style={{ color: C.blue }}>{totalAvatars}</b></span>
+          </div>
+        </div>
+
+        {/* 商品列表 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '6px 8px' }}>
+          {products.map(prod => {
+            const isConfigured = prod.avatars.length > 0
+            const isSelected = selectedId === prod.id
+            return (
+              <div key={prod.id} onClick={() => setSelectedId(prod.id)} style={{
+                padding: '10px 12px', borderRadius: 8, marginBottom: 6,
+                cursor: 'pointer',
+                background: isSelected ? C.blueLight : C.card,
+                border: isSelected ? `1.5px solid ${C.blue}` : `1px solid ${C.border}`,
+                transition: 'all 0.15s',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{
+                    fontSize: 9, padding: '2px 6px', borderRadius: 3,
+                    background: isConfigured ? '#E8F5E9' : '#FFF3E0',
+                    color: isConfigured ? C.green : C.orange, fontWeight: 600, flexShrink: 0,
+                  }}>{prod.linkNum}号</span>
+                  <span style={{
+                    fontSize: 12, fontWeight: 500, color: C.text,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
+                  }}>{prod.name}</span>
+                  <span style={{ fontSize: 11, color: C.textSec, flexShrink: 0 }}>{prod.price}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {isConfigured ? (
+                    <>
+                      <div style={{ display: 'flex', gap: -4 }}>
+                        {prod.avatars.slice(0, 3).map((av, i) => (
+                          <div key={av.id} style={{
+                            width: 22, height: 22, borderRadius: '50%', overflow: 'hidden',
+                            border: '2px solid #fff', marginLeft: i > 0 ? -6 : 0,
+                            background: '#f0f0f0',
+                          }}>
+                            <ChromaKeyImage src={av.preview} alt={av.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                          </div>
+                        ))}
+                      </div>
+                      <span style={{ fontSize: 10, color: C.green }}>
+                        {prod.avatars.length} 个形象 · {prod.avatars[0].actionCount}/{prod.avatars[0].maxActions} 动作
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: 10, color: C.orange }}>⚠ 未配置伴播形象</span>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 右侧：商品详情 / 伴播形象 */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
+        {selected ? (
+          <>
+            {/* 商品信息 */}
+            <div style={{
+              padding: '10px 12px', borderRadius: 8,
+              background: C.card, border: `1px solid ${C.border}`, marginBottom: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <span style={{
+                  fontSize: 10, padding: '2px 6px', borderRadius: 3,
+                  background: '#E8F3FF', color: C.blue, fontWeight: 600,
+                }}>{selected.linkNum}号链接</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{selected.name}</span>
+              </div>
+              <div style={{ fontSize: 12, color: C.textSec }}>{selected.price}</div>
+            </div>
+
+            {/* 伴播形象列表 */}
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 6 }}>
+              伴播形象 ({selected.avatars.length})
+            </div>
+
+            {selected.avatars.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {selected.avatars.map(av => (
+                  <div key={av.id} style={{
+                    padding: '10px', borderRadius: 8,
+                    border: `1px solid ${C.border}`, background: '#FAFAFA',
+                  }}>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <div style={{
+                        width: 60, height: 107, borderRadius: 6, overflow: 'hidden',
+                        background: '#fff', border: `1px solid ${C.border}`, flexShrink: 0,
+                      }}>
+                        <ChromaKeyImage src={av.preview} alt={av.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 4 }}>{av.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                          <span style={{
+                            fontSize: 9, padding: '2px 6px', borderRadius: 3,
+                            background: av.maxActions === 6 ? '#E8F5E9' : '#E8F3FF',
+                            color: av.maxActions === 6 ? C.green : C.blue, fontWeight: 600,
+                          }}>{av.maxActions === 6 ? '基础版' : '高级版'}</span>
+                          <span style={{ fontSize: 10, color: C.textSec }}>
+                            动作 {av.actionCount}/{av.maxActions}
+                          </span>
+                        </div>
+                        {/* 动作进度条 */}
+                        <div style={{
+                          height: 4, borderRadius: 2, background: '#E5E6EB',
+                          overflow: 'hidden', marginBottom: 4,
+                        }}>
+                          <div style={{
+                            height: '100%', borderRadius: 2,
+                            width: `${(av.actionCount / av.maxActions) * 100}%`,
+                            background: av.actionCount >= av.maxActions ? C.orange : C.green,
+                          }} />
+                        </div>
+                        {av.actionCount >= av.maxActions && (
+                          <div style={{ fontSize: 9, color: C.orange }}>已达上限，可升级或定制 ¥1500/个</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{
+                padding: '24px', textAlign: 'center', borderRadius: 8,
+                border: `1.5px dashed ${C.border}`, background: '#FAFAFA',
+              }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>🎭</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 4 }}>暂无伴播形象</div>
+                <div style={{ fontSize: 10, color: C.textSec, marginBottom: 12 }}>
+                  请联系助播虾团队配置该商品的伴播形象
+                </div>
+                <button style={{
+                  padding: '6px 16px', borderRadius: 6,
+                  background: C.blue, border: 'none', color: '#fff',
+                  fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: C.font,
+                }}>联系配置</button>
+              </div>
+            )}
+
+            {/* 添加形象按钮 */}
+            {selected.avatars.length > 0 && (
+              <button style={{
+                width: '100%', padding: '8px', borderRadius: 6, marginTop: 8,
+                border: `1.5px dashed ${C.border}`, background: 'transparent',
+                color: C.blue, fontSize: 11, cursor: 'pointer', fontFamily: C.font,
+              }}>+ 添加伴播形象</button>
+            )}
+          </>
+        ) : (
+          <div style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexDirection: 'column', padding: 32,
+          }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>👈</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 4 }}>选择商品查看详情</div>
+            <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', lineHeight: 1.6 }}>
+              点击左侧商品，查看已绑定的伴播形象<br />
+              每个商品可配置 0-N 个虚拟童模形象
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ============ 进退场指令组件 ============
+type CommandType = 'enter' | 'exit' | 'change'
+type CommandItem = { id: string; type: CommandType; label: string; defaultPhrase: string; customPhrase: string }
+
+const DEFAULT_COMMANDS: CommandItem[] = [
+  { id: 'c1', type: 'enter', label: '进场', defaultPhrase: '来，我们看下上身效果', customPhrase: '' },
+  { id: 'c2', type: 'change', label: '换装', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
+  { id: 'c3', type: 'exit', label: '退场', defaultPhrase: '请模特先下场', customPhrase: '' },
+]
+
+function CommandContent() {
+  const [commands, setCommands] = useState(DEFAULT_COMMANDS)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+
+  const startEdit = (cmd: CommandItem) => {
+    setEditingId(cmd.id)
+    setEditValue(cmd.customPhrase || cmd.defaultPhrase)
+  }
+
+  const saveEdit = (id: string) => {
+    setCommands(prev => prev.map(c => c.id === id ? { ...c, customPhrase: editValue } : c))
+    setEditingId(null)
+  }
+
+  const resetToDefault = (id: string) => {
+    setCommands(prev => prev.map(c => c.id === id ? { ...c, customPhrase: '' } : c))
+  }
+
+  const typeConfig: Record<CommandType, { icon: string; color: string; bg: string }> = {
+    enter: { icon: '🚶', color: C.green, bg: '#E8F5E9' },
+    change: { icon: '👗', color: C.blue, bg: '#E8F3FF' },
+    exit: { icon: '🚪', color: C.orange, bg: '#FFF3E0' },
+  }
+
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
+      {/* 说明 */}
+      <div style={{
+        padding: '10px 12px', borderRadius: 8,
+        background: C.blueLight, border: `1px solid #D4E0FF`, marginBottom: 10,
+      }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: C.blue, marginBottom: 3 }}>🎤 语音指令控制</div>
+        <div style={{ fontSize: 10, color: C.textSec, lineHeight: 1.6 }}>
+          主播说出对应口令 → 系统识别 → 触发进场/换装/退场<br />
+          口令可自定义，但必须包含链接号信息（换装场景）
+        </div>
+      </div>
+
+      {/* 指令列表 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {commands.map(cmd => {
+          const cfg = typeConfig[cmd.type]
+          const isActive = cmd.customPhrase !== ''
+          const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
+          const isEditing = editingId === cmd.id
+
+          return (
+            <div key={cmd.id} style={{
+              padding: '12px', borderRadius: 8,
+              border: `1px solid ${C.border}`, background: C.card,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <span style={{ fontSize: 16 }}>{cfg.icon}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{cmd.label}口令</span>
+                {cmd.customPhrase && (
+                  <span style={{
+                    fontSize: 8, padding: '1px 4px', borderRadius: 3,
+                    background: 'rgba(255,125,0,0.08)', color: '#FF7D00', fontWeight: 600,
+                  }}>已自定义</span>
+                )}
+              </div>
+
+              {isEditing ? (
+                <>
+                  <input value={editValue} onChange={e => setEditValue(e.target.value)}
+                    placeholder={cmd.defaultPhrase}
+                    style={{
+                      width: '100%', height: 32, padding: '0 10px', borderRadius: 6,
+                      border: `1px solid ${C.blue}`, fontSize: 12, fontFamily: C.font,
+                      outline: 'none', boxSizing: 'border-box', marginBottom: 6,
+                    }} />
+                  <div style={{ fontSize: 9, color: C.textTert, marginBottom: 6 }}>
+                    默认：{cmd.defaultPhrase}
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                    <button onClick={() => setEditingId(null)} style={{
+                      padding: '3px 10px', borderRadius: 4, border: `1px solid ${C.border}`,
+                      background: C.card, color: C.textSec, fontSize: 10, cursor: 'pointer', fontFamily: C.font,
+                    }}>取消</button>
+                    <button onClick={() => saveEdit(cmd.id)} style={{
+                      padding: '3px 10px', borderRadius: 4, border: 'none',
+                      background: C.blue, color: '#fff', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: C.font,
+                    }}>保存</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{
+                    padding: '8px 10px', borderRadius: 6,
+                    background: cfg.bg, border: `1px solid ${cfg.color}30`,
+                    fontSize: 12, color: C.text, marginBottom: 6,
+                    lineHeight: 1.5,
+                  }}>
+                    「{displayPhrase}」
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                    <button onClick={() => startEdit(cmd)} style={{
+                      padding: '3px 10px', borderRadius: 4, border: `1px solid ${C.border}`,
+                      background: C.card, color: C.blue, fontSize: 10, cursor: 'pointer', fontFamily: C.font,
+                    }}>自定义</button>
+                    {cmd.customPhrase && (
+                      <button onClick={() => resetToDefault(cmd.id)} style={{
+                        padding: '3px 10px', borderRadius: 4, border: `1px solid ${C.border}`,
+                        background: C.card, color: C.textSec, fontSize: 10, cursor: 'pointer', fontFamily: C.font,
+                      }}>恢复默认</button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* 异常提示区域 */}
+      <div style={{
+        marginTop: 12, padding: '10px 12px', borderRadius: 8,
+        background: '#FFF7E6', border: '1px solid #FFE58F',
+      }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#B8860B', marginBottom: 6 }}>⚠️ 异常提示规则</div>
+        <div style={{ fontSize: 10, color: '#8B6914', lineHeight: 1.8 }}>
+          • 换装时无对应链接形象 → 画面不变 + 提示「无N号链接服饰的伴播模特」<br />
+          • 退场时无伴播在场 → 画面不变 + 提示「无伴播模特在场，无需退场」<br />
+          • 进场时无可用形象 → 画面不变 + 提示
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ============ 形象库内容组件（适配 360px） ============
 function AvatarContent() {
@@ -1352,7 +1721,7 @@ export default function CanvasPanel({ onClose }: Props) {
   const f = C.font
   const [activeMode, setActiveMode] = useState<Mode>('assist')
   const [assistTab, setAssistTab] = useState<AssistTab>('voiceProduct')
-  const [banboTab, setBanboTab] = useState<BanboTab>('avatar')
+  const [banboTab, setBanboTab] = useState<BanboTab>('productAvatar')
   const [banboEnabled, setBanboEnabled] = useState(false)
 
   return (
@@ -1575,9 +1944,9 @@ export default function CanvasPanel({ onClose }: Props) {
               flex: 1, overflow: 'hidden',
               position: 'relative',
             }}>
-              {banboTab === 'avatar' && <AvatarContent />}
+              {banboTab === 'productAvatar' && <ProductAvatarContent />}
               {banboTab === 'voice' && <VoiceContent />}
-              {banboTab === 'autoChat' && <AutoChatContent />}
+              {banboTab === 'command' && <CommandContent />}
               {banboTab === 'voiceSwitch' && <VoiceSwitchContent />}
             </div>
 
