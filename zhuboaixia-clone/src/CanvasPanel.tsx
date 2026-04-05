@@ -774,7 +774,7 @@ function CommandContent() {
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px', minHeight: 0 }}>
       {/* 顶部说明 */}
       <div style={{
         padding: '10px 12px', borderRadius: 8,
@@ -2215,7 +2215,7 @@ export default function CanvasPanel({ onClose }: Props) {
           />
 
           {/* 右侧：Tab + 内容 */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, boxShadow: 'inset 8px 0 16px -8px rgba(0,0,0,0.06)' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, minHeight: 0, boxShadow: 'inset 8px 0 16px -8px rgba(0,0,0,0.06)' }}>
             {/* 3 Tab Bar */}
             <div style={{
               padding: '8px 8px 0', background: C.card,
@@ -2241,7 +2241,7 @@ export default function CanvasPanel({ onClose }: Props) {
             </div>
 
             {/* Tab 内容 */}
-            <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
               {banboTab === 'productAvatar' && (
                 <ProductAvatarContent
                   selectedProductId={selectedProductId}
