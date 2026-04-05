@@ -18,10 +18,10 @@ const ASSIST_TABS: { key: AssistTab; label: string }[] = [
   { key: 'sysSettings', label: '系统设置' },
 ]
 
-const BANBO_TABS: { key: BanboTab; label: string }[] = [
-  { key: 'productAvatar', label: '📦 商品伴播' },
-  { key: 'command', label: '🎤 进退场指令' },
-  { key: 'sysSettings', label: '⚙️ 系统设置' },
+const BANBO_TABS: { key: BanboTab; label: string; desc: string }[] = [
+  { key: 'productAvatar', label: '形象配置', desc: '为商品绑定伴播形象' },
+  { key: 'command', label: '动作设置', desc: '配置直播中触发的动作' },
+  { key: 'sysSettings', label: '高级设置', desc: '版本分级·NDI·设备' },
 ]
 
 const SIDEBAR_BUTTONS = [
@@ -288,7 +288,7 @@ function ProductAvatarContent() {
           padding: '10px 12px', borderBottom: `1px solid ${C.border}`,
           background: C.blueLight, flexShrink: 0,
         }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 4 }}>📦 商品伴播管理</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 4 }}>🎭 形象配置</div>
           <div style={{ display: 'flex', gap: 12, fontSize: 11, color: C.textSec }}>
             <span>商品 <b style={{ color: C.text }}>{products.length}</b></span>
             <span>已配置 <b style={{ color: C.green }}>{configuredCount}</b></span>
@@ -355,19 +355,23 @@ function ProductAvatarContent() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
         {selected ? (
           <>
-            {/* 商品信息头 */}
+            {/* 商品信息头 — 仅显示链接号和价格 */}
             <div style={{
-              padding: '10px 12px', borderRadius: 8,
+              padding: '8px 12px', borderRadius: 8,
               background: C.card, border: `1px solid ${C.border}`, marginBottom: 10,
+              display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <span style={{
-                  fontSize: 10, padding: '2px 6px', borderRadius: 3,
-                  background: '#E8F3FF', color: C.blue, fontWeight: 600,
-                }}>{selected.linkNum}号链接</span>
-                <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{selected.name}</span>
-              </div>
-              <div style={{ fontSize: 12, color: C.textSec }}>{selected.price}</div>
+              <span style={{
+                fontSize: 10, padding: '2px 6px', borderRadius: 3,
+                background: '#E8F3FF', color: C.blue, fontWeight: 600,
+              }}>{selected.linkNum}号链接</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{selected.name}</span>
+              <span style={{ fontSize: 12, color: C.textSec, marginLeft: 'auto' }}>{selected.price}</span>
+              <span style={{
+                fontSize: 10, padding: '2px 8px', borderRadius: 4,
+                background: selected.avatars.length > 0 ? '#E8F5E9' : '#FFF3E0',
+                color: selected.avatars.length > 0 ? C.green : C.orange, fontWeight: 500,
+              }}>{selected.avatars.length > 0 ? `已配置 ${selected.avatars.length} 个形象` : '未配置'}</span>
             </div>
 
             {/* 伴播形象列表 */}
@@ -424,15 +428,15 @@ function ProductAvatarContent() {
                     <div style={{
                       display: 'flex', gap: 6, padding: '8px 10px 10px',
                     }}>
-                      {/* 常规态 */}
+                      {/* 直播中（自动循环） */}
                       <div style={{
                         flex: 1, borderRadius: 6,
                         background: '#F0F4FF', border: `1px solid ${C.blue}20`,
                         padding: '8px',
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-                          <span style={{ fontSize: 11 }}>🟢</span>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: C.blue }}>常规态</span>
+                          <span style={{ fontSize: 11 }}>🔵</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: C.blue }}>直播中（自动循环）</span>
                         </div>
                         <div style={{
                           width: '100%', aspectRatio: '9/16', maxHeight: 120, borderRadius: 4,
@@ -462,7 +466,7 @@ function ProductAvatarContent() {
                         </div>
                       </div>
 
-                      {/* 事件态 */}
+                      {/* 活动触发（指定场景播放） */}
                       <div style={{
                         flex: 1, borderRadius: 6,
                         background: '#FFF8F0', border: `1px solid ${C.orange}20`,
@@ -470,7 +474,7 @@ function ProductAvatarContent() {
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
                           <span style={{ fontSize: 11 }}>🟠</span>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: C.orange }}>事件态</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: C.orange }}>活动触发（指定场景播放）</span>
                         </div>
                         <div style={{
                           width: '100%', aspectRatio: '9/16', maxHeight: 120, borderRadius: 4,
@@ -533,16 +537,234 @@ function ProductAvatarContent() {
         ) : (
           <div style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexDirection: 'column', padding: 32,
+            flexDirection: 'column', padding: 24,
           }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>👈</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 4 }}>选择商品查看详情</div>
-            <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', lineHeight: 1.6 }}>
-              点击左侧商品，查看已绑定的伴播形象<br />
-              每个形象包含常规态和事件态两种视频
+            {/* 快速开始引导 */}
+            <div style={{
+              width: '100%', maxWidth: 320,
+              background: '#F0F4FF', borderRadius: 10,
+              padding: '16px 16px 14px', border: `1px solid ${C.blue}20`,
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 10, textAlign: 'center' }}>
+                🚀 快速开始
+              </div>
+              {[
+                { step: 1, text: '在左侧选择一个商品' },
+                { step: 2, text: '为商品配置伴播形象' },
+                { step: 3, text: '点击「开启伴播」启动' },
+              ].map(item => (
+                <div key={item.step} style={{
+                  display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8,
+                  padding: '8px 10px', borderRadius: 6,
+                  background: '#fff',
+                }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: C.blue, color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 700, flexShrink: 0,
+                  }}>{item.step}</div>
+                  <span style={{ fontSize: 12, color: C.text }}>{item.text}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ============ 时间轴预览组件 ============
+function TimelinePreview({ products, banboEnabled, onToggleBanbo }: {
+  products: ProductItem[], banboEnabled: boolean, onToggleBanbo: () => void
+}) {
+  // 收集所有有形象的商品
+  const avatarsWithProduct = products.flatMap(p =>
+    p.avatars.map(av => ({ product: p, avatar: av }))
+  )
+  const totalDuration = 60 // 60秒时间轴
+
+  return (
+    <div style={{
+      width: 280, flexShrink: 0,
+      background: '#111827',
+      display: 'flex', flexDirection: 'column',
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* 顶部标题 */}
+      <div style={{
+        padding: '10px 12px',
+        background: 'rgba(0,0,0,0.3)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        flexShrink: 0,
+      }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 2 }}>📹 伴播预览</div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>
+          直播全程 · {avatarsWithProduct.length} 个形象
+        </div>
+      </div>
+
+      {/* 形象视频预览区 */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px' }}>
+        {avatarsWithProduct.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {avatarsWithProduct.map(({ product, avatar }) => (
+              <div key={avatar.id} style={{
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: 8,
+                padding: 8,
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}>
+                {/* 形象名 + 商品 */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6,
+                }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '50%', overflow: 'hidden',
+                    border: '1.5px solid rgba(255,255,255,0.2)', flexShrink: 0,
+                    background: '#333',
+                  }}>
+                    <ChromaKeyImage src={avatar.preview} alt={avatar.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 11, fontWeight: 600, color: '#fff',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{avatar.name}</div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.45)' }}>
+                      {product.linkNum}号 · {product.name}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 常规态视频预览 */}
+                <div style={{
+                  width: '100%', aspectRatio: '9/16', maxHeight: 180,
+                  borderRadius: 6, overflow: 'hidden',
+                  background: '#1a1a2e', marginBottom: 4,
+                  position: 'relative',
+                }}>
+                  {avatar.normalState.url ? (
+                    <video src={avatar.normalState.url}
+                      muted loop autoPlay
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{
+                      width: '100%', height: '100%',
+                      display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center', gap: 4,
+                    }}>
+                      <span style={{ fontSize: 28 }}>🎬</span>
+                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>等待上传视频</span>
+                    </div>
+                  )}
+                  {/* 状态标签 */}
+                  <div style={{
+                    position: 'absolute', top: 6, left: 6,
+                    display: 'flex', gap: 4,
+                  }}>
+                    <span style={{
+                      fontSize: 9, padding: '2px 6px', borderRadius: 3,
+                      background: banboEnabled ? 'rgba(16,185,129,0.8)' : 'rgba(255,255,255,0.15)',
+                      color: '#fff', fontWeight: 600,
+                    }}>{banboEnabled ? 'LIVE' : '待开启'}</span>
+                  </div>
+                </div>
+
+                {/* 时间轴条 */}
+                <div style={{ marginTop: 4 }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3,
+                  }}>
+                    <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>🔵 常规</span>
+                    <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{avatar.normalState.duration}s 循环</span>
+                  </div>
+                  <div style={{
+                    height: 8, borderRadius: 4,
+                    background: 'rgba(255,255,255,0.08)',
+                    overflow: 'hidden', position: 'relative',
+                  }}>
+                    {/* 常规态反复条 */}
+                    {Array.from({ length: Math.ceil(totalDuration / avatar.normalState.duration) }).map((_, i) => (
+                      <div key={i} style={{
+                        position: 'absolute',
+                        left: `${(i * avatar.normalState.duration / totalDuration) * 100}%`,
+                        width: `${(avatar.normalState.duration / totalDuration) * 100}%`,
+                        height: '100%',
+                        background: i % 2 === 0 ? 'rgba(96,165,250,0.6)' : 'rgba(96,165,250,0.3)',
+                        borderRadius: 2,
+                      }} />
+                    ))}
+                  </div>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 4, marginTop: 4,
+                  }}>
+                    <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>🟠 事件</span>
+                    <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{avatar.eventState.duration}s 触发</span>
+                  </div>
+                  <div style={{
+                    height: 8, borderRadius: 4,
+                    background: 'rgba(255,255,255,0.08)',
+                    overflow: 'hidden', position: 'relative',
+                    marginTop: 2,
+                  }}>
+                    {/* 事件态单段条 */}
+                    <div style={{
+                      position: 'absolute',
+                      left: '10%', width: `${(avatar.eventState.duration / totalDuration) * 100}%`,
+                      height: '100%',
+                      background: 'rgba(245,158,11,0.6)',
+                      borderRadius: 2,
+                    }} />
+                    <span style={{
+                      position: 'absolute', left: '3%', top: -1,
+                      fontSize: 7, color: 'rgba(255,255,255,0.5)',
+                    }}>触发点 ▸</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{
+            padding: '32px 16px', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>🎭</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 6 }}>
+              暂无伴播形象
+            </div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
+              在右侧「形象配置」中<br />为商品添加伴播形象
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 底部：开启伴播按钮 */}
+      <div style={{
+        padding: '10px 12px',
+        background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
+        flexShrink: 0,
+      }}>
+        <button onClick={onToggleBanbo} style={{
+          width: '100%', padding: '10px',
+          borderRadius: 8, border: 'none',
+          background: banboEnabled
+            ? 'linear-gradient(135deg, #34D399, #10B981)'
+            : 'linear-gradient(135deg, #60A5FA, #3B82F6)',
+          color: '#fff', fontSize: 14, fontWeight: 700,
+          cursor: 'pointer', fontFamily: C.font,
+        }}>
+          {banboEnabled ? '✅ 伴播已开启' : '▶ 开启伴播'}
+        </button>
+        <div style={{
+          fontSize: 9, color: 'rgba(255,255,255,0.5)',
+          textAlign: 'center', marginTop: 6, lineHeight: 1.5,
+        }}>
+          输出透明底视频 → 导入抖音直播伴侣
+        </div>
       </div>
     </div>
   )
@@ -1948,121 +2170,39 @@ export default function CanvasPanel({ onClose }: Props) {
       {/* ===== 伴播模式 ===== */}
       {activeMode === 'banbo' && (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          {/* 左侧：9:16 预览画布 */}
-          <div style={{
-            width: 280, flexShrink: 0,
-            background: '#1a1a2e',
-            position: 'relative', overflow: 'hidden',
-          }}>
-            <img src="/bg_studio.jpg" alt="直播间背景"
-              style={{
-                position: 'absolute', inset: 0,
-                width: '100%', height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-            {/* 形象占位 */}
-            <div style={{
-              position: 'absolute',
-              top: '12%', left: '12%', right: '22%', bottom: '32%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px dashed rgba(255,255,255,0.3)',
-              borderRadius: 8,
-            }}>
-              <div style={{
-                color: 'rgba(255,255,255,0.6)',
-                fontSize: 12, textAlign: 'center',
-              }}>
-                上传伴播形象
-                <div style={{ fontSize: 10, marginTop: 3, color: 'rgba(255,255,255,0.4)' }}>支持视频/图片</div>
-              </div>
-            </div>
-
-            {/* 右侧 4 按钮 */}
-            <div style={{
-              position: 'absolute',
-              right: 8, top: '12%',
-              display: 'flex', flexDirection: 'column', gap: 8,
-              zIndex: 10,
-            }}>
-              {SIDEBAR_BUTTONS.map(btn => {
-                const isBanbo = btn.key === 'banbo'
-                return (
-                  <div key={btn.key} style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-                  }}>
-                    <button
-                      onClick={() => { if (isBanbo) setBanboEnabled(!banboEnabled) }}
-                      style={{
-                        width: 36, height: 36, borderRadius: '50%',
-                        border: 'none',
-                        background: isBanbo && banboEnabled ? C.blue : 'rgba(0,0,0,0.5)',
-                        color: '#fff', fontSize: 16,
-                        cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        backdropFilter: 'blur(8px)',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                      }}
-                    >{btn.icon}</button>
-                    <span style={{
-                      fontSize: 9, color: 'rgba(255,255,255,0.85)',
-                      textShadow: '0 1px 3px rgba(0,0,0,0.8)', fontWeight: 500,
-                    }}>{btn.label}</span>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* 底部：开启伴播 + 说明 */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0,
-              padding: '14px 12px 12px',
-              background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
-              display: 'flex', flexDirection: 'column', gap: 8,
-              zIndex: 10,
-            }}>
-              <button onClick={() => setBanboEnabled(!banboEnabled)} style={{
-                width: '100%', padding: '10px',
-                borderRadius: 8, border: 'none',
-                background: banboEnabled
-                  ? 'linear-gradient(135deg, #34D399, #10B981)'
-                  : 'linear-gradient(135deg, #60A5FA, #3B82F6)',
-                color: '#fff', fontSize: 14, fontWeight: 700,
-                cursor: 'pointer', fontFamily: f,
-              }}>
-                {banboEnabled ? '✅ 伴播已开启' : '开启伴播'}
-              </button>
-              <div style={{
-                fontSize: 10, color: 'rgba(255,255,255,0.65)',
-                lineHeight: 1.6, textAlign: 'center', padding: '0 4px',
-              }}>
-                输出 Alpha 通道透明底视频，可导入抖音直播伴侣作为「媒体源」图层使用。
-                实际场景效果请在直播伴侣中预览。
-              </div>
-            </div>
-          </div>
+          {/* 左侧：时间轴预览 */}
+          <TimelinePreview
+            products={PRODUCTS}
+            banboEnabled={banboEnabled}
+            onToggleBanbo={() => setBanboEnabled(!banboEnabled)}
+          />
 
           {/* 右侧：4 Tab 配置区 */}
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column',
             borderLeft: `1px solid ${C.border}`,
           }}>
-            {/* 4 Tab Bar */}
+            {/* 3 Tab Bar */}
             <div style={{
-              padding: '6px 6px', background: C.card,
+              padding: '8px 8px 0', background: C.card,
               borderBottom: `1px solid ${C.border}`,
               display: 'flex', gap: 2, flexShrink: 0,
             }}>
               {BANBO_TABS.map(tab => (
                 <button key={tab.key} onClick={() => setBanboTab(tab.key)} style={{
-                  flex: 1, padding: '8px 0', borderRadius: 0, border: 'none',
-                  fontSize: 12, whiteSpace: 'nowrap', textAlign: 'center',
+                  flex: 1, padding: '8px 0 6px', borderRadius: 0, border: 'none',
+                  fontSize: 13, whiteSpace: 'nowrap', textAlign: 'center',
                   fontWeight: banboTab === tab.key ? 600 : 400,
                   background: 'transparent',
                   color: banboTab === tab.key ? C.blue : C.textSec,
                   cursor: 'pointer', fontFamily: f,
                   borderBottom: banboTab === tab.key ? `2.5px solid ${C.blue}` : '2.5px solid transparent',
-                }}>{tab.label}</button>
+                }}>
+                  {tab.label}
+                  {banboTab === tab.key && (
+                    <div style={{ fontSize: 10, fontWeight: 400, color: C.textSec, marginTop: 2 }}>{tab.desc}</div>
+                  )}
+                </button>
               ))}
             </div>
 
@@ -2086,14 +2226,15 @@ export default function CanvasPanel({ onClose }: Props) {
                 flex: 1, padding: '10px',
                 borderRadius: 8, border: `1px solid ${C.border}`,
                 background: '#fff', color: C.textSec,
-                fontSize: 14, cursor: 'pointer', fontFamily: f,
-              }}>取消</button>
+                fontSize: 13, cursor: 'pointer', fontFamily: f,
+              }}>重置</button>
               <button style={{
-                flex: 1, padding: '10px',
+                flex: 2, padding: '10px',
                 borderRadius: 8, border: 'none',
-                background: C.blue, color: '#fff',
+                background: 'linear-gradient(135deg, #60A5FA, #3B82F6)', color: '#fff',
                 fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: f,
-              }}>确认配置</button>
+                boxShadow: '0 2px 8px rgba(59,130,246,0.3)',
+              }}>💾 保存配置</button>
             </div>
           </div>
         </div>
