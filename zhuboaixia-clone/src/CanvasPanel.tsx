@@ -379,8 +379,11 @@ function TimelineLeftBar({
           {products.map(p => {
             const isSelected = selectedProductId === p.id
             const comp = getStepCompletion(products, p.id)
-            const statusLabel = comp.status === 'ready' ? '🟢'
-              : comp.status === 'partial' ? '🟡' : '🔴'
+            const statusStyle = comp.status === 'ready'
+              ? { label: '就绪', bg: 'rgba(52,211,153,0.2)', color: '#34D399' }
+              : comp.status === 'partial'
+              ? { label: '半配', bg: 'rgba(251,191,36,0.2)', color: '#FBBF24' }
+              : { label: '未配', bg: 'rgba(239,68,68,0.2)', color: '#EF4444' }
             return (
               <div key={p.id} ref={el => { productItemRefs.current[p.id] = el }} onClick={() => handleSelectProduct(p.id)} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
@@ -398,7 +401,10 @@ function TimelineLeftBar({
                   fontSize: 10, color: isSelected ? '#fff' : 'rgba(255,255,255,0.7)',
                   flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{p.name}</span>
-                <span style={{ fontSize: 10, flexShrink: 0 }}>{statusLabel}</span>
+                <span style={{
+                  fontSize: 8, padding: '1px 5px', borderRadius: 3, flexShrink: 0,
+                  background: statusStyle.bg, color: statusStyle.color, fontWeight: 600,
+                }}>{statusStyle.label}</span>
               </div>
             )
           })}
@@ -478,8 +484,17 @@ function TimelineLeftBar({
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3,
                     }}>
-                      <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>🔵 常规</span>
+                      <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>直播中（自动轮播）</span>
                       <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{normalDuration}s 循环</span>
+                    </div>
+                    {/* 时间标注 */}
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      marginBottom: 2, padding: '0 1px',
+                    }}>
+                      {['0s', '15s', '30s', '45s', '60s'].map(t => (
+                        <span key={t} style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>{t}</span>
+                      ))}
                     </div>
                     <div style={{
                       height: 8, borderRadius: 4,
@@ -494,7 +509,10 @@ function TimelineLeftBar({
                           height: '100%',
                           background: i % 2 === 0 ? 'rgba(96,165,250,0.6)' : 'rgba(96,165,250,0.3)',
                           borderRadius: 2,
-                        }} />
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          {i === 0 && <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>轮播</span>}
+                        </div>
                       ))}
                     </div>
 
@@ -503,7 +521,7 @@ function TimelineLeftBar({
                         <div style={{
                           display: 'flex', alignItems: 'center', gap: 4, marginTop: 4,
                         }}>
-                          <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>🟠 事件</span>
+                          <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>口令触发</span>
                           <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{eventDuration}s 触发</span>
                         </div>
                         <div style={{
@@ -518,7 +536,10 @@ function TimelineLeftBar({
                             height: '100%',
                             background: 'rgba(245,158,11,0.6)',
                             borderRadius: 2,
-                          }} />
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>触发</span>
+                          </div>
                           <span style={{
                             position: 'absolute', left: '3%', top: -1,
                             fontSize: 7, color: 'rgba(255,255,255,0.5)',
@@ -1396,33 +1417,12 @@ function UnifiedBanboPanel({
           )}
         </>
       ) : (
-        /* 未选择商品 */
+        /* 未选择商品（fallback，正常不会触发） */
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexDirection: 'column', padding: 24, height: '100%',
         }}>
-          <div style={{
-            width: '100%', maxWidth: 320,
-            background: '#F0F4FF', borderRadius: 10,
-            padding: '16px', border: `1px solid ${C.blue}20`,
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 10, textAlign: 'center' }}>
-              🚀 配置向导
-            </div>
-            {[
-              { step: 1, text: '在左侧选择一个商品', icon: '📦' },
-              { step: 2, text: '给它选一个伴播模特', icon: '🎭' },
-              { step: 3, text: '设定出场退场口令', icon: '🎤' },
-            ].map(item => (
-              <div key={item.step} style={{
-                display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8,
-                padding: '8px 10px', borderRadius: 6, background: '#fff',
-              }}>
-                <span style={{ fontSize: 16 }}>{item.icon}</span>
-                <span style={{ fontSize: 12, color: C.text }}>{item.text}</span>
-              </div>
-            ))}
-          </div>
+          <span style={{ fontSize: 12, color: C.textSec }}>← 在左侧选择一个商品开始配置</span>
         </div>
       )}
     </div>
@@ -2591,7 +2591,7 @@ export default function CanvasPanel({ onClose }: Props) {
   // banbo mode
   const [banboEnabled, setBanboEnabled] = useState(false)
   const [products, setProducts] = useState(PRODUCTS)
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const [selectedProductId, setSelectedProductId] = useState<string | null>('p1')
   const [previewStateId, setPreviewStateId] = useState<string | null>(null)
   const [previewEventId, setPreviewEventId] = useState<string | null>(null)
 
@@ -2721,24 +2721,13 @@ export default function CanvasPanel({ onClose }: Props) {
             </div>
 
             {/* 底部操作 */}
+            {/* 自动保存提示 */}
             <div style={{
-              padding: '10px 12px', borderTop: `1px solid ${C.border}`,
+              padding: '8px 12px', borderTop: `1px solid ${C.border}`,
               background: C.card, flexShrink: 0,
-              display: 'flex', gap: 8, justifyContent: 'center',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}>
-              <button style={{
-                padding: '10px 24px',
-                borderRadius: 8, border: `1px solid ${C.border}`,
-                background: '#fff', color: C.textSec,
-                fontSize: 13, cursor: 'pointer', fontFamily: f,
-              }}>重置</button>
-              <button style={{
-                padding: '10px 32px',
-                borderRadius: 8, border: 'none',
-                background: 'linear-gradient(135deg, #60A5FA, #3B82F6)', color: '#fff',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: f,
-                boxShadow: '0 2px 8px rgba(59,130,246,0.3)',
-              }}>💾 保存配置</button>
+              <span style={{ fontSize: 10, color: C.textSec }}>✓ 所有修改自动保存</span>
             </div>
           </div>
         </div>
