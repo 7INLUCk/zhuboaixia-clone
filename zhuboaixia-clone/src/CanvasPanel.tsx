@@ -64,11 +64,11 @@ function ChromaKeyImage({ src, alt, style, draggable }: {
     const d = imageData.data
     for (let i = 0; i < d.length; i += 4) {
       const r = d[i], g = d[i + 1], b = d[i + 2]
-      if ((g > 90 && g > r * 1.25 && g > b * 1.25) ||
-          (g > 120 && g > r + 25 && g > b + 25) ||
-          (g > 70 && r < 100 && b < 100 && g > r * 1.4)) {
+      if ((g > 80 && g > r * 1.1 && g > b * 1.1) ||
+          (g > 100 && g > r + 15 && g > b + 15) ||
+          (g > 60 && r < 120 && b < 120 && g > r * 1.3)) {
         const greenness = Math.min(1, (g - Math.max(r, b)) / (g + 1))
-        d[i + 3] = greenness > 0.6 ? 0 : Math.round((1 - greenness * 1.5) * 255)
+        d[i + 3] = greenness > 0.5 ? 0 : Math.round((1 - greenness * 1.5) * 255)
       }
     }
     ctx.putImageData(imageData, 0, 0)
