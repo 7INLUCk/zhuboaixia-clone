@@ -337,10 +337,10 @@ function ProductAvatarContent() {
   }
 
   return (
-    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minWidth: 0 }}>
       {/* 左侧：商品列表 */}
       <div style={{
-        width: 200, borderRight: `1px solid ${C.border}`,
+        width: 140, borderRight: `1px solid ${C.border}`,
         overflowY: 'auto', display: 'flex', flexDirection: 'column', flexShrink: 0,
       }}>
         {/* 顶部统计 */}
@@ -411,6 +411,7 @@ function ProductAvatarContent() {
       <div style={{
         flex: 1, overflowY: 'auto', padding: '10px 12px',
         display: 'flex', flexDirection: 'column',
+        minWidth: 0,
       }}>
         {selectedProduct ? (
           <>
@@ -638,7 +639,7 @@ function ProductAvatarContent() {
 
       {/* 右侧：形象库 + 绑定操作 */}
       <div style={{
-        width: 180, borderLeft: `1px solid ${C.border}`,
+        width: 120, borderLeft: `1px solid ${C.border}`,
         overflowY: 'auto', display: 'flex', flexDirection: 'column', flexShrink: 0,
       }}>
         <div style={{
@@ -716,7 +717,7 @@ function TimelinePreview({ products, banboEnabled, onToggleBanbo }: {
 
   return (
     <div style={{
-      width: 280, flexShrink: 0,
+      width: 220, flexShrink: 0,
       background: '#111827',
       display: 'flex', flexDirection: 'column',
       position: 'relative', overflow: 'hidden',
@@ -2296,7 +2297,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
       {/* ===== 伴播模式 ===== */}
       {activeMode === 'banbo' && (
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0 }}>
           {/* 左侧：时间轴预览 */}
           <TimelinePreview
             products={PRODUCTS}
@@ -2308,6 +2309,7 @@ export default function CanvasPanel({ onClose }: Props) {
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column',
             borderLeft: `1px solid ${C.border}`,
+            minWidth: 0, overflow: 'hidden',
           }}>
             {/* 3 Tab Bar */}
             <div style={{
