@@ -3,7 +3,7 @@ import { C, Toggle } from './shared'
 
 type Props = { onClose: () => void }
 type Mode = 'assist' | 'banbo'
-type BanboTab = 'productAvatar' | 'voice' | 'command' | 'voiceSwitch'
+type BanboTab = 'productAvatar' | 'command' | 'sysSettings'
 type AssistTab = 'voiceProduct' | 'chatAssist' | 'director' | 'comment' | 'voicePrice' | 'welcome' | 'coupons' | 'luckyBag' | 'sysSettings'
 
 const ASSIST_TABS: { key: AssistTab; label: string }[] = [
@@ -20,9 +20,8 @@ const ASSIST_TABS: { key: AssistTab; label: string }[] = [
 
 const BANBO_TABS: { key: BanboTab; label: string }[] = [
   { key: 'productAvatar', label: '📦 商品伴播' },
-  { key: 'voice', label: '🔊 音色' },
   { key: 'command', label: '🎤 进退场指令' },
-  { key: 'voiceSwitch', label: '🎙 换装触发' },
+  { key: 'sysSettings', label: '⚙️ 系统设置' },
 ]
 
 const SIDEBAR_BUTTONS = [
@@ -209,21 +208,43 @@ const LIVE_PRODUCTS = [
   { id: 'p4', name: '声卡直播设备', price: '¥1599', linkNum: 4 },
 ]
 
-// ============ 商品伴播管理数据 ============
-type ProductAvatar = { id: string; name: string; preview: string; actionCount: number; maxActions: number }
-type ProductItem = { id: string; linkNum: number; name: string; price: string; avatars: ProductAvatar[] }
+// ============ 商品伴播管理数据（三级结构） ============
+type AvatarState = { type: 'video'; url: string; duration: number }
+type AvatarOption = {
+  id: string; name: string; preview: string;  // "小小碎花裙"
+  actionCount: number; maxActions: number; version: 'basic' | 'advanced';
+  normalState: AvatarState;  // 常规态：默认动作模板视频，无声循环
+  eventState: AvatarState;   // 事件态：录播视频
+}
+type ProductItem = { id: string; linkNum: number; name: string; price: string; avatars: AvatarOption[] }
 
 const PRODUCTS: ProductItem[] = [
   {
     id: 'p1', linkNum: 1, name: '女童春款碎花连衣裙', price: '¥129',
     avatars: [
-      { id: 'pa1', name: '小小', preview: '/avatars/xiaoxiao-dress.jpg', actionCount: 4, maxActions: 6 },
+      {
+        id: 'pa1', name: '小小碎花裙', preview: '/avatars/xiaoxiao-dress.jpg',
+        actionCount: 4, maxActions: 6, version: 'basic',
+        normalState: { type: 'video', url: '/videos/xiaoxiao-dress-idle.mp4', duration: 8 },
+        eventState: { type: 'video', url: '/videos/xiaoxiao-dress-catwalk.mp4', duration: 15 },
+      },
     ],
   },
   {
     id: 'p2', linkNum: 2, name: '男童纯棉印花T恤', price: '¥89',
     avatars: [
-      { id: 'pa2', name: '篮球小子', preview: '/avatars/basketball-boy.jpg', actionCount: 3, maxActions: 6 },
+      {
+        id: 'pa2', name: '篮球小子蓝色', preview: '/avatars/basketball-boy-blue.jpg',
+        actionCount: 3, maxActions: 6, version: 'basic',
+        normalState: { type: 'video', url: '/videos/bb-blue-idle.mp4', duration: 6 },
+        eventState: { type: 'video', url: '/videos/bb-blue-slamdunk.mp4', duration: 12 },
+      },
+      {
+        id: 'pa2b', name: '篮球小子红色', preview: '/avatars/basketball-boy-red.jpg',
+        actionCount: 1, maxActions: 6, version: 'basic',
+        normalState: { type: 'video', url: '/videos/bb-red-idle.mp4', duration: 6 },
+        eventState: { type: 'video', url: '/videos/bb-red-dribble.mp4', duration: 10 },
+      },
     ],
   },
   {
@@ -233,7 +254,12 @@ const PRODUCTS: ProductItem[] = [
   {
     id: 'p4', linkNum: 4, name: '女童百褶半身裙', price: '¥99',
     avatars: [
-      { id: 'pa3', name: '榴莲宝贝', preview: '/avatars/durian-3d.jpg', actionCount: 6, maxActions: 12 },
+      {
+        id: 'pa3', name: '榴莲宝贝3D', preview: '/avatars/durian-3d.jpg',
+        actionCount: 6, maxActions: 12, version: 'advanced',
+        normalState: { type: 'video', url: '/videos/durian-idle.mp4', duration: 10 },
+        eventState: { type: 'video', url: '/videos/durian-spin.mp4', duration: 20 },
+      },
     ],
   },
 ]
@@ -246,6 +272,9 @@ function ProductAvatarContent() {
 
   const totalAvatars = products.reduce((s, p) => s + p.avatars.length, 0)
   const configuredCount = products.filter(p => p.avatars.length > 0).length
+
+  // 格式化秒数为 "Xs"
+  const fmtDur = (s: number) => `${s}s`
 
   return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
@@ -296,7 +325,7 @@ function ProductAvatarContent() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   {isConfigured ? (
                     <>
-                      <div style={{ display: 'flex', gap: -4 }}>
+                      <div style={{ display: 'flex' }}>
                         {prod.avatars.slice(0, 3).map((av, i) => (
                           <div key={av.id} style={{
                             width: 22, height: 22, borderRadius: '50%', overflow: 'hidden',
@@ -309,7 +338,7 @@ function ProductAvatarContent() {
                         ))}
                       </div>
                       <span style={{ fontSize: 10, color: C.green }}>
-                        {prod.avatars.length} 个形象 · {prod.avatars[0].actionCount}/{prod.avatars[0].maxActions} 动作
+                        {prod.avatars.length} 个形象
                       </span>
                     </>
                   ) : (
@@ -322,11 +351,11 @@ function ProductAvatarContent() {
         </div>
       </div>
 
-      {/* 右侧：商品详情 / 伴播形象 */}
+      {/* 右侧：伴播形象详情 */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
         {selected ? (
           <>
-            {/* 商品信息 */}
+            {/* 商品信息头 */}
             <div style={{
               padding: '10px 12px', borderRadius: 8,
               background: C.card, border: `1px solid ${C.border}`, marginBottom: 10,
@@ -342,18 +371,19 @@ function ProductAvatarContent() {
             </div>
 
             {/* 伴播形象列表 */}
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 6 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 8 }}>
               伴播形象 ({selected.avatars.length})
             </div>
 
             {selected.avatars.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {selected.avatars.map(av => (
                   <div key={av.id} style={{
-                    padding: '10px', borderRadius: 8,
-                    border: `1px solid ${C.border}`, background: '#FAFAFA',
+                    borderRadius: 8,
+                    border: `1px solid ${C.border}`, background: '#FAFAFA', overflow: 'hidden',
                   }}>
-                    <div style={{ display: 'flex', gap: 10 }}>
+                    {/* 形象头部 */}
+                    <div style={{ display: 'flex', gap: 10, padding: '10px 10px 0' }}>
                       <div style={{
                         width: 60, height: 107, borderRadius: 6, overflow: 'hidden',
                         background: '#fff', border: `1px solid ${C.border}`, flexShrink: 0,
@@ -366,9 +396,9 @@ function ProductAvatarContent() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                           <span style={{
                             fontSize: 9, padding: '2px 6px', borderRadius: 3,
-                            background: av.maxActions === 6 ? '#E8F5E9' : '#E8F3FF',
-                            color: av.maxActions === 6 ? C.green : C.blue, fontWeight: 600,
-                          }}>{av.maxActions === 6 ? '基础版' : '高级版'}</span>
+                            background: av.version === 'advanced' ? '#E8F3FF' : '#E8F5E9',
+                            color: av.version === 'advanced' ? C.blue : C.green, fontWeight: 600,
+                          }}>{av.version === 'advanced' ? '高级版' : '基础版'}</span>
                           <span style={{ fontSize: 10, color: C.textSec }}>
                             动作 {av.actionCount}/{av.maxActions}
                           </span>
@@ -387,6 +417,87 @@ function ProductAvatarContent() {
                         {av.actionCount >= av.maxActions && (
                           <div style={{ fontSize: 9, color: C.orange }}>已达上限，可升级或定制 ¥1500/个</div>
                         )}
+                      </div>
+                    </div>
+
+                    {/* 常规态 / 事件态 */}
+                    <div style={{
+                      display: 'flex', gap: 6, padding: '8px 10px 10px',
+                    }}>
+                      {/* 常规态 */}
+                      <div style={{
+                        flex: 1, borderRadius: 6,
+                        background: '#F0F4FF', border: `1px solid ${C.blue}20`,
+                        padding: '8px',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                          <span style={{ fontSize: 11 }}>🟢</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: C.blue }}>常规态</span>
+                        </div>
+                        <div style={{
+                          width: '100%', aspectRatio: '9/16', maxHeight: 120, borderRadius: 4,
+                          background: '#DDE3F0', border: `1px solid ${C.border}`,
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                          gap: 4, overflow: 'hidden', position: 'relative',
+                        }}>
+                          {av.normalState.url ? (
+                            <video src={av.normalState.url} muted loop
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onMouseOver={e => (e.target as HTMLVideoElement).play()}
+                              onMouseOut={e => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0 }} />
+                          ) : (
+                            <>
+                              <span style={{ fontSize: 20 }}>▶️</span>
+                              <span style={{ fontSize: 9, color: C.textSec }}>预览视频</span>
+                            </>
+                          )}
+                          <span style={{
+                            position: 'absolute', bottom: 3, right: 5,
+                            fontSize: 9, background: 'rgba(0,0,0,0.55)', color: '#fff',
+                            padding: '1px 4px', borderRadius: 3,
+                          }}>{fmtDur(av.normalState.duration)}</span>
+                        </div>
+                        <div style={{ fontSize: 9, color: C.textSec, marginTop: 4, textAlign: 'center' }}>
+                          默认动作 · 无声循环
+                        </div>
+                      </div>
+
+                      {/* 事件态 */}
+                      <div style={{
+                        flex: 1, borderRadius: 6,
+                        background: '#FFF8F0', border: `1px solid ${C.orange}20`,
+                        padding: '8px',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                          <span style={{ fontSize: 11 }}>🟠</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: C.orange }}>事件态</span>
+                        </div>
+                        <div style={{
+                          width: '100%', aspectRatio: '9/16', maxHeight: 120, borderRadius: 4,
+                          background: '#F0E6D8', border: `1px solid ${C.border}`,
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                          gap: 4, overflow: 'hidden', position: 'relative',
+                        }}>
+                          {av.eventState.url ? (
+                            <video src={av.eventState.url} muted loop
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onMouseOver={e => (e.target as HTMLVideoElement).play()}
+                              onMouseOut={e => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0 }} />
+                          ) : (
+                            <>
+                              <span style={{ fontSize: 20 }}>▶️</span>
+                              <span style={{ fontSize: 9, color: C.textSec }}>预览视频</span>
+                            </>
+                          )}
+                          <span style={{
+                            position: 'absolute', bottom: 3, right: 5,
+                            fontSize: 9, background: 'rgba(0,0,0,0.55)', color: '#fff',
+                            padding: '1px 4px', borderRadius: 3,
+                          }}>{fmtDur(av.eventState.duration)}</span>
+                        </div>
+                        <div style={{ fontSize: 9, color: C.textSec, marginTop: 4, textAlign: 'center' }}>
+                          录播视频 · 有声播放
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -428,7 +539,7 @@ function ProductAvatarContent() {
             <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 4 }}>选择商品查看详情</div>
             <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', lineHeight: 1.6 }}>
               点击左侧商品，查看已绑定的伴播形象<br />
-              每个商品可配置 0-N 个虚拟童模形象
+              每个形象包含常规态和事件态两种视频
             </div>
           </div>
         )}
@@ -573,6 +684,22 @@ function CommandContent() {
           • 退场时无伴播在场 → 画面不变 + 提示「无伴播模特在场，无需退场」<br />
           • 进场时无可用形象 → 画面不变 + 提示
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ============ 系统设置内容组件（占位） ============
+function SystemSettingsContent() {
+  return (
+    <div style={{
+      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexDirection: 'column', padding: 32,
+    }}>
+      <div style={{ fontSize: 36, marginBottom: 12 }}>⚙️</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 4 }}>系统设置</div>
+      <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center' }}>
+        版本分级 · NDI · 设备状态
       </div>
     </div>
   )
@@ -1945,9 +2072,8 @@ export default function CanvasPanel({ onClose }: Props) {
               position: 'relative',
             }}>
               {banboTab === 'productAvatar' && <ProductAvatarContent />}
-              {banboTab === 'voice' && <VoiceContent />}
               {banboTab === 'command' && <CommandContent />}
-              {banboTab === 'voiceSwitch' && <VoiceSwitchContent />}
+              {banboTab === 'sysSettings' && <SystemSettingsContent />}
             </div>
 
             {/* 底部操作 */}
