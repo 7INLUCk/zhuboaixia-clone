@@ -16,15 +16,12 @@
 - **方案 B 地址**：https://miaobo-b.pages.dev（锁定 b 分支）
 - **PRD**：https://vqz9o07xyt.feishu.cn/docx/LYJgdNgxFoFVITxDaqOc1gw9nNb
 
-### 伴播面板二轮改造（Issue #2，进行中）
-- Timeline 回归左栏 280px 深色风格（复用 9cad07c 样式）
-- 每个已绑定形象一张卡片：头像+视频预览+LIVE标签+可视化时间轴条
-- 形象配置 Tab 删商品列表，由 Timeline 统一承载
-- 事件态口令放动作设置 Tab（与进出场口令一起）
-- 多对多绑定不锁定 + 未绑定橙色提示但不阻断
-- 方案C渐变过渡带已落地（深→白交界柔化）
-- 分支：`codex/issue-2-timeline-regression`，3 commits
-- 下个会话：PR创建+合并 + 废弃组件清理 + SystemSettingsContent
+### 伴播面板 UX 改造（UX v3 已部署，持续优化中）
+- **当前状态**：UX v3 已部署到 miaobo-b.pages.dev，待 Boss 验收
+- **核心设计**：三步引导向导（选模特→确认口令→选动作）
+- **关键决策**：每步必须有用户操作，不能系统自动完成
+- **分支**：b 分支直接提交，最新 commit 0ab2430
+- **Issue #7** 已完成，PR #8 已合并
 - 详情见 memory/current-task.md
 
 ### 直播间合成系统（stream-compositor）

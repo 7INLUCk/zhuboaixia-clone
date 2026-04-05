@@ -212,21 +212,25 @@ const LIVE_PRODUCTS = [
 // ============ 商品伴播管理数据（三级结构） ============
 type NormalState = { id: string; label: string; icon: string; duration: number }
 type EventAction = { id: string; label: string; command: string; duration: number }
-type AvatarLibItem = { id: string; name: string; preview: string; category: 'public' | 'custom' }
+type AvatarLibItem = { id: string; name: string; preview: string; category: 'public' | 'custom'; voiceTier: 'standard' | 'premium' }
+// 搭话规则（主播口令 → avatar 回复内容，1:1 精确触发）
+type ChatRule = { id: string; trigger: string; response: string }
 type ProductItem = {
   id: string; linkNum: number; name: string; price: string;
   boundAvatarId: string | null  // 每个商品只能绑定一个形象
+  chatRules: ChatRule[]  // 搭话规则（仅 premium 形象有效）
+  chatEnabled: boolean   // 搭话开关
 }
 
 // 形象库（用户从中选择绑定）
 const AVATAR_LIBRARY: AvatarLibItem[] = [
-  { id: 'av1', name: '篮球小子-蓝', preview: '/avatars/basketball-boy-blue.jpg', category: 'public' },
-  { id: 'av2', name: '篮球小子-红', preview: '/avatars/basketball-boy-red.jpg', category: 'public' },
-  { id: 'av3', name: '篮球小子-黑', preview: '/avatars/basketball-boy-black.jpg', category: 'public' },
-  { id: 'av4', name: '篮球小子-白', preview: '/avatars/basketball-boy-white.jpg', category: 'public' },
-  { id: 'av5', name: '小小碎花裙', preview: '/avatars/xiaoxiao-dress.jpg', category: 'public' },
-  { id: 'av6', name: '榴莲宝贝3D', preview: '/avatars/durian-3d.jpg', category: 'custom' },
-  { id: 'av7', name: '卡通小猫', preview: '/avatars/cartoon-cat.jpg', category: 'public' },
+  { id: 'av1', name: '篮球小子-蓝', preview: '/avatars/basketball-boy-blue.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av2', name: '篮球小子-红', preview: '/avatars/basketball-boy-red.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av3', name: '篮球小子-黑', preview: '/avatars/basketball-boy-black.jpg', category: 'public', voiceTier: 'premium' },
+  { id: 'av4', name: '篮球小子-白', preview: '/avatars/basketball-boy-white.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av5', name: '小小碎花裙', preview: '/avatars/xiaoxiao-dress.jpg', category: 'public', voiceTier: 'premium' },
+  { id: 'av6', name: '榴莲宝贝3D', preview: '/avatars/durian-3d.jpg', category: 'custom', voiceTier: 'premium' },
+  { id: 'av7', name: '卡通小猫', preview: '/avatars/cartoon-cat.jpg', category: 'public', voiceTier: 'standard' },
 ]
 
 // 每个形象的常规态（6个基底动作，直播时随机轮播）
@@ -290,12 +294,12 @@ const DEFAULT_EVENT_ACTIONS: EventAction[] = [
 ]
 
 const PRODUCTS: ProductItem[] = [
-  { id: 'p1', linkNum: 1, name: '女童春款碎花连衣裙', price: '¥129', boundAvatarId: 'av5' },
-  { id: 'p2', linkNum: 2, name: '男童纯棉印花T恤', price: '¥89', boundAvatarId: 'av1' },
-  { id: 'p3', linkNum: 3, name: '儿童防晒衣外套', price: '¥159', boundAvatarId: null },
-  { id: 'p4', linkNum: 4, name: '女童百褶半身裙', price: '¥99', boundAvatarId: 'av6' },
-  { id: 'p5', linkNum: 5, name: '男童运动裤', price: '¥79', boundAvatarId: null },
-  { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatarId: null },
+  { id: 'p1', linkNum: 1, name: '女童春款碎花连衣裙', price: '¥129', boundAvatarId: 'av5', chatRules: [{ id: 'cr1', trigger: '多少钱', response: '这款碎花裙129元哦，很划算的！' }], chatEnabled: true },
+  { id: 'p2', linkNum: 2, name: '男童纯棉印花T恤', price: '¥89', boundAvatarId: 'av1', chatRules: [], chatEnabled: false },
+  { id: 'p3', linkNum: 3, name: '儿童防晒衣外套', price: '¥159', boundAvatarId: null, chatRules: [], chatEnabled: false },
+  { id: 'p4', linkNum: 4, name: '女童百褶半身裙', price: '¥99', boundAvatarId: 'av6', chatRules: [{ id: 'cr2', trigger: '有优惠吗', response: '现在下单立减20元！' }, { id: 'cr3', trigger: '质量怎么样', response: '纯棉面料，亲肤透气，宝宝穿很舒服~' }], chatEnabled: true },
+  { id: 'p5', linkNum: 5, name: '男童运动裤', price: '¥79', boundAvatarId: null, chatRules: [], chatEnabled: false },
+  { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatarId: null, chatRules: [], chatEnabled: false },
 ]
 
 // 步骤完成度计算
@@ -1298,7 +1302,16 @@ function UnifiedBanboPanel({
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{boundAvatar.name}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{boundAvatar.name}</div>
+                        <div style={{
+                          fontSize: 8, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
+                          background: boundAvatar.voiceTier === 'premium' ? 'rgba(51,112,255,0.15)' : 'rgba(134,144,156,0.15)',
+                          color: boundAvatar.voiceTier === 'premium' ? C.blue : C.textSec,
+                        }}>
+                          {boundAvatar.voiceTier === 'premium' ? '🔵 可搭话' : '🟢 标准'}
+                        </div>
+                      </div>
                       <div style={{ fontSize: 10, color: C.green, marginTop: 1 }}>✅ 已绑定，主播喊口令即可出场</div>
                     </div>
                     <button onClick={handleUnbind} style={{
@@ -1338,8 +1351,17 @@ function UnifiedBanboPanel({
                       <div key={av.id} onClick={() => handleBind(av.id)} style={{
                         padding: '6px', borderRadius: 8, cursor: 'pointer',
                         background: C.card, border: `1px solid ${C.border}`,
-                        textAlign: 'center', transition: 'all 0.15s',
+                        textAlign: 'center', transition: 'all 0.15s', position: 'relative',
                       }}>
+                        {/* voiceTier 徽标 */}
+                        <div style={{
+                          position: 'absolute', top: 4, right: 4, zIndex: 1,
+                          fontSize: 8, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
+                          background: av.voiceTier === 'premium' ? 'rgba(51,112,255,0.9)' : 'rgba(134,144,156,0.7)',
+                          color: '#fff',
+                        }}>
+                          {av.voiceTier === 'premium' ? '🔵可搭话' : '🟢标准'}
+                        </div>
                         <div style={{ width: '100%', aspectRatio: '1', borderRadius: 6, overflow: 'hidden', background: '#f0f0f0', marginBottom: 4 }}>
                           <ChromaKeyImage src={av.preview} alt={av.name}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
@@ -1628,10 +1650,104 @@ function UnifiedBanboPanel({
                   </div>
                 </div>
               )}
+
+              {/* ===== 搭话能力（仅 premium 形象展示） ===== */}
+              {boundAvatar && boundAvatar.voiceTier === 'premium' && (
+                <div style={{
+                  marginTop: 12, padding: '10px', borderRadius: 8,
+                  background: '#F0F4FF', border: '1px solid rgba(96,165,250,0.2)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                    <span style={{ fontSize: 14 }}>💬</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>搭话能力</span>
+                    <span style={{
+                      fontSize: 8, padding: '1px 5px', borderRadius: 3,
+                      background: 'rgba(51,112,255,0.15)', color: C.blue, fontWeight: 600,
+                    }}>高级功能</span>
+                  </div>
+                  <div style={{
+                    fontSize: 9, color: C.textSec, lineHeight: 1.6, marginBottom: 8,
+                  }}>
+                    该模特支持实时搭话：主播说出对应口令时，模特会张嘴说出预设回复。<br/>
+                    <b style={{ color: C.orange }}>⚡ 搭话优先：当口令同时匹配搭话和事件态动作时，优先执行搭话。</b>
+                  </div>
+                  {/* 搭话开关 + 规则管理 */}
+                  {(() => {
+                    const chatEnabled = selectedProduct?.chatEnabled ?? false
+                    const chatRules = selectedProduct?.chatRules ?? []
+                    return (
+                      <div>
+                        <div style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          marginBottom: chatEnabled ? 8 : 0,
+                        }}>
+                          <div style={{ fontSize: 11, color: C.text }}>启用搭话</div>
+                          <div onClick={() => {
+                            if (!selectedProductId) return
+                            setProducts(prev => prev.map(p =>
+                              p.id === selectedProductId ? { ...p, chatEnabled: !p.chatEnabled } : p
+                            ))
+                          }} style={{
+                            width: 32, height: 18, borderRadius: 9, cursor: 'pointer',
+                            background: chatEnabled ? C.blue : '#ccc',
+                            position: 'relative', transition: 'background 0.2s',
+                          }}>
+                            <div style={{
+                              width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                              position: 'absolute', top: 2,
+                              left: chatEnabled ? 16 : 2,
+                              transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                            }} />
+                          </div>
+                        </div>
+                        {chatEnabled && (
+                          <div>
+                            {chatRules.length > 0 ? chatRules.map(rule => (
+                              <div key={rule.id} style={{
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                padding: '6px 8px', borderRadius: 6, background: '#fff',
+                                border: `1px solid ${C.border}`, marginBottom: 4, fontSize: 10,
+                              }}>
+                                <span style={{ color: C.orange, fontWeight: 600, whiteSpace: 'nowrap' }}>「{rule.trigger}」</span>
+                                <span style={{ color: C.textTert }}>→</span>
+                                <span style={{ color: C.text, flex: 1 }}>{rule.response}</span>
+                              </div>
+                            )) : (
+                              <div style={{ fontSize: 10, color: C.textSec, textAlign: 'center', padding: '6px 0' }}>
+                                暂无搭话规则
+                              </div>
+                            )}
+                            <button onClick={() => {
+                              if (!selectedProductId) return
+                              const newRule: ChatRule = { id: `cr${Date.now()}`, trigger: '', response: '' }
+                              setProducts(prev => prev.map(p =>
+                                p.id === selectedProductId ? { ...p, chatRules: [...p.chatRules, newRule] } : p
+                              ))
+                            }} style={{
+                              width: '100%', padding: '5px 0', borderRadius: 6,
+                              border: `1px dashed ${C.blue}`, background: 'rgba(51,112,255,0.05)',
+                              color: C.blue, fontSize: 10, cursor: 'pointer', fontFamily: C.font, marginTop: 4,
+                            }}>+ 添加搭话规则</button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
+                </div>
+              )}
+
+              {/* standard 形象的搭话提示 */}
+              {boundAvatar && boundAvatar.voiceTier === 'standard' && (
+                <div style={{
+                  marginTop: 12, padding: '8px 10px', borderRadius: 6,
+                  background: '#F7F8FA', border: `1px solid ${C.border}`,
+                  fontSize: 10, color: C.textSec, lineHeight: 1.6,
+                }}>
+                  🔇 该模特不支持搭话功能（仅展示动作）。如需搭话能力，请选择带「🔵可搭话」徽标的模特，或联系我们升级。
+                </div>
+              )}
             </div>
           )}
-
-          {/* 形象库（在 Step 1 底部，不在这里重复） */}
         </>
       ) : (
         /* 未选择商品（fallback，正常不会触发） */
