@@ -306,7 +306,8 @@ function getStepCompletion(products: ProductItem[], selectedProductId: string | 
   const hasCommands = hasAvatar // Step 2 默认口令即完成
   const eventActions = hasAvatar ? (EVENT_ACTIONS[product.boundAvatarId!] || DEFAULT_EVENT_ACTIONS) : []
   const hasEvents = eventActions.length > 0 // Step 3 可选
-  if (hasAvatar && hasCommands) return { step1: true, step2: true, step3: hasEvents, status: 'ready' as const }
+  // 无事件态：step3 自动完成；有事件态：step3 始终为 true（可选步骤不影响状态）
+  if (hasAvatar && hasCommands) return { step1: true, step2: true, step3: true, status: 'ready' as const }
   if (hasAvatar) return { step1: true, step2: false, step3: false, status: 'partial' as const }
   return { step1: false, step2: false, step3: false, status: 'new' as const }
 }
@@ -1610,8 +1611,21 @@ function UnifiedBanboPanel({
                   </div>
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', padding: '16px 0', color: C.textSec, fontSize: 11 }}>
-                  该模特暂无特殊动作，可以跳过这步
+                <div style={{
+                  textAlign: 'center', padding: '20px 0',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    background: '#E8F5E9', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 20,
+                  }}>✅</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.green }}>
+                    该模特不需要配置特殊动作
+                  </div>
+                  <div style={{ fontSize: 10, color: C.textSec }}>
+                    已就绪，口令配置好后即可使用
+                  </div>
                 </div>
               )}
             </div>
