@@ -372,7 +372,7 @@ function TimelineLeftBar({
         padding: '6px 8px', flexShrink: 0,
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         background: 'rgba(0,0,0,0.15)',
-        maxHeight: 100, overflowY: 'auto',
+        maxHeight: 120, overflowY: 'auto',
       }}>
         <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 4, padding: '0 4px' }}>商品配置</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -1052,19 +1052,42 @@ function UnifiedBanboPanel({
     ? (EVENT_ACTIONS[selectedProduct.boundAvatarId] || DEFAULT_EVENT_ACTIONS)
     : []
 
-  // 展开状态：绑定后自动展开下一步
+  // 展开状态：逐步引导
   const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({ 1: true })
+  const [step2Confirmed, setStep2Confirmed] = useState(false)
+  const [step2Ready, setStep2Ready] = useState(false) // Step 2 待用户确认
+
+  // 切换商品时重置状态
   useEffect(() => {
-    if (!selectedProduct) { setExpandedSteps({ 1: true }); return }
-    const s = getStepCompletion(products, selectedProductId)
-    const next: Record<number, boolean> = {}
-    if (!s.step1) { next[1] = true }
-    else { next[1] = true; next[2] = true }
-    if (s.step1 && s.step2) next[3] = expandedSteps[3] ?? false
-    setExpandedSteps(next)
-  }, [selectedProduct?.boundAvatarId, selectedProductId])
+    setExpandedSteps({ 1: true })
+    setStep2Confirmed(false)
+    setStep2Ready(false)
+    setEnabledActions({})
+  }, [selectedProductId])
+
+  // 绑模特后 → Step 2 待确认
+  useEffect(() => {
+    if (selectedProduct?.boundAvatarId) {
+      setStep2Ready(true)
+    } else {
+      setStep2Ready(false)
+      setStep2Confirmed(false)
+    }
+  }, [selectedProduct?.boundAvatarId])
 
   const toggleStep = (n: number) => setExpandedSteps(prev => ({ ...prev, [n]: !prev[n] }))
+
+  // Step 2 确认
+  const confirmStep2 = () => {
+    setStep2Confirmed(true)
+    setExpandedSteps({ 2: false, 3: true })
+  }
+
+  // 动作开关
+  const [enabledActions, setEnabledActions] = useState<Record<string, boolean>>({})
+  const toggleAction = (id: string) => {
+    setEnabledActions(prev => ({ ...prev, [id]: !prev[id] }))
+  }
 
   // 全局口令
   const [commands, setCommands] = useState(DEFAULT_COMMANDS)
@@ -1088,6 +1111,10 @@ function UnifiedBanboPanel({
     ))
     setPreviewStateId(null)
     setPreviewEventId(null)
+    setStep2Confirmed(false)
+    setEnabledActions({})
+    // 绑定后折叠 Step 1，展开 Step 2
+    setTimeout(() => setExpandedSteps({ 1: false, 2: true }), 200)
   }
   const handleUnbind = () => {
     if (!selectedProductId) return
@@ -1243,131 +1270,73 @@ function UnifiedBanboPanel({
           )}
 
           {/* ===== Step 2：设定出场和退场 ===== */}
-          <StepHeader step={2} title="设定出场和退场" desc="主播说什么模特就出来 / 退场，口令可以改" done={completion.step2} />
+          <StepHeader step={2} title="设定出场和退场" desc="主播说什么模特就出来 / 退场" done={step2Confirmed} />
           {expandedSteps[2] && (
             <div style={{
               margin: '0 12px', padding: '12px',
               border: `1px solid ${C.border}`, borderTop: 'none',
               borderRadius: '0 0 8px 8px', background: '#fff',
             }}>
-              <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8, lineHeight: 1.5 }}>
-                💡 口令就是主播说的话，默认值已填好，你可以改成更适合直播间的说法
-              </div>
-              {commands.map(cmd => {
-                const cfg = cmd.type === 'show'
-                  ? { icon: '🎭', label: '出场口令', desc: '主播说这个 → 模特登场展示', bg: '#E8F5E9' }
-                  : { icon: '🚪', label: '退场口令', desc: '主播说这个 → 模特下场', bg: '#FFF3E0' }
-                const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
-                const isEditing = editingCmdId === cmd.id
-                return (
-                  <div key={cmd.id} style={{
-                    padding: '10px', borderRadius: 8, background: cfg.bg,
-                    border: `1px solid ${C.border}`, marginBottom: 6,
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                      <span style={{ fontSize: 16 }}>{cfg.icon}</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{cfg.label}</span>
-                    </div>
-                    <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8 }}>{cfg.desc}</div>
-                    {isEditing ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
-                          style={{
-                            flex: 1, height: 30, padding: '0 10px', borderRadius: 6,
-                            border: `1px solid ${C.blue}`, fontSize: 12, fontFamily: C.font,
-                            outline: 'none',
-                          }} autoFocus />
-                        <button onClick={() => {
-                          setCommands(prev => prev.map(c => c.id === cmd.id ? { ...c, customPhrase: cmdEditValue } : c))
-                          setEditingCmdId(null)
-                        }} style={{
-                          padding: '4px 12px', borderRadius: 6, border: 'none',
-                          background: C.blue, color: '#fff', fontSize: 11, fontWeight: 600,
-                          cursor: 'pointer', fontFamily: C.font,
-                        }}>保存</button>
-                        <button onClick={() => setEditingCmdId(null)} style={{
-                          padding: '4px 12px', borderRadius: 6, border: `1px solid ${C.border}`,
-                          background: '#fff', color: C.textSec, fontSize: 11,
-                          cursor: 'pointer', fontFamily: C.font,
-                        }}>取消</button>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{
-                          fontSize: 13, fontWeight: 600, color: C.text,
-                          padding: '4px 10px', borderRadius: 6, background: '#fff',
-                          border: `1px solid ${C.border}`,
-                        }}>「{displayPhrase}」</span>
-                        <button onClick={() => {
-                          setEditingCmdId(cmd.id)
-                          setCmdEditValue(cmd.customPhrase || cmd.defaultPhrase)
-                        }} style={{
-                          padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`,
-                          background: '#fff', color: C.blue, fontSize: 11,
-                          cursor: 'pointer', fontFamily: C.font,
-                        }}>改口令</button>
-                      </div>
-                    )}
+              {!boundAvatar ? (
+                <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', padding: '12px 0' }}>
+                  👈 先在第一步选一个模特
+                </div>
+              ) : !step2Confirmed ? (
+                <div>
+                  <div style={{ fontSize: 10, color: C.textSec, marginBottom: 10, lineHeight: 1.5 }}>
+                    💡 我们已经帮你填好了默认口令，你可以直接确认或改成自己的说法
                   </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* ===== Step 3：加特殊动作（可选） ===== */}
-          <StepHeader step={3} title="加特殊动作（可选）" desc="给模特加特殊动作，主播说对应口令就触发" done={completion.step3} />
-          {expandedSteps[3] && (
-            <div style={{
-              margin: '0 12px 12px', padding: '12px',
-              border: `1px solid ${C.border}`, borderTop: 'none',
-              borderRadius: '0 0 8px 8px', background: '#fff',
-            }}>
-              <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8, lineHeight: 1.5 }}>
-                ⚡ 特殊动作是额外的互动效果，可以不配。配了之后主播说对应口令就会触发。
-              </div>
-              {localEventActions.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {localEventActions.map(ev => {
-                    const isEditing = editingEventId === ev.id
+                  {commands.map(cmd => {
+                    const cfg = cmd.type === 'show'
+                      ? { icon: '🎭', label: '出场口令', desc: '主播说这个 → 模特登场展示', bg: '#E8F5E9' }
+                      : { icon: '🚪', label: '退场口令', desc: '主播说这个 → 模特下场', bg: '#FFF3E0' }
+                    const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
+                    const isEditing = editingCmdId === cmd.id
                     return (
-                      <div key={ev.id} style={{
-                        padding: '8px 10px', borderRadius: 8,
-                        background: '#FFFAF5', border: `1px solid ${C.border}`,
+                      <div key={cmd.id} style={{
+                        padding: '10px', borderRadius: 8, background: cfg.bg,
+                        border: `1px solid ${C.border}`, marginBottom: 6,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                          <span style={{ fontSize: 14 }}>🎬</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{ev.label}</span>
-                          <span style={{ fontSize: 9, color: C.textSec }}>{ev.duration}s</span>
+                          <span style={{ fontSize: 16 }}>{cfg.icon}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{cfg.label}</span>
                         </div>
+                        <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8 }}>{cfg.desc}</div>
                         {isEditing ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 10, color: C.textSec }}>口令：</span>
-                            <input value={eventEditValue} onChange={e => setEventEditValue(e.target.value)}
+                            <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
                               style={{
-                                flex: 1, height: 28, padding: '0 8px', borderRadius: 6,
-                                border: `1px solid ${C.blue}`, fontSize: 11, fontFamily: C.font,
+                                flex: 1, height: 30, padding: '0 10px', borderRadius: 6,
+                                border: `1px solid ${C.blue}`, fontSize: 12, fontFamily: C.font,
                                 outline: 'none',
                               }} autoFocus />
-                            <button onClick={() => saveEditEvent(ev.id)} style={{
-                              padding: '3px 10px', borderRadius: 6, border: 'none',
-                              background: C.blue, color: '#fff', fontSize: 10, fontWeight: 600,
+                            <button onClick={() => {
+                              setCommands(prev => prev.map(c => c.id === cmd.id ? { ...c, customPhrase: cmdEditValue } : c))
+                              setEditingCmdId(null)
+                            }} style={{
+                              padding: '4px 12px', borderRadius: 6, border: 'none',
+                              background: C.blue, color: '#fff', fontSize: 11, fontWeight: 600,
                               cursor: 'pointer', fontFamily: C.font,
                             }}>保存</button>
-                            <button onClick={() => setEditingEventId(null)} style={{
-                              padding: '3px 10px', borderRadius: 6, border: `1px solid ${C.border}`,
-                              background: '#fff', color: C.textSec, fontSize: 10,
+                            <button onClick={() => setEditingCmdId(null)} style={{
+                              padding: '4px 12px', borderRadius: 6, border: `1px solid ${C.border}`,
+                              background: '#fff', color: C.textSec, fontSize: 11,
                               cursor: 'pointer', fontFamily: C.font,
                             }}>取消</button>
                           </div>
                         ) : (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <span style={{
-                              fontSize: 11, color: C.orange, fontWeight: 500,
-                              padding: '3px 8px', borderRadius: 4, background: '#FFF7E6',
-                            }}>「{ev.command}」</span>
-                            <button onClick={() => startEditEvent(ev)} style={{
-                              padding: '3px 8px', borderRadius: 4, border: `1px solid ${C.border}`,
-                              background: '#fff', color: C.blue, fontSize: 10,
+                              fontSize: 13, fontWeight: 600, color: C.text,
+                              padding: '4px 10px', borderRadius: 6, background: '#fff',
+                              border: `1px solid ${C.border}`,
+                            }}>「{displayPhrase}」</span>
+                            <button onClick={() => {
+                              setEditingCmdId(cmd.id)
+                              setCmdEditValue(cmd.customPhrase || cmd.defaultPhrase)
+                            }} style={{
+                              padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`,
+                              background: '#fff', color: C.blue, fontSize: 11,
                               cursor: 'pointer', fontFamily: C.font,
                             }}>改口令</button>
                           </div>
@@ -1375,6 +1344,154 @@ function UnifiedBanboPanel({
                       </div>
                     )
                   })}
+                  {/* 确认按钮 */}
+                  <button onClick={confirmStep2} style={{
+                    width: '100%', padding: '10px', marginTop: 6,
+                    borderRadius: 8, border: 'none',
+                    background: 'linear-gradient(135deg, #60A5FA, #3B82F6)',
+                    color: '#fff', fontSize: 13, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: C.font,
+                  }}>确认使用以上口令 ✓</button>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8, lineHeight: 1.5 }}>
+                    ✅ 已确认，口令随时可以修改
+                  </div>
+                  {commands.map(cmd => {
+                    const cfg = cmd.type === 'show'
+                      ? { icon: '🎭', label: '出场口令', bg: '#E8F5E9' }
+                      : { icon: '🚪', label: '退场口令', bg: '#FFF3E0' }
+                    const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
+                    const isEditing = editingCmdId === cmd.id
+                    return (
+                      <div key={cmd.id} style={{
+                        padding: '8px 10px', borderRadius: 8, background: cfg.bg,
+                        border: `1px solid ${C.border}`, marginBottom: 4,
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                        <span style={{ fontSize: 14 }}>{cfg.icon}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: C.text }}>{cfg.label}</span>
+                        {isEditing ? (
+                          <>
+                            <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
+                              style={{
+                                flex: 1, height: 26, padding: '0 8px', borderRadius: 4,
+                                border: `1px solid ${C.blue}`, fontSize: 11, fontFamily: C.font,
+                                outline: 'none',
+                              }} autoFocus />
+                            <button onClick={() => {
+                              setCommands(prev => prev.map(c => c.id === cmd.id ? { ...c, customPhrase: cmdEditValue } : c))
+                              setEditingCmdId(null)
+                            }} style={{
+                              padding: '2px 8px', borderRadius: 4, border: 'none',
+                              background: C.blue, color: '#fff', fontSize: 10, fontFamily: C.font, cursor: 'pointer',
+                            }}>保存</button>
+                          </>
+                        ) : (
+                          <>
+                            <span style={{ fontSize: 11, fontWeight: 500, color: C.text, flex: 1 }}>「{displayPhrase}」</span>
+                            <button onClick={() => {
+                              setEditingCmdId(cmd.id)
+                              setCmdEditValue(cmd.customPhrase || cmd.defaultPhrase)
+                            }} style={{
+                              padding: '2px 8px', borderRadius: 4, border: `1px solid ${C.border}`,
+                              background: '#fff', color: C.blue, fontSize: 10, fontFamily: C.font, cursor: 'pointer',
+                            }}>改</button>
+                          </>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===== Step 3：选特殊动作（可选） ===== */}
+          <StepHeader step={3} title="选特殊动作（可选）" desc="开启需要的动作，主播说口令就触发" done={completion.step3 && step2Confirmed} />
+          {expandedSteps[3] && (
+            <div style={{
+              margin: '0 12px 12px', padding: '12px',
+              border: `1px solid ${C.border}`, borderTop: 'none',
+              borderRadius: '0 0 8px 8px', background: '#fff',
+            }}>
+              {!boundAvatar ? (
+                <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', padding: '12px 0' }}>
+                  👈 先在第一步选一个模特
+                </div>
+              ) : localEventActions.length > 0 ? (
+                <div>
+                  <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8, lineHeight: 1.5 }}>
+                    ⚡ 以下是该模特支持的特殊动作，开启后主播说对应口令就会触发
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {localEventActions.map(ev => {
+                      const isEnabled = enabledActions[ev.id] !== false // 默认开启
+                      const isEditing = editingEventId === ev.id
+                      return (
+                        <div key={ev.id} style={{
+                          padding: '8px 10px', borderRadius: 8,
+                          background: isEnabled ? '#FFFAF5' : '#F5F5F5',
+                          border: `1px solid ${isEnabled ? C.border : '#e0e0e0'}`,
+                          opacity: isEnabled ? 1 : 0.6,
+                          transition: 'all 0.15s',
+                        }}>
+                          {/* 第一行：动作名 + 开关 */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                            <span style={{ fontSize: 14 }}>🎬</span>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: C.text, flex: 1 }}>{ev.label}</span>
+                            <span style={{ fontSize: 9, color: C.textSec }}>{ev.duration}s</span>
+                            <div onClick={() => toggleAction(ev.id)} style={{
+                              width: 32, height: 18, borderRadius: 9, cursor: 'pointer',
+                              background: isEnabled ? C.green : '#ccc',
+                              position: 'relative', transition: 'background 0.2s',
+                            }}>
+                              <div style={{
+                                width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                                position: 'absolute', top: 2,
+                                left: isEnabled ? 16 : 2,
+                                transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                              }} />
+                            </div>
+                          </div>
+                          {/* 第二行：触发口令 */}
+                          {isEnabled && (
+                            <div>
+                              <div style={{ fontSize: 9, color: C.textSec, marginBottom: 4 }}>
+                                触发口令（主播说这个就播放）
+                              </div>
+                              {isEditing ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <input value={eventEditValue} onChange={e => setEventEditValue(e.target.value)}
+                                    style={{
+                                      flex: 1, height: 26, padding: '0 8px', borderRadius: 4,
+                                      border: `1px solid ${C.blue}`, fontSize: 11, fontFamily: C.font,
+                                      outline: 'none',
+                                    }} autoFocus />
+                                  <button onClick={() => saveEditEvent(ev.id)} style={{
+                                    padding: '2px 8px', borderRadius: 4, border: 'none',
+                                    background: C.blue, color: '#fff', fontSize: 10, fontFamily: C.font, cursor: 'pointer',
+                                  }}>保存</button>
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <span style={{
+                                    fontSize: 11, fontWeight: 600, color: C.orange,
+                                    padding: '2px 8px', borderRadius: 4, background: '#FFF7E6',
+                                  }}>「{ev.command}」</span>
+                                  <button onClick={() => startEditEvent(ev)} style={{
+                                    padding: '2px 6px', borderRadius: 4, border: `1px solid ${C.border}`,
+                                    background: '#fff', color: C.blue, fontSize: 9, fontFamily: C.font, cursor: 'pointer',
+                                  }}>改口令</button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '16px 0', color: C.textSec, fontSize: 11 }}>
@@ -1384,37 +1501,7 @@ function UnifiedBanboPanel({
             </div>
           )}
 
-          {/* 形象库（折叠在底部，方便更换） */}
-          {boundAvatar && (
-            <div style={{
-              margin: '4px 12px 12px', padding: '10px 12px', borderRadius: 8,
-              background: '#FAFAFA', border: `1px solid ${C.border}`,
-            }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: C.text, marginBottom: 8 }}>
-                🎭 换个模特？
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: 6 }}>
-                {AVATAR_LIBRARY.map(av => {
-                  const isCurrent = selectedProduct?.boundAvatarId === av.id
-                  return (
-                    <div key={av.id} onClick={() => !isCurrent && handleBind(av.id)} style={{
-                      padding: 4, borderRadius: 6, cursor: isCurrent ? 'default' : 'pointer',
-                      background: isCurrent ? '#E8F5E9' : C.card,
-                      border: isCurrent ? `1.5px solid ${C.green}` : `1px solid ${C.border}`,
-                      textAlign: 'center', transition: 'all 0.15s', opacity: isCurrent ? 0.7 : 1,
-                    }}>
-                      <div style={{ width: '100%', aspectRatio: '1', borderRadius: 4, overflow: 'hidden', background: '#f0f0f0', marginBottom: 2 }}>
-                        <ChromaKeyImage src={av.preview} alt={av.name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
-                      </div>
-                      <div style={{ fontSize: 8, fontWeight: 600, color: C.text }}>{av.name}</div>
-                      {isCurrent && <div style={{ fontSize: 7, color: C.green }}>当前</div>}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
+          {/* 形象库（在 Step 1 底部，不在这里重复） */}
         </>
       ) : (
         /* 未选择商品（fallback，正常不会触发） */
