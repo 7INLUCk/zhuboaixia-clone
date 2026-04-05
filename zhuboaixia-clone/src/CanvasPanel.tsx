@@ -532,7 +532,7 @@ function TimelineLeftBar({
 
                   {/* 常规态视频预览 */}
                   <div style={{
-                    width: '100%', aspectRatio: '9/16', maxHeight: 180,
+                    width: '100%', aspectRatio: '9/16', maxHeight: 260,
                     borderRadius: 6, overflow: 'hidden',
                     background: '#1a1a2e', marginBottom: 4,
                     position: 'relative',
@@ -1943,7 +1943,7 @@ function AvatarContent() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
         {/* 形象预览（9:16，缩小） */}
         <div style={{
-          width: '100%', aspectRatio: '9/16', maxHeight: 180,
+          width: '100%', aspectRatio: '9/16', maxHeight: 260,
           background: '#FFFFFF', borderRadius: 8,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           marginBottom: 10, position: 'relative', overflow: 'hidden',
