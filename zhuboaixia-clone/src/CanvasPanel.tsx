@@ -367,12 +367,12 @@ function TimelineLeftBar({
         </div>
       </div>
 
-      {/* 商品完成度列表 */}
+      {/* 商品完成度列表（精确3.5行：每行26px × 3.5 + gap 2px × 3 = 97px） */}
       <div ref={productListRef} style={{
         padding: '6px 8px', flexShrink: 0,
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         background: 'rgba(0,0,0,0.15)',
-        maxHeight: 120, overflowY: 'auto',
+        maxHeight: 97, overflowY: 'auto',
       }}>
         <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 4, padding: '0 4px' }}>商品配置</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -387,7 +387,7 @@ function TimelineLeftBar({
             return (
               <div key={p.id} ref={el => { productItemRefs.current[p.id] = el }} onClick={() => handleSelectProduct(p.id)} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                padding: '4px 8px', borderRadius: 4,
+                padding: '4px 8px', borderRadius: 4, height: 26, flexShrink: 0,
                 background: isSelected ? 'rgba(96,165,250,0.15)' : 'transparent',
                 border: isSelected ? '1px solid rgba(96,165,250,0.3)' : '1px solid transparent',
                 cursor: 'pointer', transition: 'all 0.15s',
@@ -1423,11 +1423,11 @@ function UnifiedBanboPanel({
               ) : localEventActions.length > 0 ? (
                 <div>
                   <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8, lineHeight: 1.5 }}>
-                    ⚡ 以下是该模特支持的特殊动作，开启后主播说对应口令就会触发
+                    ⚡ 该模特支持以下特殊动作，点击开关启用后配置触发口令
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {localEventActions.map(ev => {
-                      const isEnabled = enabledActions[ev.id] !== false // 默认开启
+                      const isEnabled = enabledActions[ev.id] === true // 默认关闭，用户手动开启
                       const isEditing = editingEventId === ev.id
                       return (
                         <div key={ev.id} style={{
@@ -1491,6 +1491,13 @@ function UnifiedBanboPanel({
                         </div>
                       )
                     })}
+                  </div>
+                  <div style={{
+                    fontSize: 9, color: C.textSec, marginTop: 8, padding: '6px 8px',
+                    background: '#F0F4FF', borderRadius: 6, lineHeight: 1.5,
+                    border: '1px solid rgba(96,165,250,0.15)',
+                  }}>
+                    💡 口令采用模糊匹配：主播原样念出或简单改几个字都能触发，但字数改动过大时大概率匹配失败，建议用简短易记的口令
                   </div>
                 </div>
               ) : (
