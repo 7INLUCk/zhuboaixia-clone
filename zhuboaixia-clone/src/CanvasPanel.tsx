@@ -271,7 +271,7 @@ const LIVE_PRODUCTS = [
 
 // ============ 商品伴播管理数据（三级结构） ============
 type NormalState = { id: string; label: string; icon: string; duration: number; videoUrl?: string }
-type EventAction = { id: string; label: string; command: string; duration: number; videoUrl?: string }
+type EventAction = { id: string; label: string; command: string; duration: number; videoUrl?: string; isTransition?: boolean }
 type AvatarLibItem = { id: string; name: string; preview: string; category: 'public' | 'custom'; voiceTier: 'standard' | 'premium' }
 // 搭话规则（主播口令 → avatar 回复内容，1:1 精确触发）
 type ChatRule = { id: string; trigger: string; response: string }
@@ -349,6 +349,8 @@ const EVENT_ACTIONS: Record<string, EventAction[]> = {
     { id: 'ea2', label: '胯下运球', command: '', duration: 10 },
   ],
   av5: [
+    { id: 'ea_entrance', label: '入场', command: '', duration: 5, videoUrl: '/avatars/generated/av5_entrance.mp4', isTransition: true },
+    { id: 'ea_exit', label: '退场', command: '', duration: 5, videoUrl: '/avatars/generated/av5_exit.mp4', isTransition: true },
     { id: 'ea1', label: 'T台走秀', command: '', duration: 15, videoUrl: '/avatars/generated/av5_event.mp4' },
     { id: 'ea2', label: '旋转展示', command: '', duration: 10, videoUrl: '/avatars/generated/av5_ea2.mp4' },
     { id: 'ea3', label: '欢呼跳跃', command: '', duration: 10, videoUrl: '/avatars/generated/av5_ea3.mp4' },
@@ -732,8 +734,13 @@ function TimelineLeftBar({
                   }}>
                     <button onClick={(e) => {
                       e.stopPropagation()
-                      const firstEvent = eventActions.find((ev: any) => ev.videoUrl) || eventActions[0]
-                      if (firstEvent?.videoUrl) handleEventBlockClick(firstEvent.id)
+                      const entranceEvent = eventActions.find((ev: any) => ev.id === 'ea_entrance')
+                      if (entranceEvent?.videoUrl) {
+                        handleEventBlockClick(entranceEvent.id)
+                      } else {
+                        const fallback = eventActions.find((ev: any) => ev.videoUrl)
+                        if (fallback?.videoUrl) handleEventBlockClick(fallback.id)
+                      }
                     }} style={{
                       flex: 1, height: 26, borderRadius: 6, border: '1px solid rgba(168,85,247,0.3)',
                       background: 'rgba(168,85,247,0.12)', color: '#C084FC',
@@ -745,8 +752,13 @@ function TimelineLeftBar({
                     </button>
                     <button onClick={(e) => {
                       e.stopPropagation()
-                      const lastEvent = [...eventActions].reverse().find((ev: any) => ev.videoUrl)
-                      if (lastEvent?.videoUrl) handleEventBlockClick(lastEvent.id)
+                      const exitEvent = eventActions.find((ev: any) => ev.id === 'ea_exit')
+                      if (exitEvent?.videoUrl) {
+                        handleEventBlockClick(exitEvent.id)
+                      } else {
+                        const fallback = [...eventActions].reverse().find((ev: any) => ev.videoUrl)
+                        if (fallback?.videoUrl) handleEventBlockClick(fallback.id)
+                      }
                     }} style={{
                       flex: 1, height: 26, borderRadius: 6, border: '1px solid rgba(251,146,60,0.3)',
                       background: 'rgba(251,146,60,0.12)', color: '#FB923C',
@@ -806,7 +818,7 @@ function TimelineLeftBar({
                     })}
                   </div>
 
-                  {eventActions.length > 0 && (
+                  {eventActions.filter((ev: any) => !ev.isTransition).length > 0 && (
                     <>
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, marginBottom: 3,
@@ -817,7 +829,7 @@ function TimelineLeftBar({
                         display: 'flex', gap: 2, height: 18, borderRadius: 4,
                         overflow: 'hidden',
                       }}>
-                        {eventActions.map((ev: any) => {
+                        {eventActions.filter((ev: any) => !ev.isTransition).map((ev: any) => {
                           const isActive = previewEventId === ev.id
                           return (
                             <div key={ev.id} onClick={(e) => { e.stopPropagation(); handleEventBlockClick(ev.id) }} style={{
