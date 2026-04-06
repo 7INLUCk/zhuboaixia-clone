@@ -1758,44 +1758,71 @@ function UnifiedBanboPanel({
                           <span style={{ fontSize: 16 }}>{cfg.icon}</span>
                           <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{cfg.label}</span>
                         </div>
-                        <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8 }}>{cfg.desc}</div>
+                        <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8, lineHeight: 1.7 }}>
+                          {cmd.desc.split('\n').map((line, i) => <div key={i}>📍 {line}</div>)}
+                        </div>
                         {isEditing ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
-                              style={{
-                                flex: 1, height: 30, padding: '0 10px', borderRadius: 6,
-                                border: `1px solid ${C.blue}`, fontSize: 12, fontFamily: C.font,
-                                outline: 'none',
-                              }} autoFocus />
-                            <button onClick={() => {
-                              setCommands(prev => prev.map(c => c.id === cmd.id ? { ...c, customPhrase: cmdEditValue } : c))
-                              setEditingCmdId(null)
-                            }} style={{
-                              padding: '4px 12px', borderRadius: 6, border: 'none',
-                              background: C.blue, color: '#fff', fontSize: 11, fontWeight: 600,
-                              cursor: 'pointer', fontFamily: C.font,
-                            }}>保存</button>
-                            <button onClick={() => setEditingCmdId(null)} style={{
-                              padding: '4px 12px', borderRadius: 6, border: `1px solid ${C.border}`,
-                              background: '#fff', color: C.textSec, fontSize: 11,
-                              cursor: 'pointer', fontFamily: C.font,
-                            }}>取消</button>
+                          <div>
+                            {cmd.type === 'show' && (
+                              <div style={{
+                                fontSize: 10, color: '#6B7280', lineHeight: 1.7,
+                                marginBottom: 8, padding: '6px 8px', borderRadius: 6,
+                                background: '#F0F4FF', border: '1px solid #D6E4FF',
+                              }}>
+                                ✏️ <b>自定义口令规则</b><br/>
+                                • 必须包含「{'{N}号链接」— 系统靠它匹配商品'}<br/>
+                                • 其他部分随意发挥，比如「看看{'{N}号链接穿上好不好看」'}<br/>
+                                • 口令是模糊匹配，不需要一字不差
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
+                                placeholder={cmd.type === 'show' ? '例：看看{N}号链接穿上身的效果' : ''}
+                                style={{
+                                  flex: 1, height: 30, padding: '0 10px', borderRadius: 6,
+                                  border: `1px solid ${C.blue}`, fontSize: 12, fontFamily: C.font,
+                                  outline: 'none',
+                                }} autoFocus />
+                              <button onClick={() => {
+                                setCommands(prev => prev.map(c => c.id === cmd.id ? { ...c, customPhrase: cmdEditValue } : c))
+                                setEditingCmdId(null)
+                              }} style={{
+                                padding: '4px 12px', borderRadius: 6, border: 'none',
+                                background: C.blue, color: '#fff', fontSize: 11, fontWeight: 600,
+                                cursor: 'pointer', fontFamily: C.font,
+                              }}>保存</button>
+                              <button onClick={() => setEditingCmdId(null)} style={{
+                                padding: '4px 12px', borderRadius: 6, border: `1px solid ${C.border}`,
+                                background: '#fff', color: C.textSec, fontSize: 11,
+                                cursor: 'pointer', fontFamily: C.font,
+                              }}>取消</button>
+                            </div>
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{
-                              fontSize: 13, fontWeight: 600, color: C.text,
-                              padding: '4px 10px', borderRadius: 6, background: '#fff',
-                              border: `1px solid ${C.border}`,
-                            }}>「{displayPhrase}」</span>
-                            <button onClick={() => {
-                              setEditingCmdId(cmd.id)
-                              setCmdEditValue(cmd.customPhrase || cmd.defaultPhrase)
-                            }} style={{
-                              padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`,
-                              background: '#fff', color: C.blue, fontSize: 11,
-                              cursor: 'pointer', fontFamily: C.font,
-                            }}>改口令</button>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{
+                                fontSize: 13, fontWeight: 600, color: C.text,
+                                padding: '4px 10px', borderRadius: 6, background: '#fff',
+                                border: `1px solid ${C.border}`,
+                              }}>「{displayPhrase}」</span>
+                              <button onClick={() => {
+                                setEditingCmdId(cmd.id)
+                                setCmdEditValue(cmd.customPhrase || cmd.defaultPhrase)
+                              }} style={{
+                                padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`,
+                                background: '#fff', color: C.blue, fontSize: 11,
+                                cursor: 'pointer', fontFamily: C.font,
+                              }}>改口令</button>
+                            </div>
+                            {cmd.type === 'show' && (
+                              <div style={{
+                                fontSize: 10, color: '#9CA3AF', lineHeight: 1.6,
+                                marginTop: 6, padding: '4px 0',
+                              }}>
+                                💡 {'{N} 自动替换成商品链接号。口令是模糊匹配，「看看」和「上身效果」之间的文字可以自由修改'}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1830,21 +1857,33 @@ function UnifiedBanboPanel({
                         <span style={{ fontSize: 14 }}>{cfg.icon}</span>
                         <span style={{ fontSize: 11, fontWeight: 600, color: C.text }}>{cfg.label}</span>
                         {isEditing ? (
-                          <>
-                            <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
-                              style={{
-                                flex: 1, height: 26, padding: '0 8px', borderRadius: 4,
-                                border: `1px solid ${C.blue}`, fontSize: 11, fontFamily: C.font,
-                                outline: 'none',
-                              }} autoFocus />
-                            <button onClick={() => {
-                              setCommands(prev => prev.map(c => c.id === cmd.id ? { ...c, customPhrase: cmdEditValue } : c))
-                              setEditingCmdId(null)
-                            }} style={{
-                              padding: '2px 8px', borderRadius: 4, border: 'none',
-                              background: C.blue, color: '#fff', fontSize: 10, fontFamily: C.font, cursor: 'pointer',
-                            }}>保存</button>
-                          </>
+                          <div style={{ flex: 1 }}>
+                            {cmd.type === 'show' && (
+                              <div style={{
+                                fontSize: 9, color: '#6B7280', lineHeight: 1.6,
+                                marginBottom: 4, padding: '4px 6px', borderRadius: 4,
+                                background: '#F0F4FF', border: '1px solid #D6E4FF',
+                              }}>
+                                ✏️ 必须包含「{'{N}号链接」，其他随意。模糊匹配，不需一字不差'}
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
+                                placeholder={cmd.type === 'show' ? '例：看看{N}号链接穿上身的效果' : ''}
+                                style={{
+                                  flex: 1, height: 26, padding: '0 8px', borderRadius: 4,
+                                  border: `1px solid ${C.blue}`, fontSize: 11, fontFamily: C.font,
+                                  outline: 'none',
+                                }} autoFocus />
+                              <button onClick={() => {
+                                setCommands(prev => prev.map(c => c.id === cmd.id ? { ...c, customPhrase: cmdEditValue } : c))
+                                setEditingCmdId(null)
+                              }} style={{
+                                padding: '2px 8px', borderRadius: 4, border: 'none',
+                                background: C.blue, color: '#fff', fontSize: 10, fontFamily: C.font, cursor: 'pointer',
+                              }}>保存</button>
+                            </div>
+                          </div>
                         ) : (
                           <>
                             <span style={{ fontSize: 11, fontWeight: 500, color: C.text, flex: 1 }}>「{displayPhrase}」</span>
@@ -1860,6 +1899,13 @@ function UnifiedBanboPanel({
                       </div>
                     )
                   })}
+                  {/* N号链接规则说明 */}
+                  <div style={{
+                    marginTop: 6, fontSize: 10, color: '#9CA3AF', lineHeight: 1.6,
+                    padding: '4px 0',
+                  }}>
+                    💡 {'{N} 自动替换成商品链接号。口令是模糊匹配，「看看」和「上身效果」之间的文字可以自由修改'}
+                  </div>
                   {/* 异常提示规则 */}
                   <div style={{
                     marginTop: 8, padding: '8px 10px', borderRadius: 6,
