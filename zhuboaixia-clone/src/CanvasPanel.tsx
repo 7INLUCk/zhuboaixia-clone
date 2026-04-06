@@ -2381,10 +2381,7 @@ function AutoChatContent() {
   const [specialNote, setSpecialNote] = useState('')
   const [frequency, setFrequency] = useState<'high' | 'mid' | 'low'>('high')
   const [fixedChatEnabled, setFixedChatEnabled] = useState(false)
-  const [fixedChats, setFixedChats] = useState<FixedChat[]>([
-    { id: 'f1', trigger: '库存没有了', response: '没有了哦', outfitId: null, actionId: null },
-    { id: 'f2', trigger: '全场保价，退换货，倒数54321', response: '主播身上这件黑色羽绒服，白鹅绒填充！', outfitId: 'o1', actionId: 'a3' },
-  ])
+  const [fixedChats, setFixedChats] = useState<FixedChat[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
 
   const addFixedChat = () => {
@@ -2547,6 +2544,15 @@ function AutoChatContent() {
                   }}>+ 新增固定搭话</button>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {fixedChats.length === 0 && (
+                      <div style={{
+                        padding: '12px', borderRadius: 6,
+                        border: `1px dashed ${C.border}`, background: '#FAFAFA',
+                        textAlign: 'center', fontSize: 11, color: C.textTert,
+                      }}>
+                        还没有搭话规则？点击上方「+ 新增固定搭话」添加一条试试
+                      </div>
+                    )}
                     {fixedChats.map(chat => {
                       const actions = getOutfitActions(chat.outfitId)
                       return (
@@ -2558,7 +2564,7 @@ function AutoChatContent() {
                             <>
                               <div style={{ fontSize: 9, color: C.textTert, marginBottom: 3 }}>触发词</div>
                               <input value={chat.trigger} onChange={e => updateFixedChat(chat.id, 'trigger', e.target.value)}
-                                placeholder="例：库存没有了"
+                                placeholder="例：主播问到价格时"
                                 style={{
                                   width: '100%', height: 24, padding: '0 6px', borderRadius: 4,
                                   border: `1px solid ${chat.trigger.trim() ? C.border : C.red}`,
@@ -2566,7 +2572,7 @@ function AutoChatContent() {
                                 }} />
                               <div style={{ fontSize: 9, color: C.textTert, marginBottom: 3 }}>回复内容</div>
                               <input value={chat.response} onChange={e => updateFixedChat(chat.id, 'response', e.target.value)}
-                                placeholder="例：没有了哦"
+                                placeholder="例：对！这款碎花裙 129 元很划算～"
                                 style={{
                                   width: '100%', height: 24, padding: '0 6px', borderRadius: 4,
                                   border: `1px solid ${chat.response.trim() ? C.border : C.red}`,

@@ -333,3 +333,24 @@ python3 send_image.py --image photo.jpg --chat-id "ou_xxx" --agent miijia
 ### 最终方案
 - 搭话优先：口令命中搭话 → 执行搭话，跳过动作
 - 简单确定性行为，无需 UI 警告
+
+## 2026-04-06 12:16 - 嵌套 onClick 事件冒泡导致子级点击无效
+
+### 问题
+时间轴区块 onClick 设了 previewStateId，但点击后预览不切换。
+- 子级 onClick：`setPreviewStateId(stateId)` 
+- 父级 onClick：`setPreviewStateId(null)` ← 事件冒泡后执行，把刚设的值清掉
+
+### 根因
+子级 onClick 触发 → 事件冒泡到父级 → 父级 onClick 也执行 → 覆盖子级结果
+
+### 正确解法
+子级 onClick 加 `e.stopPropagation()` 阻止冒泡：
+```tsx
+<div onClick={(e) => { e.stopPropagation(); handleClick(id) }}>
+```
+
+### 防复发
+- 嵌套 onClick 结构中，子级必须 stopPropagation
+- 点击"没反应"但代码逻辑正确 → 先检查事件冒泡
+- 这是第 2 次遇到此问题（第一次在其他项目），需记牢
