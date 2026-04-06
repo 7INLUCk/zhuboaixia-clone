@@ -3560,3 +3560,4 @@ export default function CanvasPanel({ onClose }: Props) {
     </>
   )
 }
+// v2-guide-fix
