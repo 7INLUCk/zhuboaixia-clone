@@ -1267,6 +1267,7 @@ function UnifiedBanboPanel({
   const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({ 1: true })
   const [step2Confirmed, setStep2Confirmed] = useState(false)
   const [step2Ready, setStep2Ready] = useState(false) // Step 2 待用户确认
+  const [editingChatRuleId, setEditingChatRuleId] = useState<string | null>(null)
 
   // 切换商品时重置状态
   useEffect(() => {
@@ -1274,6 +1275,7 @@ function UnifiedBanboPanel({
     setStep2Confirmed(false)
     setStep2Ready(false)
     setEnabledActions({})
+    setEditingChatRuleId(null)
   }, [selectedProductId])
 
   // 绑模特后 → Step 2 待确认
@@ -1826,15 +1828,78 @@ function UnifiedBanboPanel({
                         {chatEnabled && (
                           <div>
                             {chatRules.length > 0 ? chatRules.map(rule => (
-                              <div key={rule.id} style={{
-                                display: 'flex', alignItems: 'center', gap: 6,
-                                padding: '6px 8px', borderRadius: 6, background: '#fff',
-                                border: `1px solid ${C.border}`, marginBottom: 4, fontSize: 10,
-                              }}>
-                                <span style={{ color: C.orange, fontWeight: 600, whiteSpace: 'nowrap' }}>「{rule.trigger}」</span>
-                                <span style={{ color: C.textTert }}>→</span>
-                                <span style={{ color: C.text, flex: 1 }}>{rule.response}</span>
-                              </div>
+                              editingChatRuleId === rule.id ? (
+                                // 编辑态
+                                <div key={rule.id} style={{
+                                  padding: '8px', borderRadius: 6, background: '#fff',
+                                  border: `1px solid ${C.blue}`, marginBottom: 4,
+                                }}>
+                                  <div style={{ fontSize: 9, color: C.textTert, marginBottom: 3 }}>触发词（主播说了什么）</div>
+                                  <input value={rule.trigger} onChange={e => {
+                                    setProducts(prev => prev.map(p =>
+                                      p.id === selectedProductId ? { ...p, chatRules: p.chatRules.map(r => r.id === rule.id ? { ...r, trigger: e.target.value } : r) } : p
+                                    ))
+                                  }} placeholder="例：多少钱" style={{
+                                    width: '100%', height: 26, padding: '0 6px', borderRadius: 4,
+                                    border: `1px solid ${rule.trigger.trim() ? C.border : C.red}`,
+                                    fontSize: 11, fontFamily: C.font, outline: 'none', boxSizing: 'border-box', marginBottom: 6,
+                                  }} />
+                                  <div style={{ fontSize: 9, color: C.textTert, marginBottom: 3 }}>回复内容（伴播说什么）</div>
+                                  <input value={rule.response} onChange={e => {
+                                    setProducts(prev => prev.map(p =>
+                                      p.id === selectedProductId ? { ...p, chatRules: p.chatRules.map(r => r.id === rule.id ? { ...r, response: e.target.value } : r) } : p
+                                    ))
+                                  }} placeholder="例：这款碎花裙 129 元哦～" style={{
+                                    width: '100%', height: 26, padding: '0 6px', borderRadius: 4,
+                                    border: `1px solid ${rule.response.trim() ? C.border : C.red}`,
+                                    fontSize: 11, fontFamily: C.font, outline: 'none', boxSizing: 'border-box', marginBottom: 6,
+                                  }} />
+                                  <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                                    <button onClick={() => {
+                                      // 取消：如果 trigger 和 response 都为空，删除这条规则
+                                      if (!rule.trigger.trim() && !rule.response.trim()) {
+                                        setProducts(prev => prev.map(p =>
+                                          p.id === selectedProductId ? { ...p, chatRules: p.chatRules.filter(r => r.id !== rule.id) } : p
+                                        ))
+                                      }
+                                      setEditingChatRuleId(null)
+                                    }} style={{
+                                      padding: '3px 10px', borderRadius: 4, border: `1px solid ${C.border}`,
+                                      background: C.card, color: C.textSec, fontSize: 10, cursor: 'pointer', fontFamily: C.font,
+                                    }}>取消</button>
+                                    {rule.trigger.trim() && rule.response.trim() && (
+                                      <button onClick={() => setEditingChatRuleId(null)} style={{
+                                        padding: '3px 10px', borderRadius: 4, border: 'none',
+                                        background: C.blue, color: '#fff', fontSize: 10, cursor: 'pointer', fontFamily: C.font,
+                                      }}>完成</button>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                // 展示态
+                                <div key={rule.id} onClick={() => setEditingChatRuleId(rule.id)} style={{
+                                  display: 'flex', alignItems: 'center', gap: 6,
+                                  padding: '6px 8px', borderRadius: 6, background: '#fff',
+                                  border: `1px solid ${C.border}`, marginBottom: 4, fontSize: 10,
+                                  cursor: 'pointer', transition: 'border-color 0.15s',
+                                }}
+                                  onMouseEnter={e => (e.currentTarget.style.borderColor = C.blue)}
+                                  onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
+                                >
+                                  <span style={{ color: C.orange, fontWeight: 600, whiteSpace: 'nowrap' }}>「{rule.trigger || '未填写'}」</span>
+                                  <span style={{ color: C.textTert }}>→</span>
+                                  <span style={{ color: C.text, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rule.response || '未填写'}</span>
+                                  <button onClick={(e) => {
+                                    e.stopPropagation()
+                                    setProducts(prev => prev.map(p =>
+                                      p.id === selectedProductId ? { ...p, chatRules: p.chatRules.filter(r => r.id !== rule.id) } : p
+                                    ))
+                                  }} style={{
+                                    padding: '1px 5px', borderRadius: 3, border: 'none',
+                                    background: 'transparent', color: C.red, fontSize: 9, cursor: 'pointer', fontFamily: C.font,
+                                  }}>✕</button>
+                                </div>
+                              )
                             )) : (
                               <div style={{ fontSize: 10, color: C.textSec, textAlign: 'center', padding: '6px 0' }}>
                                 暂无搭话规则
@@ -1846,6 +1911,7 @@ function UnifiedBanboPanel({
                               setProducts(prev => prev.map(p =>
                                 p.id === selectedProductId ? { ...p, chatRules: [...p.chatRules, newRule] } : p
                               ))
+                              setEditingChatRuleId(newRule.id)
                             }} style={{
                               width: '100%', padding: '5px 0', borderRadius: 6,
                               border: `1px dashed ${C.blue}`, background: 'rgba(51,112,255,0.05)',
