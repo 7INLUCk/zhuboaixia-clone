@@ -1,29 +1,25 @@
 # 当前任务状态
 
-## 任务：搭话能力分层设计 — 已完成，待 Boss 验收
+## 任务：绿幕抠图全面修复 — 已部署，待 Boss 验收
 
-### 状态：已部署，等 Boss 验收
-- **开始时间**：2026-04-06 01:08
-- **完成时间**：2026-04-06 01:20
-- **已部署**：miaobo-b.pages.dev (commit e570b06)
+### 已完成
+1. ✅ 3 张静态图预抠图（av1/av2/av6 PNG，Qwen Vision 验证通过）
+   - av1 篮球小子-蓝：HSV 形态学 → ✅
+   - av2 篮球小子-红：HSV + despill 去溢色 → ✅
+   - av6 榴莲宝贝3D：HSV 形态学 → ✅
+2. ✅ ChromaKeyVideo 组件（浏览器端 requestAnimationFrame 逐帧 canvas 抠绿幕）
+3. ✅ 5 个视频使用 ChromaKeyVideo 组件展示（av1_idle, av5_idle, av5_event, av6_idle, av6_event）
+4. ✅ av1/av2/av6 预览图切换到预抠图 PNG
+5. ✅ 部署 miaobo-b.pages.dev (commit d5f31e0)
+6. ✅ 飞书卡片汇报
 
-### 已完成清单
-1. ✅ 设计方案确认（能力徽标 + 渐进揭示 + 搭话优先）
-2. ✅ 口令冲突方案确认（搭话优先，不可合并执行）
-3. ✅ AVATAR_LIBRARY 扩展 voiceTier 字段
-4. ✅ Step 1 形象卡片添加能力徽标
-5. ✅ Step 3 新增搭话能力区块（premium）+ 搭话提示（standard）
-6. ✅ ProductItem 扩展 chatRules/chatEnabled
-7. ✅ 部署验证通过
+### 技术要点
+- Coze 生成的绿幕偏黄绿，需要更宽泛的 HSV 范围（H:35-85, S:40+, V:40+）
+- ffmpeg libvpx-vp9 虽然列出 yuva420p 为 supported pixel formats，但实际编码输出 yuv420p（丢弃 alpha）
+- 所以改用浏览器端 canvas 逐帧处理视频绿幕
+- despill：边缘区域 G 通道钳制到 min(R,B)*1.02+3
 
-### Git 记录
-- Commit: e570b06 (feat: voice tier design - 搭话能力分层 + 搭话优先策略)
-
-### 待继续
-- AutoChatPanel（独立面板）standard 灰显逻辑未更新（有独立路由）
-- Boss 验收后可能有调整
-
-### 待继续
-- 智能搭话逻辑尚未展开（Boss 提到但先不讲）
-- Boss 说"下个规划再继续"，本次会话结束
-- 重新开新会话时：读 MEMORY.md + memory/2026-04-06.md 即可恢复上下文
+### 待 Boss 确认
+- 静态图抠图效果
+- 视频绿幕实时处理效果
+- 如有问题请截图反馈
