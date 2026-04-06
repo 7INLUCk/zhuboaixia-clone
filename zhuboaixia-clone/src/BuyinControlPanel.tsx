@@ -193,10 +193,7 @@ export default function BuyinControlPanel({ onClose, onContinueConfig }: Props) 
   const [specialNote, setSpecialNote] = useState('')
   const [chatFrequency, setChatFrequency] = useState<'high' | 'mid' | 'low'>('high')
   const [fixedChatEnabled, setFixedChatEnabled] = useState(false)
-  const [fixedChats, setFixedChats] = useState<FixedChat[]>([
-    { id: 'f1', trigger: '库存没有了', response: '没有了哦', outfitId: null, actionId: null },
-    { id: 'f2', trigger: '全场保价，退换货，倒数54321', response: '主播身上这件黑色羽绒服，白鹅绒填充！', outfitId: 'o1', actionId: 'a3' },
-  ])
+  const [fixedChats, setFixedChats] = useState<FixedChat[]>([])
   const [editingChatId, setEditingChatId] = useState<string | null>(null)
 
   // 声控切屏状态
@@ -503,9 +500,9 @@ export default function BuyinControlPanel({ onClose, onContinueConfig }: Props) 
                                 {editingChatId === chat.id ? (
                                   <>
                                     <div style={{ fontSize: 10, color: C.textTert, marginBottom: 4 }}>触发词</div>
-                                    <input value={chat.trigger} onChange={e => updateFixedChat(chat.id, 'trigger', e.target.value)} placeholder="例：库存没有了" style={{ width: '100%', height: 28, padding: '0 8px', borderRadius: 6, border: `1px solid ${chat.trigger.trim() ? C.border : C.red}`, fontSize: 12, fontFamily: f, outline: 'none', boxSizing: 'border-box', marginBottom: 6 }} />
+                                    <input value={chat.trigger} onChange={e => updateFixedChat(chat.id, 'trigger', e.target.value)} placeholder="例：主播问到价格时" style={{ width: '100%', height: 28, padding: '0 8px', borderRadius: 6, border: `1px solid ${chat.trigger.trim() ? C.border : C.red}`, fontSize: 12, fontFamily: f, outline: 'none', boxSizing: 'border-box', marginBottom: 6 }} />
                                     <div style={{ fontSize: 10, color: C.textTert, marginBottom: 4 }}>回复内容</div>
-                                    <input value={chat.response} onChange={e => updateFixedChat(chat.id, 'response', e.target.value)} placeholder="例：没有了哦" style={{ width: '100%', height: 28, padding: '0 8px', borderRadius: 6, border: `1px solid ${chat.response.trim() ? C.border : C.red}`, fontSize: 12, fontFamily: f, outline: 'none', boxSizing: 'border-box', marginBottom: 6 }} />
+                                    <input value={chat.response} onChange={e => updateFixedChat(chat.id, 'response', e.target.value)} placeholder="例：对！这款碎花裙 129 元很划算～" style={{ width: '100%', height: 28, padding: '0 8px', borderRadius: 6, border: `1px solid ${chat.response.trim() ? C.border : C.red}`, fontSize: 12, fontFamily: f, outline: 'none', boxSizing: 'border-box', marginBottom: 6 }} />
                                     <div style={{ fontSize: 10, color: C.textTert, marginBottom: 4 }}>切换造型</div>
                                     <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
                                       <button onClick={() => updateFixedChat(chat.id, 'outfitId', null)} style={{ padding: '4px 10px', borderRadius: 6, border: chat.outfitId === null ? `1px solid ${C.blue}` : `1px solid ${C.border}`, background: chat.outfitId === null ? C.blueLight : C.card, color: chat.outfitId === null ? C.blue : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: f }}>不切换</button>
