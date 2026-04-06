@@ -560,222 +560,252 @@ function TimelineLeftBar({
         </div>
       </div>
 
-      {/* 形象视频预览区 */}
+      {/* 形象视频预览区 — 所有商品均展示 */}
       <div ref={previewAreaRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', minHeight: 0, scrollSnapType: 'y mandatory' }}>
-        {boundAvatars.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {boundAvatars.map(({ product, avatar, normalStates, eventActions }) => {
-              const isSelected = selectedProductId === product.id
-              const normalDuration = normalStates.reduce((sum, s) => sum + s.duration, 0)
-              const eventDuration = eventActions.length > 0 ? eventActions[0].duration : 0
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {products.map(product => {
+            const isSelected = selectedProductId === product.id
+            const avatar = product.boundAvatarId ? AVATAR_LIBRARY.find(a => a.id === product.boundAvatarId) : null
+            const normalStates = avatar ? (NORMAL_STATES[avatar.id] || DEFAULT_STATES) : []
+            const eventActions = avatar ? (EVENT_ACTIONS[avatar.id] || DEFAULT_EVENT_ACTIONS) : []
+
+            // 未配置形象 → 空态引导卡片
+            if (!avatar) {
               return (
-                <div key={avatar.id} ref={el => { previewCardRefs.current[product.id] = el }} onClick={() => handleSelectProduct(product.id)} style={{
-                  background: isSelected ? 'rgba(96,165,250,0.12)' : 'rgba(255,255,255,0.05)',
+                <div key={product.id} ref={el => { previewCardRefs.current[product.id] = el }} onClick={() => handleSelectProduct(product.id)} style={{
+                  background: isSelected ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
                   borderRadius: 8,
-                  padding: 8,
-                  border: isSelected ? '2px solid rgba(96,165,250,0.6)' : '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: isSelected ? '0 0 12px rgba(96,165,250,0.2)' : 'none',
+                  padding: 12,
+                  border: isSelected ? '2px dashed rgba(96,165,250,0.5)' : '1px dashed rgba(255,255,255,0.12)',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
+                  scrollSnapAlign: 'start',
                 }}>
-                  {/* 形象名 + 商品 */}
+                  {/* 商品信息 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <span style={{
+                      fontSize: 8, padding: '1px 4px', borderRadius: 2,
+                      background: isSelected ? 'rgba(96,165,250,0.2)' : 'rgba(255,255,255,0.1)',
+                      color: isSelected ? '#93BBFC' : 'rgba(255,255,255,0.6)',
+                      flexShrink: 0,
+                    }}>{product.linkNum}号</span>
+                    <span style={{
+                      fontSize: 10, fontWeight: 600, color: isSelected ? '#fff' : 'rgba(255,255,255,0.7)',
+                      flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{product.name}</span>
+                    <span style={{
+                      fontSize: 8, padding: '1px 5px', borderRadius: 3, flexShrink: 0,
+                      background: 'rgba(239,68,68,0.2)', color: '#EF4444', fontWeight: 600,
+                    }}>未配</span>
+                  </div>
+                  {/* 空态占位 */}
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    padding: '16px 0', gap: 8,
                   }}>
                     <div style={{
-                      width: 24, height: 24, borderRadius: '50%', overflow: 'hidden',
-                      border: '1.5px solid rgba(255,255,255,0.2)', flexShrink: 0,
-                      background: '#333',
-                    }}>
-                      <ChromaKeyImage src={avatar.preview} alt={avatar.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                      width: 48, height: 48, borderRadius: '50%',
+                      border: '2px dashed rgba(255,255,255,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 22,
+                    }}>🎭</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+                      还没有配置伴播模特
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 11, fontWeight: 600, color: '#fff',
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>{avatar.name}</div>
-                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.45)' }}>
-                        {product.linkNum}号 · {product.name}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 常规态视频预览 */}
-                  <div style={{
-                    width: '100%', aspectRatio: '9/16', maxHeight: 220,
-                    borderRadius: 6, overflow: 'hidden',
-                    background: '#FFFFFF', marginBottom: 4,
-                    position: 'relative',
-                  }}>
-                    {(() => {
-                      // 找到当前要播放的视频 URL
-                      let currentVideoUrl: string | undefined
-                      if (previewEventId) {
-                        const ev = eventActions.find(e => e.id === previewEventId)
-                        currentVideoUrl = ev?.videoUrl
-                      } else if (previewStateId) {
-                        const st = normalStates.find(s => s.id === previewStateId)
-                        currentVideoUrl = st?.videoUrl || normalStates.find(s => s.videoUrl)?.videoUrl
-                      }
-                      // 如果没有指定，找第一个有视频的常态
-                      if (!currentVideoUrl && !previewStateId && !previewEventId) {
-                        const firstVideo = normalStates.find(s => s.videoUrl)
-                        currentVideoUrl = firstVideo?.videoUrl
-                      }
-
-                      if (currentVideoUrl) {
-                        return (
-                          <ChromaKeyVideo
-                            src={currentVideoUrl}
-                            autoPlay
-                            loop={!previewEventId}
-                            muted
-                            playsInline
-                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                            onEnded={() => {
-                              if (previewEventId) setPreviewEventId(null)
-                            }}
-                          />
-                        )
-                      }
-                      return (
-                        <div style={{
-                          width: '100%', height: '100%',
-                          display: 'flex', flexDirection: 'column',
-                          alignItems: 'center', justifyContent: 'center', gap: 4,
-                        }}>
-                          <ChromaKeyImage src={avatar.preview} alt={avatar.name}
-                            style={{ width: '100%', height: '100%', objectFit: 'contain' }} draggable={false} />
-                        </div>
-                      )
-                    })()}
-                    {/* 状态标签 */}
-                    <div style={{
-                      position: 'absolute', top: 6, left: 6,
-                      display: 'flex', gap: 4,
-                    }}>
-                      <span style={{
-                        fontSize: 9, padding: '2px 6px', borderRadius: 3,
-                        background: banboEnabled ? 'rgba(16,185,129,0.8)' : 'rgba(255,255,255,0.15)',
-                        color: '#fff', fontWeight: 600,
-                      }}>{banboEnabled ? 'LIVE' : '待开启'}</span>
-                    </div>
-                  </div>
-
-                  {/* 分区时间轴 */}
-                  <div style={{ marginTop: 4 }}>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3,
-                    }}>
-                      <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>
-                        {previewEventId ? '🎬 事件播放中' : '🎭 直播时自动展示 · 点击预览'}
-                      </span>
-                      <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{normalDuration}s 一轮</span>
-                    </div>
-                    {/* 常态分区块：按动作切分，可点击 */}
-                    <div style={{
-                      display: 'flex', gap: 2, height: 20, borderRadius: 4,
-                      overflow: 'hidden',
-                    }}>
-                      {normalStates.map(st => {
-                        const isActive = previewStateId === st.id && !previewEventId
-                        const isDimmed = previewEventId !== null // 事件态播放时默认态变暗
-                        return (
-                          <div key={st.id} onClick={(e) => { e.stopPropagation(); handleTimelineBlockClick(st.id) }} style={{
-                            flex: st.duration,
-                            height: '100%',
-                            borderRadius: 2,
-                            cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            gap: 2,
-                            background: isActive
-                              ? 'rgba(96,165,250,0.7)'
-                              : 'rgba(96,165,250,0.15)',
-                            opacity: isDimmed ? 0.3 : 1,
-                            boxShadow: isActive ? '0 0 6px rgba(96,165,250,0.5)' : 'none',
-                            transition: 'all 0.2s',
-                            border: isActive ? '2px solid #60A5FA' : '1px solid rgba(255,255,255,0.06)',
-                            position: 'relative',
-                          }}>
-                            {isActive && <div style={{
-                              position: 'absolute', top: -1, left: '10%', right: '10%',
-                              height: 2, borderRadius: 1, background: '#60A5FA',
-                            }} />}
-                            <span style={{ fontSize: 8 }}>{st.icon}</span>
-                            <span style={{
-                              fontSize: 7, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
-                              fontWeight: isActive ? 600 : 400,
-                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                            }}>{st.label}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    {/* 事件态分区块 */}
-                    {eventActions.length > 0 && (
-                      <>
-                        <div style={{
-                          display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, marginBottom: 3,
-                        }}>
-                          <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>🎤 主播说口令触发 · 点击预览</span>
-                        </div>
-                        <div style={{
-                          display: 'flex', gap: 2, height: 18, borderRadius: 4,
-                          overflow: 'hidden',
-                        }}>
-                          {eventActions.map(ev => {
-                            const isActive = previewEventId === ev.id
-                            return (
-                              <div key={ev.id} onClick={(e) => { e.stopPropagation(); handleEventBlockClick(ev.id) }} style={{
-                                flex: ev.duration,
-                                height: '100%',
-                                borderRadius: 2,
-                                cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                gap: 2,
-                                background: isActive
-                                  ? 'rgba(245,158,11,0.7)'
-                                  : 'rgba(245,158,11,0.15)',
-                                boxShadow: isActive ? '0 0 6px rgba(245,158,11,0.5)' : 'none',
-                                transition: 'all 0.2s',
-                                border: isActive ? '2px solid #F59E0B' : '1px solid rgba(255,255,255,0.06)',
-                                position: 'relative',
-                              }}>
-                                {isActive && <div style={{
-                                  position: 'absolute', top: -1, left: '10%', right: '10%',
-                                  height: 2, borderRadius: 1, background: '#F59E0B',
-                                }} />}
-                                <span style={{ fontSize: 7 }}>🎬</span>
-                                <span style={{
-                                  fontSize: 7, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
-                                  fontWeight: isActive ? 600 : 400,
-                                }}>{ev.label}</span>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </>
-                    )}
                   </div>
                 </div>
               )
-            })}
-          </div>
-        ) : (
-          <div style={{
-            padding: '32px 16px', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 32, marginBottom: 10 }}>🎭</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 6 }}>
-              暂无伴播形象
-            </div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
-              在右侧「形象配置」中<br />为商品添加伴播形象
-            </div>
-          </div>
-        )}
+            }
+
+            // 已配置形象 → 视频预览卡片（原有逻辑）
+            const normalDuration = normalStates.reduce((sum: number, s: any) => sum + s.duration, 0)
+            return (
+              <div key={product.id} ref={el => { previewCardRefs.current[product.id] = el }} onClick={() => handleSelectProduct(product.id)} style={{
+                background: isSelected ? 'rgba(96,165,250,0.12)' : 'rgba(255,255,255,0.05)',
+                borderRadius: 8,
+                padding: 8,
+                border: isSelected ? '2px solid rgba(96,165,250,0.6)' : '1px solid rgba(255,255,255,0.08)',
+                boxShadow: isSelected ? '0 0 12px rgba(96,165,250,0.2)' : 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                scrollSnapAlign: 'start',
+              }}>
+                {/* 形象名 + 商品 */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6,
+                }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '50%', overflow: 'hidden',
+                    border: '1.5px solid rgba(255,255,255,0.2)', flexShrink: 0,
+                    background: '#333',
+                  }}>
+                    <ChromaKeyImage src={avatar.preview} alt={avatar.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 11, fontWeight: 600, color: '#fff',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{avatar.name}</div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.45)' }}>
+                      {product.linkNum}号 · {product.name}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 常规态视频预览 */}
+                <div style={{
+                  width: '100%', aspectRatio: '9/16', maxHeight: 220,
+                  borderRadius: 6, overflow: 'hidden',
+                  background: '#FFFFFF', marginBottom: 4,
+                  position: 'relative',
+                }}>
+                  {(() => {
+                    let currentVideoUrl: string | undefined
+                    if (previewEventId) {
+                      const ev = eventActions.find((e: any) => e.id === previewEventId)
+                      currentVideoUrl = ev?.videoUrl
+                    } else if (previewStateId) {
+                      const st = normalStates.find((s: any) => s.id === previewStateId)
+                      currentVideoUrl = st?.videoUrl || normalStates.find((s: any) => s.videoUrl)?.videoUrl
+                    }
+                    if (!currentVideoUrl && !previewStateId && !previewEventId) {
+                      const firstVideo = normalStates.find((s: any) => s.videoUrl)
+                      currentVideoUrl = firstVideo?.videoUrl
+                    }
+
+                    if (currentVideoUrl) {
+                      return (
+                        <ChromaKeyVideo
+                          src={currentVideoUrl}
+                          autoPlay
+                          loop={!previewEventId}
+                          muted
+                          playsInline
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          onEnded={() => {
+                            if (previewEventId) setPreviewEventId(null)
+                          }}
+                        />
+                      )
+                    }
+                    return (
+                      <div style={{
+                        width: '100%', height: '100%',
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center', gap: 4,
+                      }}>
+                        <ChromaKeyImage src={avatar.preview} alt={avatar.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }} draggable={false} />
+                      </div>
+                    )
+                  })()}
+                  <div style={{
+                    position: 'absolute', top: 6, left: 6,
+                    display: 'flex', gap: 4,
+                  }}>
+                    <span style={{
+                      fontSize: 9, padding: '2px 6px', borderRadius: 3,
+                      background: banboEnabled ? 'rgba(16,185,129,0.8)' : 'rgba(255,255,255,0.15)',
+                      color: '#fff', fontWeight: 600,
+                    }}>{banboEnabled ? 'LIVE' : '待开启'}</span>
+                  </div>
+                </div>
+
+                {/* 分区时间轴 */}
+                <div style={{ marginTop: 4 }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3,
+                  }}>
+                    <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>
+                      {previewEventId ? '🎬 事件播放中' : '🎭 直播时自动展示 · 点击预览'}
+                    </span>
+                    <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{normalDuration}s 一轮</span>
+                  </div>
+                  <div style={{
+                    display: 'flex', gap: 2, height: 20, borderRadius: 4,
+                    overflow: 'hidden',
+                  }}>
+                    {normalStates.map((st: any) => {
+                      const isActive = previewStateId === st.id && !previewEventId
+                      const isDimmed = previewEventId !== null
+                      return (
+                        <div key={st.id} onClick={(e) => { e.stopPropagation(); handleTimelineBlockClick(st.id) }} style={{
+                          flex: st.duration,
+                          height: '100%',
+                          borderRadius: 2,
+                          cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          gap: 2,
+                          background: isActive ? 'rgba(96,165,250,0.7)' : 'rgba(96,165,250,0.15)',
+                          opacity: isDimmed ? 0.3 : 1,
+                          boxShadow: isActive ? '0 0 6px rgba(96,165,250,0.5)' : 'none',
+                          transition: 'all 0.2s',
+                          border: isActive ? '2px solid #60A5FA' : '1px solid rgba(255,255,255,0.06)',
+                          position: 'relative',
+                        }}>
+                          {isActive && <div style={{
+                            position: 'absolute', top: -1, left: '10%', right: '10%',
+                            height: 2, borderRadius: 1, background: '#60A5FA',
+                          }} />}
+                          <span style={{ fontSize: 8 }}>{st.icon}</span>
+                          <span style={{
+                            fontSize: 7, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
+                            fontWeight: isActive ? 600 : 400,
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          }}>{st.label}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {eventActions.length > 0 && (
+                    <>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, marginBottom: 3,
+                      }}>
+                        <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>🎤 主播说口令触发 · 点击预览</span>
+                      </div>
+                      <div style={{
+                        display: 'flex', gap: 2, height: 18, borderRadius: 4,
+                        overflow: 'hidden',
+                      }}>
+                        {eventActions.map((ev: any) => {
+                          const isActive = previewEventId === ev.id
+                          return (
+                            <div key={ev.id} onClick={(e) => { e.stopPropagation(); handleEventBlockClick(ev.id) }} style={{
+                              flex: ev.duration,
+                              height: '100%',
+                              borderRadius: 2,
+                              cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              gap: 2,
+                              background: isActive ? 'rgba(245,158,11,0.7)' : 'rgba(245,158,11,0.15)',
+                              boxShadow: isActive ? '0 0 6px rgba(245,158,11,0.5)' : 'none',
+                              transition: 'all 0.2s',
+                              border: isActive ? '2px solid #F59E0B' : '1px solid rgba(255,255,255,0.06)',
+                              position: 'relative',
+                            }}>
+                              {isActive && <div style={{
+                                position: 'absolute', top: -1, left: '10%', right: '10%',
+                                height: 2, borderRadius: 1, background: '#F59E0B',
+                              }} />}
+                              <span style={{ fontSize: 7 }}>🎬</span>
+                              <span style={{
+                                fontSize: 7, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
+                                fontWeight: isActive ? 600 : 400,
+                              }}>{ev.label}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* 底部：开启伴播按钮 */}
