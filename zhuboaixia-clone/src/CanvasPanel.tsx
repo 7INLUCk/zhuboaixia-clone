@@ -3507,9 +3507,7 @@ export default function CanvasPanel({ onClose }: Props) {
   const [previewEventId, setPreviewEventId] = useState<string | null>(null)
 
   // 改动二：引导向导面板（首次进入伴播 Tab 时显示）
-  const [showBanboGuide, setShowBanboGuide] = useState(() => {
-    return !localStorage.getItem('banbo_guide_dismissed')
-  })
+  const [showBanboGuide, setShowBanboGuide] = useState(true)
 
   return (
     <>
@@ -3577,7 +3575,7 @@ export default function CanvasPanel({ onClose }: Props) {
                 <div><div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第四步</div><div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>一键投到抖音直播伴侣</div></div>
               </div>
             </div>
-            <button onClick={() => { setShowBanboGuide(false); localStorage.setItem('banbo_guide_dismissed', '1') }} style={{
+            <button onClick={() => setShowBanboGuide(false)} style={{
               padding: '12px 36px', borderRadius: 8, border: 'none',
               background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
               color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font,
