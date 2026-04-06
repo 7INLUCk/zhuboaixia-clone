@@ -354,3 +354,15 @@ python3 send_image.py --image photo.jpg --chat-id "ou_xxx" --agent miijia
 - 嵌套 onClick 结构中，子级必须 stopPropagation
 - 点击"没反应"但代码逻辑正确 → 先检查事件冒泡
 - 这是第 2 次遇到此问题（第一次在其他项目），需记牢
+
+## 2026-04-06 12:18 - 改了 AutoChatPanel 但其他 3 个面板没改（遗漏）
+
+### 问题
+清空预设问答只改了 AutoChatPanel.tsx，但 CanvasPanel / BuyinControlPanel / ConfigPanel 三个文件也有完全相同的预设数据。
+
+### 根因
+同一个 fixedChats 组件被复制到 4 个文件中，只改了 1 个。
+
+### 防复发
+- 改公共模式前先 grep 确认所有出现位置
+- 用 `grep -rn "关键词" src/` 一次性找出所有副本

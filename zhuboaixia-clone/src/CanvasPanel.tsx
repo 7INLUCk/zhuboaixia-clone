@@ -313,11 +313,11 @@ const NORMAL_STATES: Record<string, NormalState[]> = {
   ],
   av5: [
     { id: 'ns1', label: '转圈圈', icon: '🌀', duration: 8, videoUrl: '/avatars/generated/av5_idle.mp4' },
-    { id: 'ns2', label: '摆裙摆', icon: '👗', duration: 7 },
-    { id: 'ns3', label: '挥挥手', icon: '👋', duration: 6 },
-    { id: 'ns4', label: '蹦蹦跳', icon: '🐰', duration: 5 },
-    { id: 'ns5', label: '比心', icon: '💕', duration: 6 },
-    { id: 'ns6', label: '歪头', icon: '🤔', duration: 5 },
+    { id: 'ns2', label: '摆裙摆', icon: '👗', duration: 7, videoUrl: '/avatars/generated/av5_ns2.mp4' },
+    { id: 'ns3', label: '挥挥手', icon: '👋', duration: 6, videoUrl: '/avatars/generated/av5_ns3.mp4' },
+    { id: 'ns4', label: '蹦蹦跳', icon: '🐰', duration: 5, videoUrl: '/avatars/generated/av5_ns4.mp4' },
+    { id: 'ns5', label: '比心', icon: '💕', duration: 6, videoUrl: '/avatars/generated/av5_ns5.mp4' },
+    { id: 'ns6', label: '歪头', icon: '🤔', duration: 5, videoUrl: '/avatars/generated/av5_ns6.mp4' },
   ],
   av6: [
     { id: 'ns1', label: '摇晃身体', icon: '💃', duration: 6, videoUrl: '/avatars/generated/av6_idle.mp4' },
@@ -350,6 +350,8 @@ const EVENT_ACTIONS: Record<string, EventAction[]> = {
   ],
   av5: [
     { id: 'ea1', label: 'T台走秀', command: '', duration: 15, videoUrl: '/avatars/generated/av5_event.mp4' },
+    { id: 'ea2', label: '旋转展示', command: '', duration: 10, videoUrl: '/avatars/generated/av5_ea2.mp4' },
+    { id: 'ea3', label: '欢呼跳跃', command: '', duration: 10, videoUrl: '/avatars/generated/av5_ea3.mp4' },
   ],
   av6: [
     { id: 'ea1', label: '旋转展示', command: '', duration: 20, videoUrl: '/avatars/generated/av6_event.mp4' },
