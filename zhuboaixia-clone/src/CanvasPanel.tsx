@@ -404,14 +404,19 @@ function TimelineLeftBar({
   const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const autoPlayResumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 自动轮播逻辑：banboEnabled 时随机选中常态片段
+  // 自动轮播逻辑：商品绑定形象后立即随机轮播常态片段
   useEffect(() => {
-    if (!banboEnabled || !selectedProductId) {
+    if (!selectedProductId) {
       if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null }
       return
     }
     const product = products.find(p => p.id === selectedProductId)
-    if (!product?.boundAvatarId) return
+    if (!product?.boundAvatarId) {
+      if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null }
+      setPreviewStateId(null)
+      setPreviewEventId(null)
+      return
+    }
     const states = NORMAL_STATES[product.boundAvatarId] || DEFAULT_STATES
     if (states.length === 0) return
     // 立即随机选一个
@@ -424,13 +429,13 @@ function TimelineLeftBar({
     const avgDuration = states.reduce((s, st) => s + st.duration, 0) / states.length
     autoPlayTimerRef.current = setInterval(pick, avgDuration * 1000)
     return () => { if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null } }
-  }, [banboEnabled, selectedProductId])
+  }, [selectedProductId, products])
 
   // 恢复自动轮播（10 秒无操作后）
   const scheduleAutoPlayResume = () => {
     if (autoPlayResumeTimerRef.current) clearTimeout(autoPlayResumeTimerRef.current)
     autoPlayResumeTimerRef.current = setTimeout(() => {
-      if (!banboEnabled || !selectedProductId) return
+      if (!selectedProductId) return
       const product = products.find(p => p.id === selectedProductId)
       if (!product?.boundAvatarId) return
       const states = NORMAL_STATES[product.boundAvatarId] || DEFAULT_STATES
@@ -679,6 +684,7 @@ function TimelineLeftBar({
                     if (currentVideoUrl) {
                       return (
                         <ChromaKeyVideo
+                          key={currentVideoUrl}
                           src={currentVideoUrl}
                           autoPlay
                           loop={!previewEventId}
