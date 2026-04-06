@@ -366,3 +366,26 @@ python3 send_image.py --image photo.jpg --chat-id "ou_xxx" --agent miijia
 ### 防复发
 - 改公共模式前先 grep 确认所有出现位置
 - 用 `grep -rn "关键词" src/` 一次性找出所有副本
+
+## 2026-04-06 13:12 — React 视频轮播：useEffect 依赖 + key prop
+
+### 问题
+自动轮播切换视频 src，但浏览器不自动重新播放新视频。
+
+### 根因
+1. **useEffect 依赖不足**：轮播依赖 `banboEnabled` 而非 `products`（实际变化的数据源），导致绑定形象后 effect 不重新触发
+2. **缺少 key prop**：React 复用同一个 video DOM 元素，只更新 src 属性。浏览器对运行中 video 的 src 切换处理不一致
+
+### 正确做法
+```tsx
+// 依赖实际变化的数据源
+useEffect(() => { ... }, [selectedProductId, products])
+
+// src 变化时强制重新挂载
+<ChromaKeyVideo key={currentVideoUrl} src={currentVideoUrl} ... />
+```
+
+### 防复发
+- 视频轮播场景：useEffect 依赖数组必须包含所有影响数据源的状态
+- 切换视频 src：必须加 key={src} 强制 React 重建 DOM
+- 不要用间接状态（如 banboEnabled）代替直接数据源（如 products）

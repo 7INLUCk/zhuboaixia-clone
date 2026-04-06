@@ -684,7 +684,6 @@ function TimelineLeftBar({
                     if (currentVideoUrl) {
                       return (
                         <ChromaKeyVideo
-                          key={currentVideoUrl}
                           src={currentVideoUrl}
                           autoPlay
                           loop={!previewEventId}
