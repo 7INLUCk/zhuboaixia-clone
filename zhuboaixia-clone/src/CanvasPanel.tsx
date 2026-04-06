@@ -392,13 +392,11 @@ function getStepCompletion(products: ProductItem[], selectedProductId: string | 
 function TimelineLeftBar({
   products, selectedProductId, onSelectProduct, banboEnabled, onToggleBanbo,
   previewStateId, setPreviewStateId, previewEventId, setPreviewEventId,
-  onCopyConfig,
 }: {
   products: ProductItem[]; selectedProductId: string | null;
   onSelectProduct: (id: string) => void; banboEnabled: boolean; onToggleBanbo: () => void;
   previewStateId: string | null; setPreviewStateId: (id: string | null) => void;
   previewEventId: string | null; setPreviewEventId: (id: string | null) => void;
-  onCopyConfig?: (productId: string) => void;
 }) {
   const totalDuration = 60 // 60秒时间轴
   const productItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -571,13 +569,6 @@ function TimelineLeftBar({
                   fontSize: 8, padding: '1px 5px', borderRadius: 3, flexShrink: 0,
                   background: statusStyle.bg, color: statusStyle.color, fontWeight: 600,
                 }}>{statusStyle.label}</span>
-                {p.boundAvatarId && onCopyConfig && (
-                  <span onClick={e => { e.stopPropagation(); onCopyConfig(p.id) }} style={{
-                    fontSize: 8, padding: '1px 4px', borderRadius: 3, flexShrink: 0,
-                    background: 'rgba(96,165,250,0.15)', color: '#93BBFC',
-                    cursor: 'pointer', fontWeight: 500,
-                  }} title="复制配置到其他商品">📋</span>
-                )}
               </div>
             )
           })}
@@ -1848,14 +1839,6 @@ function UnifiedBanboPanel({
                                 cursor: 'pointer', fontFamily: C.font,
                               }}>改口令</button>
                             </div>
-                            {cmd.type === 'show' && (
-                              <div style={{
-                                fontSize: 10, color: '#9CA3AF', lineHeight: 1.6,
-                                marginTop: 6, padding: '4px 0',
-                              }}>
-                                💡 {'{N} 自动替换成商品链接号。口令是模糊匹配，「看看」和「上身效果」之间的文字可以自由修改'}
-                              </div>
-                            )}
                           </div>
                         )}
                       </div>
@@ -1932,13 +1915,6 @@ function UnifiedBanboPanel({
                       </div>
                     )
                   })}
-                  {/* N号链接规则说明 */}
-                  <div style={{
-                    marginTop: 6, fontSize: 10, color: '#9CA3AF', lineHeight: 1.6,
-                    padding: '4px 0',
-                  }}>
-                    💡 {'{N} 自动替换成商品链接号。口令是模糊匹配，「看看」和「上身效果」之间的文字可以自由修改'}
-                  </div>
                   {/* 异常提示规则 */}
                   <div style={{
                     marginTop: 8, padding: '8px 10px', borderRadius: 6,
@@ -3687,11 +3663,6 @@ export default function CanvasPanel({ onClose }: Props) {
             setPreviewStateId={setPreviewStateId}
             previewEventId={previewEventId}
             setPreviewEventId={setPreviewEventId}
-            onCopyConfig={(id) => {
-              setSelectedProductId(id)
-              setPreviewStateId(null)
-              setPreviewEventId(null)
-            }}
           />
 
           {/* 右侧：统一配置面板 */}
