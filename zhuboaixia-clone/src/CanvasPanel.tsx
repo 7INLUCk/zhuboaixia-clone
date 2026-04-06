@@ -1944,13 +1944,13 @@ function UnifiedBanboPanel({
                 <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', padding: '12px 0' }}>
                   👈 先在第一步选一个模特
                 </div>
-              ) : localEventActions.length > 0 ? (
+              ) : localEventActions.filter(ev => !ev.isTransition).length > 0 ? (
                 <div>
                   <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8, lineHeight: 1.5 }}>
                     ⚡ 该模特支持以下特殊动作，点击开关启用后配置触发口令
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {localEventActions.map(ev => {
+                    {localEventActions.filter(ev => !ev.isTransition).map(ev => {
                       const isEnabled = enabledActions[ev.id] === true // 默认关闭，用户手动开启
                       const isEditing = editingEventId === ev.id
                       return (
