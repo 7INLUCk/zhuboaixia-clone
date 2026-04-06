@@ -862,7 +862,7 @@ function TimelineLeftBar({
                 fontSize: 10, color: 'rgba(255,255,255,0.3)',
                 fontFamily: 'monospace',
               }}>
-                📡 NDI 通道：<span style={{ color: 'rgba(255,255,255,0.6)' }}>MiiMii伴播</span>
+                📡 NDI 通道：<span style={{ color: 'rgba(255,255,255,0.6)' }}>助播虾</span>
               </div>
               <div
                 onClick={() => setShowGuide(false)}
@@ -919,7 +919,7 @@ function TimelineLeftBar({
                   fontSize: 11, color: 'rgba(255,255,255,0.5)',
                   fontFamily: 'monospace',
                 }}>
-                  📡 MiiMii伴播
+                  📡 助播虾
                 </div>
                 {showGuide && guideCard}
               </>
