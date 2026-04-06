@@ -682,7 +682,7 @@ function TimelineLeftBar({
                         const isActive = previewStateId === st.id && !previewEventId
                         const isDimmed = previewEventId !== null // 事件态播放时默认态变暗
                         return (
-                          <div key={st.id} onClick={() => handleTimelineBlockClick(st.id)} style={{
+                          <div key={st.id} onClick={(e) => { e.stopPropagation(); handleTimelineBlockClick(st.id) }} style={{
                             flex: st.duration,
                             height: '100%',
                             borderRadius: 2,
@@ -728,7 +728,7 @@ function TimelineLeftBar({
                           {eventActions.map(ev => {
                             const isActive = previewEventId === ev.id
                             return (
-                              <div key={ev.id} onClick={() => handleEventBlockClick(ev.id)} style={{
+                              <div key={ev.id} onClick={(e) => { e.stopPropagation(); handleEventBlockClick(ev.id) }} style={{
                                 flex: ev.duration,
                                 height: '100%',
                                 borderRadius: 2,
