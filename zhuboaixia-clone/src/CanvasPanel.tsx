@@ -724,52 +724,89 @@ function TimelineLeftBar({
                       background: banboEnabled ? 'rgba(16,185,129,0.8)' : 'rgba(255,255,255,0.15)',
                       color: '#fff', fontWeight: 600,
                     }}>{banboEnabled ? 'LIVE' : '待开启'}</span>
+                    {/* 改动一：播放状态标签 */}
+                    {previewEventId === 'ea_entrance' && (
+                      <span style={{
+                        fontSize: 9, padding: '2px 6px', borderRadius: 3,
+                        background: 'rgba(168,85,247,0.85)', color: '#fff', fontWeight: 600,
+                      }}>▶ 正在播放入场动画</span>
+                    )}
+                    {previewEventId === 'ea_exit' && (
+                      <span style={{
+                        fontSize: 9, padding: '2px 6px', borderRadius: 3,
+                        background: 'rgba(251,146,60,0.85)', color: '#fff', fontWeight: 600,
+                      }}>▶ 正在播放退场动画</span>
+                    )}
                   </div>
                 </div>
 
-                {/* 入场/退场动画预览按钮 */}
-                {eventActions.length > 0 && (
+                {/* 入场/退场动画预览按钮 — 改动一：选中态 */}
+                {eventActions.length > 0 && (() => {
+                  const isEntrancePlaying = previewEventId === 'ea_entrance' || (previewEventId && eventActions.find((ev: any) => ev.id === previewEventId)?.id === 'ea_entrance')
+                  const isExitPlaying = previewEventId === 'ea_exit' || (previewEventId && eventActions.find((ev: any) => ev.id === previewEventId)?.id === 'ea_exit')
+                  // 也检查 fallback 场景：previewEventId 匹配到某个 event，且它是 entrance/exit
+                  const currentEvent = previewEventId ? eventActions.find((ev: any) => ev.id === previewEventId) : null
+                  const entrancePlaying = currentEvent?.id === 'ea_entrance'
+                  const exitPlaying = currentEvent?.id === 'ea_exit'
+                  const anyPlaying = entrancePlaying || exitPlaying
+                  return (
                   <div style={{
                     display: 'flex', gap: 6, marginTop: 6, marginBottom: 2,
                   }}>
                     <button onClick={(e) => {
                       e.stopPropagation()
-                      const entranceEvent = eventActions.find((ev: any) => ev.id === 'ea_entrance')
-                      if (entranceEvent?.videoUrl) {
-                        handleEventBlockClick(entranceEvent.id)
-                      } else {
-                        const fallback = eventActions.find((ev: any) => ev.videoUrl)
-                        if (fallback?.videoUrl) handleEventBlockClick(fallback.id)
+                      if (entrancePlaying) {
+                        // 点击正在播放的按钮 → 停止
+                        setPreviewEventId(null)
+                        scheduleAutoPlayResume()
+                      } else if (!anyPlaying) {
+                        const entranceEvent = eventActions.find((ev: any) => ev.id === 'ea_entrance')
+                        if (entranceEvent?.videoUrl) {
+                          handleEventBlockClick(entranceEvent.id)
+                        } else {
+                          const fallback = eventActions.find((ev: any) => ev.videoUrl)
+                          if (fallback?.videoUrl) handleEventBlockClick(fallback.id)
+                        }
                       }
                     }} style={{
-                      flex: 1, height: 26, borderRadius: 6, border: '1px solid rgba(168,85,247,0.3)',
-                      background: 'rgba(168,85,247,0.12)', color: '#C084FC',
-                      fontSize: 10, fontWeight: 500, cursor: 'pointer',
+                      flex: 1, height: 26, borderRadius: 6,
+                      border: entrancePlaying ? 'none' : (anyPlaying ? '1px solid rgba(168,85,247,0.15)' : '1px solid rgba(168,85,247,0.3)'),
+                      background: entrancePlaying ? '#A855F7' : (anyPlaying ? 'rgba(168,85,247,0.05)' : 'rgba(168,85,247,0.12)'),
+                      color: entrancePlaying ? '#fff' : (anyPlaying ? 'rgba(192,132,252,0.35)' : '#C084FC'),
+                      fontSize: 10, fontWeight: entrancePlaying ? 700 : 500, cursor: anyPlaying && !entrancePlaying ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                       fontFamily: C.font, transition: 'all 0.15s',
                     }}>
-                      🎬 入场动画
+                      {entrancePlaying ? '⏹ 停止播放' : '🎬 入场动画'}
                     </button>
                     <button onClick={(e) => {
                       e.stopPropagation()
-                      const exitEvent = eventActions.find((ev: any) => ev.id === 'ea_exit')
-                      if (exitEvent?.videoUrl) {
-                        handleEventBlockClick(exitEvent.id)
-                      } else {
-                        const fallback = [...eventActions].reverse().find((ev: any) => ev.videoUrl)
-                        if (fallback?.videoUrl) handleEventBlockClick(fallback.id)
+                      if (exitPlaying) {
+                        setPreviewEventId(null)
+                        scheduleAutoPlayResume()
+                      } else if (!anyPlaying) {
+                        const exitEvent = eventActions.find((ev: any) => ev.id === 'ea_exit')
+                        if (exitEvent?.videoUrl) {
+                          handleEventBlockClick(exitEvent.id)
+                        } else {
+                          const fallback = [...eventActions].reverse().find((ev: any) => ev.videoUrl)
+                          if (fallback?.videoUrl) handleEventBlockClick(fallback.id)
+                        }
                       }
                     }} style={{
-                      flex: 1, height: 26, borderRadius: 6, border: '1px solid rgba(251,146,60,0.3)',
-                      background: 'rgba(251,146,60,0.12)', color: '#FB923C',
-                      fontSize: 10, fontWeight: 500, cursor: 'pointer',
+                      flex: 1, height: 26, borderRadius: 6,
+                      border: exitPlaying ? 'none' : (anyPlaying ? '1px solid rgba(251,146,60,0.15)' : '1px solid rgba(251,146,60,0.3)'),
+                      background: exitPlaying ? '#FB923C' : (anyPlaying ? 'rgba(251,146,60,0.05)' : 'rgba(251,146,60,0.12)'),
+                      color: exitPlaying ? '#fff' : (anyPlaying ? 'rgba(251,146,60,0.35)' : '#FB923C'),
+                      fontSize: 10, fontWeight: exitPlaying ? 700 : 500, cursor: anyPlaying && !exitPlaying ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                       fontFamily: C.font, transition: 'all 0.15s',
                     }}>
-                      🚪 退场动画
+                      {exitPlaying ? '⏹ 停止播放' : '🚪 退场动画'}
                     </button>
                   </div>
-                )}
+                  )
+                })()}
 
                 {/* 分区时间轴 */}
                 <div style={{ marginTop: 4 }}>
@@ -3305,6 +3342,11 @@ export default function CanvasPanel({ onClose }: Props) {
   const [previewStateId, setPreviewStateId] = useState<string | null>(null)
   const [previewEventId, setPreviewEventId] = useState<string | null>(null)
 
+  // 改动二：引导向导面板（首次进入伴播 Tab 时显示）
+  const [showBanboGuide, setShowBanboGuide] = useState(() => {
+    return !localStorage.getItem('banbo_guide_dismissed')
+  })
+
   return (
     <>
     <style>{`@keyframes slideFromLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
@@ -3420,7 +3462,75 @@ export default function CanvasPanel({ onClose }: Props) {
           />
 
           {/* 右侧：统一配置面板 */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, minHeight: 0, boxShadow: 'inset 8px 0 16px -8px rgba(0,0,0,0.06)' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, minHeight: 0, boxShadow: 'inset 8px 0 16px -8px rgba(0,0,0,0.06)', position: 'relative' }}>
+
+            {/* ===== 改动二+三：引导向导面板（居中遮罩层） ===== */}
+            {showBanboGuide && (
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 50,
+                background: '#fff',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                padding: 32,
+              }}>
+                <div style={{ maxWidth: 400, width: '100%', textAlign: 'center' }}>
+                  {/* 标题 */}
+                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1F2937', marginBottom: 6 }}>欢迎使用伴播功能</div>
+                  <div style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 32 }}>四步配置，让你的直播间多一个虚拟伴播模特</div>
+
+                  {/* 四步 */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'left', marginBottom: 36 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                      <span style={{ fontSize: 24, lineHeight: 1 }}>🎉</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第一步</div>
+                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>给商品选一个虚拟模特</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                      <span style={{ fontSize: 24, lineHeight: 1 }}>🎤</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第二步</div>
+                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>设展示口令，主播说口令时模特出场或换装</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                      <span style={{ fontSize: 24, lineHeight: 1 }}>💥</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第三步</div>
+                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>配置动作和搭话能力</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                      <span style={{ fontSize: 24, lineHeight: 1 }}>🚀</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第四步</div>
+                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>一键投到抖音直播伴侣</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 开始按钮 */}
+                  <button onClick={() => {
+                    setShowBanboGuide(false)
+                    localStorage.setItem('banbo_guide_dismissed', '1')
+                  }} style={{
+                    padding: '12px 36px', borderRadius: 8, border: 'none',
+                    background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+                    color: '#fff', fontSize: 14, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: C.font,
+                    boxShadow: '0 4px 12px rgba(99,102,241,0.4)',
+                    transition: 'transform 0.15s',
+                  }}
+                    onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
+                    onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+                  >
+                    开始配置 👉
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* 内容 */}
             <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
               <UnifiedBanboPanel
