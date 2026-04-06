@@ -1,17 +1,12 @@
-# 当前任务状态
+# 当前任务：无
 
-## 任务：「输出到直播伴侣」三态按钮（已完成）
+## 已完成任务（2026-04-01）
 
-### 完成项
-- ✅ 三态按钮实现（未就绪/就绪/输出中）
-- ✅ 4 步 NDI 引导卡
-- ✅ LIVE 脉冲动画
-- ✅ 引导卡可收起
-- ✅ 浏览器验证通过
-- ✅ 部署 miaobo-b.pages.dev，commit 911a539
-- ✅ GitHub 推送
-- ✅ 飞书卡片汇报
-
-### 下次会话
-- Boss 验收效果
-- NDI 输出功能需配合桌面端组件实现
+### 确认配置交互实现
+- **需求**：所有 Panel 点击「确认配置」→ 跳转到 BuyinControlPanel
+- **改动**：
+  - shared.tsx：Props 添加 `onConfirmConfig?: () => void`
+  - BuyinDashboardOverlay.tsx：传递 `onConfirmConfig={() => setActivePanel('main')}`
+  - 10个 Panel：添加 onClick={onConfirmConfig}
+- **部署**：https://f86371a7.miaobo-prototype.pages.dev
+- **状态**：✅ 已完成

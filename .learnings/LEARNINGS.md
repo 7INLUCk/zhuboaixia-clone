@@ -1,5 +1,92 @@
 # LEARNINGS.md
 
+## 2026-04-01 11:02 - GPU 平台推荐被营销文章影响
+
+### 问题
+我推荐了算家云（¥1.24/小时），但没有足够稳定性数据，可能被营销文章影响。
+
+### 根因
+- 只看了价格，没有验证稳定性
+- 算家云宣传"最低价格"，但实际用户反馈数据不足
+- 智星云（¥1.35/小时）有更多用户实测数据，性价比更可靠
+
+### 正确做法
+- 短期试用：选 AutoDL（稳定，用户量大）
+- 长期使用：选智星云（性价比断层领先，无隐性费用）
+- 价格最低的不一定是最好的
+
+### 防复发
+- 推荐平台时，优先考虑稳定性和用户量
+- 坦白承认可能被营销影响，给出客观对比
+
+---
+
+## 2026-04-01 10:22 - 汇报时忘记用飞书卡片（Boss 再次纠正）
+
+### 问题
+Boss 要求用飞书卡片汇报，但我直接发了纯文本（超过 2 句话）。
+
+### 根因
+- AGENTS.md 有明确规则：超过 2 句话必须走飞书卡片
+- SOUL.md 也有飞书卡片回复规则
+- 但执行时没有自检，直接用 message 工具发了纯文本
+
+### 正确流程
+1. 构思内容 → 数句子 → 超过 2 句 → 读 skill 模板
+2. 用 report.json 模板构造卡片
+3. 调用 send_card.py 发送
+4. 回复 NO_REPLY（不发重复文本）
+
+### 防复发
+- **回复前 5 秒自检**：数句子，超过 2 句强制走卡片
+- **有结构内容**：不管几句都走卡片
+- **模板路径**：`~/.agents/skills/feishu-card-composer/templates/report.json`
+- **Skill 文档**：`~/.agents/skills/feishu-card-composer/SKILL.md`
+
+---
+
+## 2026-03-31 18:32 - 飞书卡片缺少卡片头的根因
+
+### 问题
+发送的飞书卡片没有卡片头（背景色、标题、大字），只显示内容区。
+
+### 根因
+卡片 JSON 结构错误：直接用 `elements` 开始，没有使用飞书卡片标准的 `header` block。
+
+错误结构：
+```json
+{
+  "config": {...},
+  "elements": [...]  // ❌ 缺少 header
+}
+```
+
+正确结构：
+```json
+{
+  "schema": "2.0",
+  "header": {
+    "template": "indigo",  // 背景色主题
+    "title": {"tag": "plain_text", "content": "标题"},
+    "subtitle": {"tag": "plain_text", "content": "副标题"},
+    "text_tag_list": [...]
+  },
+  "body": {
+    "elements": [...]
+  }
+}
+```
+
+### 踩坑补充
+- `column_set` 用 `flex_mode: "trisect"`（三列）比 `bisect`（两列）更稳定
+- 报错 `ROOT -> body -> elements` 时，检查 column 内元素格式是否正确
+
+### 防复发
+- 写卡片前先读模板 `report.json`，复制结构再改内容
+- 模板路径：`~/.agents/skills/feishu-card-composer/templates/report.json`
+
+---
+
 ## 2026-03-29 23:50 - flex 布局中 `height: '100%'` 解析失败根因
 
 ### 问题

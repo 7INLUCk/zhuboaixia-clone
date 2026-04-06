@@ -574,7 +574,7 @@ function TimelineLeftBar({
       </div>
 
       {/* 形象视频预览区 — 所有商品均展示 */}
-      <div ref={previewAreaRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', minHeight: 0, scrollSnapType: 'y mandatory' }}>
+      <div ref={previewAreaRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', minHeight: 0, scrollSnapType: 'y proximity', scrollBehavior: 'smooth' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {products.map(product => {
             const isSelected = selectedProductId === product.id
@@ -724,6 +724,40 @@ function TimelineLeftBar({
                     }}>{banboEnabled ? 'LIVE' : '待开启'}</span>
                   </div>
                 </div>
+
+                {/* 入场/退场动画预览按钮 */}
+                {eventActions.length > 0 && (
+                  <div style={{
+                    display: 'flex', gap: 6, marginTop: 6, marginBottom: 2,
+                  }}>
+                    <button onClick={(e) => {
+                      e.stopPropagation()
+                      const firstEvent = eventActions.find((ev: any) => ev.videoUrl) || eventActions[0]
+                      if (firstEvent?.videoUrl) handleEventBlockClick(firstEvent.id)
+                    }} style={{
+                      flex: 1, height: 26, borderRadius: 6, border: '1px solid rgba(168,85,247,0.3)',
+                      background: 'rgba(168,85,247,0.12)', color: '#C084FC',
+                      fontSize: 10, fontWeight: 500, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                      fontFamily: C.font, transition: 'all 0.15s',
+                    }}>
+                      🎬 入场动画
+                    </button>
+                    <button onClick={(e) => {
+                      e.stopPropagation()
+                      const lastEvent = [...eventActions].reverse().find((ev: any) => ev.videoUrl)
+                      if (lastEvent?.videoUrl) handleEventBlockClick(lastEvent.id)
+                    }} style={{
+                      flex: 1, height: 26, borderRadius: 6, border: '1px solid rgba(251,146,60,0.3)',
+                      background: 'rgba(251,146,60,0.12)', color: '#FB923C',
+                      fontSize: 10, fontWeight: 500, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                      fontFamily: C.font, transition: 'all 0.15s',
+                    }}>
+                      🚪 退场动画
+                    </button>
+                  </div>
+                )}
 
                 {/* 分区时间轴 */}
                 <div style={{ marginTop: 4 }}>
@@ -1660,16 +1694,6 @@ function UnifiedBanboPanel({
                 </div>
               ) : !step2Confirmed ? (
                 <div>
-                  <div style={{
-                    fontSize: 10, color: C.textSec, marginBottom: 10, lineHeight: 1.6,
-                    padding: '8px 10px', borderRadius: 6,
-                    background: '#F0F4FF', border: '1px solid rgba(96,165,250,0.15)',
-                  }}>
-                    💡 「展示口令」有两种效果：<br />
-                    <b style={{ color: C.text }}>伴播不在场</b> → 播放入场动画登场<br />
-                    <b style={{ color: C.text }}>伴播已在场</b> → 原地换装，切换到当前商品<br />
-                    所以展示口令同时也是「切品口令」
-                  </div>
                   {commands.map(cmd => {
                     const cfg = cmd.type === 'show'
                       ? { icon: '🎭', label: '展示口令（出场+切品）', desc: cmd.desc, bg: '#E8F5E9' }
