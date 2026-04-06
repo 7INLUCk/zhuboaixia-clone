@@ -392,11 +392,13 @@ function getStepCompletion(products: ProductItem[], selectedProductId: string | 
 function TimelineLeftBar({
   products, selectedProductId, onSelectProduct, banboEnabled, onToggleBanbo,
   previewStateId, setPreviewStateId, previewEventId, setPreviewEventId,
+  onCopyConfig,
 }: {
   products: ProductItem[]; selectedProductId: string | null;
   onSelectProduct: (id: string) => void; banboEnabled: boolean; onToggleBanbo: () => void;
   previewStateId: string | null; setPreviewStateId: (id: string | null) => void;
   previewEventId: string | null; setPreviewEventId: (id: string | null) => void;
+  onCopyConfig?: (productId: string) => void;
 }) {
   const totalDuration = 60 // 60秒时间轴
   const productItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -569,6 +571,13 @@ function TimelineLeftBar({
                   fontSize: 8, padding: '1px 5px', borderRadius: 3, flexShrink: 0,
                   background: statusStyle.bg, color: statusStyle.color, fontWeight: 600,
                 }}>{statusStyle.label}</span>
+                {p.boundAvatarId && onCopyConfig && (
+                  <span onClick={e => { e.stopPropagation(); onCopyConfig(p.id) }} style={{
+                    fontSize: 8, padding: '1px 4px', borderRadius: 3, flexShrink: 0,
+                    background: 'rgba(96,165,250,0.15)', color: '#93BBFC',
+                    cursor: 'pointer', fontWeight: 500,
+                  }} title="复制配置到其他商品">📋</span>
+                )}
               </div>
             )
           })}
@@ -1540,6 +1549,10 @@ function UnifiedBanboPanel({
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [eventEditValue, setEventEditValue] = useState('')
   const [localEventActions, setLocalEventActions] = useState<EventAction[]>([])
+
+  // 批量应用
+  const [showBatchModal, setShowBatchModal] = useState(false)
+  const [batchTargets, setBatchTargets] = useState<Record<string, boolean>>({})
   useEffect(() => {
     setLocalEventActions(eventActions)
     setEditingEventId(null)
@@ -1572,6 +1585,26 @@ function UnifiedBanboPanel({
   const saveEditEvent = (id: string) => {
     setLocalEventActions(prev => prev.map(ev => ev.id === id ? { ...ev, command: eventEditValue } : ev))
     setEditingEventId(null)
+  }
+
+  // 批量应用：复制当前商品配置到目标商品
+  const handleBatchApply = (targetIds: string[]) => {
+    if (!selectedProduct) return
+    setProducts(prev => prev.map(p =>
+      targetIds.includes(p.id)
+        ? { ...p, boundAvatarId: selectedProduct.boundAvatarId, chatRules: [...selectedProduct.chatRules], chatEnabled: selectedProduct.chatEnabled }
+        : p
+    ))
+    setShowBatchModal(false)
+    setBatchTargets({})
+  }
+
+  // 一键应用到全部未配置商品
+  const handleApplyAll = () => {
+    if (!selectedProduct) return
+    const unconfigured = products.filter(p => !p.boundAvatarId && p.id !== selectedProduct.id)
+    if (unconfigured.length === 0) return
+    handleBatchApply(unconfigured.map(p => p.id))
   }
 
   // 步骤完成度
@@ -2200,6 +2233,40 @@ function UnifiedBanboPanel({
                   🔇 该模特不支持搭话功能（仅展示动作）。如需搭话能力，请选择带「🔵可搭话」徽标的模特，或联系我们升级。
                 </div>
               )}
+
+              {/* ===== 批量应用 ===== */}
+              {selectedProduct?.boundAvatarId && (
+                <div style={{
+                  marginTop: 12, padding: '10px', borderRadius: 8,
+                  background: '#F0FFF4', border: '1px solid rgba(52,211,153,0.25)',
+                }}>
+                  <div style={{ fontSize: 10, color: C.textSec, marginBottom: 6, lineHeight: 1.5 }}>
+                    ✅ 当前商品已配置完成，可以把这套配置复制到其他商品
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button onClick={() => {
+                      const otherConfigured = products.filter(p => p.id !== selectedProductId && p.boundAvatarId)
+                      const targets: Record<string, boolean> = {}
+                      products.forEach(p => { if (p.id !== selectedProductId) targets[p.id] = !p.boundAvatarId })
+                      setBatchTargets(targets)
+                      setShowBatchModal(true)
+                    }} style={{
+                      flex: 1, padding: '8px', borderRadius: 6, border: 'none',
+                      background: 'linear-gradient(135deg, #60A5FA, #3B82F6)',
+                      color: '#fff', fontSize: 11, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: C.font,
+                    }}>📋 复制到其他商品</button>
+                    {products.filter(p => !p.boundAvatarId && p.id !== selectedProductId).length > 0 && (
+                      <button onClick={handleApplyAll} style={{
+                        padding: '8px 12px', borderRadius: 6,
+                        border: `1px solid ${C.green}`, background: '#fff',
+                        color: C.green, fontSize: 11, fontWeight: 600,
+                        cursor: 'pointer', fontFamily: C.font,
+                      }}>⚡ 全部未配置</button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </>
@@ -2210,6 +2277,81 @@ function UnifiedBanboPanel({
           flexDirection: 'column', padding: 24, height: '100%',
         }}>
           <span style={{ fontSize: 12, color: C.textSec }}>← 在左侧选择一个商品开始配置</span>
+        </div>
+      )}
+
+      {/* ===== 批量应用弹窗 ===== */}
+      {showBatchModal && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.4)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+          borderRadius: 8,
+        }} onClick={() => setShowBatchModal(false)}>
+          <div style={{
+            background: '#fff', borderRadius: 12, padding: 16,
+            width: '85%', maxWidth: 320, maxHeight: '80%',
+            display: 'flex', flexDirection: 'column',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 4 }}>
+              📋 复制配置到...
+            </div>
+            <div style={{ fontSize: 10, color: C.textSec, marginBottom: 10 }}>
+              将当前商品的形象+口令+搭话规则复制给选中的商品
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
+              {products.filter(p => p.id !== selectedProductId).map(p => {
+                const hasConfig = !!p.boundAvatarId
+                const checked = batchTargets[p.id] ?? false
+                return (
+                  <div key={p.id} onClick={() => setBatchTargets(prev => ({ ...prev, [p.id]: !prev[p.id] }))} style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
+                    background: checked ? '#F0F4FF' : '#FAFAFA',
+                    border: `1px solid ${checked ? '#C7D9F7' : C.border}`,
+                    transition: 'all 0.15s',
+                  }}>
+                    <div style={{
+                      width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                      border: `2px solid ${checked ? C.blue : '#ccc'}`,
+                      background: checked ? C.blue : '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontSize: 11, fontWeight: 700,
+                    }}>{checked ? '✓' : ''}</div>
+                    <span style={{ fontSize: 10, color: '#999', flexShrink: 0 }}>{p.linkNum}号</span>
+                    <span style={{ fontSize: 11, color: C.text, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                    {hasConfig && (
+                      <span style={{ fontSize: 8, padding: '1px 4px', borderRadius: 3, background: 'rgba(251,191,36,0.2)', color: '#D97706', fontWeight: 600, flexShrink: 0 }}>
+                        ⚠ 已有配置
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { setShowBatchModal(false); setBatchTargets({}) }} style={{
+                flex: 1, padding: '8px', borderRadius: 6,
+                border: `1px solid ${C.border}`, background: '#fff',
+                color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font,
+              }}>取消</button>
+              <button onClick={() => {
+                const targets = Object.entries(batchTargets).filter(([, v]) => v).map(([k]) => k)
+                if (targets.length === 0) return
+                const overwriting = targets.filter(id => products.find(p => p.id === id)?.boundAvatarId)
+                if (overwriting.length > 0) {
+                  if (!window.confirm(`⚠️ ${overwriting.length} 个商品已有配置，确认覆盖？`)) return
+                }
+                handleBatchApply(targets)
+              }} style={{
+                flex: 1, padding: '8px', borderRadius: 6, border: 'none',
+                background: 'linear-gradient(135deg, #60A5FA, #3B82F6)',
+                color: '#fff', fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', fontFamily: C.font,
+              }}>确认复制</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -3545,6 +3687,11 @@ export default function CanvasPanel({ onClose }: Props) {
             setPreviewStateId={setPreviewStateId}
             previewEventId={previewEventId}
             setPreviewEventId={setPreviewEventId}
+            onCopyConfig={(id) => {
+              setSelectedProductId(id)
+              setPreviewStateId(null)
+              setPreviewEventId(null)
+            }}
           />
 
           {/* 右侧：统一配置面板 */}
