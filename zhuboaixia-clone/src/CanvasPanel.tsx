@@ -3448,7 +3448,7 @@ export default function CanvasPanel({ onClose }: Props) {
           {/* ===== 改动二+三：引导向导面板（覆盖整个伴播区域，含 Timeline） ===== */}
           {showBanboGuide && (
             <div style={{
-              position: 'absolute', inset: 0, zIndex: 50,
+              position: 'fixed', top: 0, left: 0, width: 710, bottom: 0, zIndex: 999,
               background: '#fff',
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
