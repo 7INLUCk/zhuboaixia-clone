@@ -349,8 +349,6 @@ const EVENT_ACTIONS: Record<string, EventAction[]> = {
     { id: 'ea2', label: '胯下运球', command: '', duration: 10 },
   ],
   av5: [
-    { id: 'ea_entrance', label: '入场', command: '', duration: 5, videoUrl: '/avatars/generated/av5_entrance.mp4', isTransition: true },
-    { id: 'ea_exit', label: '退场', command: '', duration: 5, videoUrl: '/avatars/generated/av5_exit.mp4', isTransition: true },
     { id: 'ea1', label: 'T台走秀', command: '', duration: 15, videoUrl: '/avatars/generated/av5_event.mp4' },
     { id: 'ea2', label: '旋转展示', command: '', duration: 10, videoUrl: '/avatars/generated/av5_ea2.mp4' },
     { id: 'ea3', label: '欢呼跳跃', command: '', duration: 10, videoUrl: '/avatars/generated/av5_ea3.mp4' },
@@ -724,89 +722,15 @@ function TimelineLeftBar({
                       background: banboEnabled ? 'rgba(16,185,129,0.8)' : 'rgba(255,255,255,0.15)',
                       color: '#fff', fontWeight: 600,
                     }}>{banboEnabled ? 'LIVE' : '待开启'}</span>
-                    {/* 改动一：播放状态标签 */}
-                    {previewEventId === 'ea_entrance' && (
+                    {/* 播放状态标签 */}
+                    {previewEventId && (
                       <span style={{
                         fontSize: 9, padding: '2px 6px', borderRadius: 3,
                         background: 'rgba(168,85,247,0.85)', color: '#fff', fontWeight: 600,
-                      }}>▶ 正在播放入场动画</span>
-                    )}
-                    {previewEventId === 'ea_exit' && (
-                      <span style={{
-                        fontSize: 9, padding: '2px 6px', borderRadius: 3,
-                        background: 'rgba(251,146,60,0.85)', color: '#fff', fontWeight: 600,
-                      }}>▶ 正在播放退场动画</span>
+                      }}>▶ 正在播放事件动画</span>
                     )}
                   </div>
                 </div>
-
-                {/* 入场/退场动画预览按钮 — 改动一：选中态 */}
-                {eventActions.length > 0 && (() => {
-                  const isEntrancePlaying = previewEventId === 'ea_entrance' || (previewEventId && eventActions.find((ev: any) => ev.id === previewEventId)?.id === 'ea_entrance')
-                  const isExitPlaying = previewEventId === 'ea_exit' || (previewEventId && eventActions.find((ev: any) => ev.id === previewEventId)?.id === 'ea_exit')
-                  // 也检查 fallback 场景：previewEventId 匹配到某个 event，且它是 entrance/exit
-                  const currentEvent = previewEventId ? eventActions.find((ev: any) => ev.id === previewEventId) : null
-                  const entrancePlaying = currentEvent?.id === 'ea_entrance'
-                  const exitPlaying = currentEvent?.id === 'ea_exit'
-                  const anyPlaying = entrancePlaying || exitPlaying
-                  return (
-                  <div style={{
-                    display: 'flex', gap: 6, marginTop: 6, marginBottom: 2,
-                  }}>
-                    <button onClick={(e) => {
-                      e.stopPropagation()
-                      if (entrancePlaying) {
-                        // 点击正在播放的按钮 → 停止
-                        setPreviewEventId(null)
-                        scheduleAutoPlayResume()
-                      } else if (!anyPlaying) {
-                        const entranceEvent = eventActions.find((ev: any) => ev.id === 'ea_entrance')
-                        if (entranceEvent?.videoUrl) {
-                          handleEventBlockClick(entranceEvent.id)
-                        } else {
-                          const fallback = eventActions.find((ev: any) => ev.videoUrl)
-                          if (fallback?.videoUrl) handleEventBlockClick(fallback.id)
-                        }
-                      }
-                    }} style={{
-                      flex: 1, height: 26, borderRadius: 6,
-                      border: entrancePlaying ? 'none' : (anyPlaying ? '1px solid rgba(168,85,247,0.15)' : '1px solid rgba(168,85,247,0.3)'),
-                      background: entrancePlaying ? '#A855F7' : (anyPlaying ? 'rgba(168,85,247,0.05)' : 'rgba(168,85,247,0.12)'),
-                      color: entrancePlaying ? '#fff' : (anyPlaying ? 'rgba(192,132,252,0.35)' : '#C084FC'),
-                      fontSize: 10, fontWeight: entrancePlaying ? 700 : 500, cursor: anyPlaying && !entrancePlaying ? 'not-allowed' : 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                      fontFamily: C.font, transition: 'all 0.15s',
-                    }}>
-                      {entrancePlaying ? '⏹ 停止播放' : '🎬 入场动画'}
-                    </button>
-                    <button onClick={(e) => {
-                      e.stopPropagation()
-                      if (exitPlaying) {
-                        setPreviewEventId(null)
-                        scheduleAutoPlayResume()
-                      } else if (!anyPlaying) {
-                        const exitEvent = eventActions.find((ev: any) => ev.id === 'ea_exit')
-                        if (exitEvent?.videoUrl) {
-                          handleEventBlockClick(exitEvent.id)
-                        } else {
-                          const fallback = [...eventActions].reverse().find((ev: any) => ev.videoUrl)
-                          if (fallback?.videoUrl) handleEventBlockClick(fallback.id)
-                        }
-                      }
-                    }} style={{
-                      flex: 1, height: 26, borderRadius: 6,
-                      border: exitPlaying ? 'none' : (anyPlaying ? '1px solid rgba(251,146,60,0.15)' : '1px solid rgba(251,146,60,0.3)'),
-                      background: exitPlaying ? '#FB923C' : (anyPlaying ? 'rgba(251,146,60,0.05)' : 'rgba(251,146,60,0.12)'),
-                      color: exitPlaying ? '#fff' : (anyPlaying ? 'rgba(251,146,60,0.35)' : '#FB923C'),
-                      fontSize: 10, fontWeight: exitPlaying ? 700 : 500, cursor: anyPlaying && !exitPlaying ? 'not-allowed' : 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                      fontFamily: C.font, transition: 'all 0.15s',
-                    }}>
-                      {exitPlaying ? '⏹ 停止播放' : '🚪 退场动画'}
-                    </button>
-                  </div>
-                  )
-                })()}
 
                 {/* 分区时间轴 */}
                 <div style={{ marginTop: 4 }}>
