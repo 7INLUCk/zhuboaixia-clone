@@ -1,16 +1,14 @@
 # 当前任务状态
 
-## 任务：自动轮播修复（已完成）
+## 任务：白屏修复（已完成）
 
 ### 完成项
-- ✅ auto-carousel useEffect 依赖改为 [selectedProductId, products]
-- ✅ ChromaKeyVideo 加 key={src}
-- ✅ scheduleAutoPlayResume 移除 banboEnabled 依赖
-- ✅ 浏览器验证：绑定 av5 → 自动轮播 ns4→ns6，视频播放正常
-- ✅ 部署 miaobo-b.pages.dev，commit 2b69f16
-- ✅ GitHub 推送 codex/issue-15-ux-optimization → b
+- ✅ 根因定位：key={src} 强制 React 卸载/挂载，canvas 内容被销毁
+- ✅ 修复：去掉 key prop，复用 canvas 元素
+- ✅ 验证：av5_ns5 → av5_idle 平滑切换，无白屏
+- ✅ 部署 miaobo-b.pages.dev，commit 0d1e8b2
+- ✅ GitHub 推送
 - ✅ 飞书卡片汇报已发送
 
 ### 下次会话
 - Boss 验收效果
-- 待确认：是否需要补其他形象的视频素材

@@ -403,6 +403,12 @@ function TimelineLeftBar({
   const previewAreaRef = useRef<HTMLDivElement>(null)
   const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const autoPlayResumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [showGuide, setShowGuide] = useState(false)
+
+  // 计算配置就绪状态
+  const configuredCount = products.filter(p => p.boundAvatarId).length
+  const totalCount = products.length
+  const isReady = configuredCount > 0
 
   // 自动轮播逻辑：商品绑定形象后立即随机轮播常态片段
   useEffect(() => {
@@ -815,23 +821,126 @@ function TimelineLeftBar({
         </div>
       </div>
 
-      {/* 底部：开启伴播按钮 */}
+      {/* 底部：输出到直播伴侣按钮 */}
       <div style={{
         padding: '10px 12px',
         background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
         flexShrink: 0,
       }}>
-        <button onClick={onToggleBanbo} style={{
-          width: '100%', padding: '10px',
-          borderRadius: 8, border: 'none',
-          background: banboEnabled
-            ? 'linear-gradient(135deg, #34D399, #10B981)'
-            : 'linear-gradient(135deg, #60A5FA, #3B82F6)',
-          color: '#fff', fontSize: 14, fontWeight: 700,
-          cursor: 'pointer', fontFamily: C.font,
-        }}>
-          {banboEnabled ? '✅ 伴播已开启' : '▶ 开启伴播'}
-        </button>
+        {(() => {
+          const guideCard = (
+            <div style={{
+              marginTop: 8, padding: '10px 12px',
+              background: 'rgba(255,255,255,0.06)',
+              borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)',
+            }}>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8, fontWeight: 600 }}>
+                在抖音直播伴侣中接入：
+              </div>
+              {[
+                '打开「抖音直播伴侣」',
+                '点击「添加素材」→「采集」',
+                '视频设备下拉 → 选 NewTek NDI Video',
+                '调整形象大小和位置',
+              ].map((step, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  marginBottom: i < 3 ? 6 : 0,
+                }}>
+                  <span style={{
+                    width: 18, height: 18, borderRadius: '50%',
+                    background: 'rgba(96,165,250,0.2)', color: '#93BBFC',
+                    fontSize: 10, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>{i + 1}</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{step}</span>
+                </div>
+              ))}
+              <div style={{
+                marginTop: 8, textAlign: 'center',
+                fontSize: 10, color: 'rgba(255,255,255,0.3)',
+                fontFamily: 'monospace',
+              }}>
+                📡 NDI 通道：<span style={{ color: 'rgba(255,255,255,0.6)' }}>MiiMii伴播</span>
+              </div>
+              <div
+                onClick={() => setShowGuide(false)}
+                style={{
+                  marginTop: 8, textAlign: 'center',
+                  fontSize: 10, color: 'rgba(96,165,250,0.6)', cursor: 'pointer',
+                }}
+              >
+                ✅ 已添加？点击收起
+              </div>
+            </div>
+          )
+
+          // 状态 A — 未就绪
+          if (!isReady && !banboEnabled) {
+            return (
+              <div style={{
+                width: '100%', padding: '10px',
+                borderRadius: 8,
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 500,
+                textAlign: 'center', fontFamily: C.font,
+              }}>
+                配置完成后可输出到直播伴侣
+                <div style={{ fontSize: 10, marginTop: 4, color: 'rgba(255,255,255,0.25)' }}>
+                  {configuredCount}/{totalCount} 已配置
+                </div>
+              </div>
+            )
+          }
+          // 状态 C — 输出中
+          if (banboEnabled) {
+            return (
+              <>
+                <button onClick={() => { onToggleBanbo(); setShowGuide(false) }} style={{
+                  width: '100%', padding: '10px',
+                  borderRadius: 8, border: 'none',
+                  background: 'linear-gradient(135deg, #34D399, #10B981)',
+                  color: '#fff', fontSize: 14, fontWeight: 700,
+                  cursor: 'pointer', fontFamily: C.font,
+                  position: 'relative',
+                }}>
+                  <span style={{
+                    position: 'absolute', top: 6, right: 10,
+                    fontSize: 9, padding: '1px 6px', borderRadius: 3,
+                    background: 'rgba(255,255,255,0.25)', fontWeight: 600,
+                    animation: 'pulse 2s infinite',
+                  }}>LIVE</span>
+                  ⏹ 停止输出
+                </button>
+                <div style={{
+                  marginTop: 6, textAlign: 'center',
+                  fontSize: 11, color: 'rgba(255,255,255,0.5)',
+                  fontFamily: 'monospace',
+                }}>
+                  📡 MiiMii伴播
+                </div>
+                {showGuide && guideCard}
+              </>
+            )
+          }
+          // 状态 B — 就绪，未输出
+          return (
+            <>
+              <button onClick={() => { onToggleBanbo(); setShowGuide(true) }} style={{
+                width: '100%', padding: '10px',
+                borderRadius: 8, border: 'none',
+                background: 'linear-gradient(135deg, #60A5FA, #3B82F6)',
+                color: '#fff', fontSize: 14, fontWeight: 700,
+                cursor: 'pointer', fontFamily: C.font,
+              }}>
+                🚀 输出到直播伴侣
+              </button>
+              {showGuide && guideCard}
+            </>
+          )
+        })()}
       </div>
     </div>
   )
@@ -3162,7 +3271,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
   return (
     <>
-    <style>{`@keyframes slideFromLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }`}</style>
+    <style>{`@keyframes slideFromLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
     <div style={{
       position: 'absolute', top: 36, right: 0, bottom: 0, width: 710,
       zIndex: 102, overflow: 'hidden',

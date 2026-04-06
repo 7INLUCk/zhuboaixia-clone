@@ -389,3 +389,21 @@ useEffect(() => { ... }, [selectedProductId, products])
 - 视频轮播场景：useEffect 依赖数组必须包含所有影响数据源的状态
 - 切换视频 src：必须加 key={src} 强制 React 重建 DOM
 - 不要用间接状态（如 banboEnabled）代替直接数据源（如 products）
+
+## 2026-04-06 13:22 — React key prop + 视频/Canvas 切换白屏
+
+### 问题
+`key={src}` 用于视频轮播，切换时白屏 1-2 秒。
+
+### 根因
+key 变化 = React **销毁旧 DOM → 创建新 DOM**。canvas 内容是像素数据，不是 React state，销毁就没了。新 canvas 必须等视频加载+首帧渲染才能显示内容。
+
+### 正确做法
+- **需要保留旧画面过渡**：不要用 key，让 React 复用 DOM 元素
+- **需要彻底刷新（无过渡）**：用 key 强制重建
+- 视频轮播 = 复用 canvas（去掉 key）+ src 属性自然变化
+- 图片轮播 = 可以用 key（img 加载快，无感知）
+
+### 防复发
+- Canvas + 视频场景：永远不要对视频容器用 key={src}
+- 要保留渲染结果：组件必须保持挂载状态
