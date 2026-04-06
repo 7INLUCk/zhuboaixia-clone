@@ -140,11 +140,11 @@ function ChromaKeyVideo({ src, style, autoPlay, loop, muted, playsInline, onEnde
         muted={muted ?? true}
         playsInline={playsInline}
         onEnded={onEnded}
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0 }}
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: style?.objectFit || 'contain', opacity: 0 }}
       />
       <canvas
         ref={canvasRef}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        style={{ width: '100%', height: '100%', objectFit: style?.objectFit || 'contain' }}
       />
     </div>
   )
@@ -400,6 +400,7 @@ function TimelineLeftBar({
   const productListRef = useRef<HTMLDivElement>(null)
   const previewAreaRef = useRef<HTMLDivElement>(null)
   const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const autoPlayResumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 自动轮播逻辑：banboEnabled 时随机选中常态片段
   useEffect(() => {
@@ -423,17 +424,39 @@ function TimelineLeftBar({
     return () => { if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null } }
   }, [banboEnabled, selectedProductId])
 
+  // 恢复自动轮播（10 秒无操作后）
+  const scheduleAutoPlayResume = () => {
+    if (autoPlayResumeTimerRef.current) clearTimeout(autoPlayResumeTimerRef.current)
+    autoPlayResumeTimerRef.current = setTimeout(() => {
+      if (!banboEnabled || !selectedProductId) return
+      const product = products.find(p => p.id === selectedProductId)
+      if (!product?.boundAvatarId) return
+      const states = NORMAL_STATES[product.boundAvatarId] || DEFAULT_STATES
+      if (states.length === 0) return
+      const pick = () => {
+        const idx = Math.floor(Math.random() * states.length)
+        setPreviewStateId(states[idx].id)
+        setPreviewEventId(null)
+      }
+      pick()
+      const avgDuration = states.reduce((s, st) => s + st.duration, 0) / states.length
+      autoPlayTimerRef.current = setInterval(pick, avgDuration * 1000)
+    }, 10000)
+  }
+
   // 手动点击时间轴块
   const handleTimelineBlockClick = (stateId: string) => {
-    // 停止自动轮播（用户手动控制）
+    // 停止自动轮播（用户手动控制），10 秒后恢复
     if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null }
     setPreviewStateId(stateId)
     setPreviewEventId(null)
+    scheduleAutoPlayResume()
   }
 
   // 手动点击事件块
   const handleEventBlockClick = (eventId: string) => {
     if (autoPlayTimerRef.current) { clearInterval(autoPlayTimerRef.current); autoPlayTimerRef.current = null }
+    if (autoPlayResumeTimerRef.current) clearTimeout(autoPlayResumeTimerRef.current)
     setPreviewEventId(eventId)
     setPreviewStateId(null)
     // 事件播放一次后自动恢复轮播
@@ -444,19 +467,7 @@ function TimelineLeftBar({
     if (!ev) return
     setTimeout(() => {
       setPreviewEventId(null)
-      // 恢复自动轮播
-      if (banboEnabled) {
-        const states = NORMAL_STATES[product.boundAvatarId!] || DEFAULT_STATES
-        if (states.length > 0) {
-          const pick = () => {
-            const idx = Math.floor(Math.random() * states.length)
-            setPreviewStateId(states[idx].id)
-          }
-          pick()
-          const avgDuration = states.reduce((s, st) => s + st.duration, 0) / states.length
-          autoPlayTimerRef.current = setInterval(pick, avgDuration * 1000)
-        }
-      }
+      scheduleAutoPlayResume()
     }, ev.duration * 1000)
   }
 
@@ -592,9 +603,9 @@ function TimelineLeftBar({
 
                   {/* 常规态视频预览 */}
                   <div style={{
-                    width: '100%', aspectRatio: '9/16', maxHeight: 260,
+                    width: '100%', aspectRatio: '9/16', maxHeight: 220,
                     borderRadius: 6, overflow: 'hidden',
-                    background: '#1a1a2e', marginBottom: 4,
+                    background: '#FFFFFF', marginBottom: 4,
                     position: 'relative',
                   }}>
                     {(() => {
@@ -605,7 +616,7 @@ function TimelineLeftBar({
                         currentVideoUrl = ev?.videoUrl
                       } else if (previewStateId) {
                         const st = normalStates.find(s => s.id === previewStateId)
-                        currentVideoUrl = st?.videoUrl
+                        currentVideoUrl = st?.videoUrl || normalStates.find(s => s.videoUrl)?.videoUrl
                       }
                       // 如果没有指定，找第一个有视频的常态
                       if (!currentVideoUrl && !previewStateId && !previewEventId) {
@@ -621,7 +632,7 @@ function TimelineLeftBar({
                             loop={!previewEventId}
                             muted
                             playsInline
-                            style={{ width: '100%', height: '100%' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                             onEnded={() => {
                               if (previewEventId) setPreviewEventId(null)
                             }}
@@ -635,7 +646,7 @@ function TimelineLeftBar({
                           alignItems: 'center', justifyContent: 'center', gap: 4,
                         }}>
                           <ChromaKeyImage src={avatar.preview} alt={avatar.name}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }} draggable={false} />
                         </div>
                       )
                     })()}
@@ -658,9 +669,9 @@ function TimelineLeftBar({
                       display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3,
                     }}>
                       <span style={{ fontSize: 9, color: '#60A5FA', fontWeight: 500 }}>
-                        {previewEventId ? '🎬 事件播放中' : '直播中（自动轮播）'}
+                        {previewEventId ? '🎬 事件播放中' : '🎭 直播时自动展示 · 点击预览'}
                       </span>
-                      <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{normalDuration}s 循环</span>
+                      <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{normalDuration}s 一轮</span>
                     </div>
                     {/* 常态分区块：按动作切分，可点击 */}
                     <div style={{
@@ -684,8 +695,13 @@ function TimelineLeftBar({
                             opacity: isDimmed ? 0.3 : 1,
                             boxShadow: isActive ? '0 0 6px rgba(96,165,250,0.5)' : 'none',
                             transition: 'all 0.2s',
-                            border: '1px solid rgba(255,255,255,0.06)',
+                            border: isActive ? '2px solid #60A5FA' : '1px solid rgba(255,255,255,0.06)',
+                            position: 'relative',
                           }}>
+                            {isActive && <div style={{
+                              position: 'absolute', top: -1, left: '10%', right: '10%',
+                              height: 2, borderRadius: 1, background: '#60A5FA',
+                            }} />}
                             <span style={{ fontSize: 8 }}>{st.icon}</span>
                             <span style={{
                               fontSize: 7, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
@@ -703,7 +719,7 @@ function TimelineLeftBar({
                         <div style={{
                           display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, marginBottom: 3,
                         }}>
-                          <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>⚡ 口令触发（点击播放）</span>
+                          <span style={{ fontSize: 9, color: '#F59E0B', fontWeight: 500 }}>🎤 主播说口令触发 · 点击预览</span>
                         </div>
                         <div style={{
                           display: 'flex', gap: 2, height: 18, borderRadius: 4,
@@ -724,8 +740,13 @@ function TimelineLeftBar({
                                   : 'rgba(245,158,11,0.15)',
                                 boxShadow: isActive ? '0 0 6px rgba(245,158,11,0.5)' : 'none',
                                 transition: 'all 0.2s',
-                                border: '1px solid rgba(255,255,255,0.06)',
+                                border: isActive ? '2px solid #F59E0B' : '1px solid rgba(255,255,255,0.06)',
+                                position: 'relative',
                               }}>
+                                {isActive && <div style={{
+                                  position: 'absolute', top: -1, left: '10%', right: '10%',
+                                  height: 2, borderRadius: 1, background: '#F59E0B',
+                                }} />}
                                 <span style={{ fontSize: 7 }}>🎬</span>
                                 <span style={{
                                   fontSize: 7, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
