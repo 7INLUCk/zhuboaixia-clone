@@ -3443,7 +3443,75 @@ export default function CanvasPanel({ onClose }: Props) {
 
       {/* ===== 伴播模式 ===== */}
       {activeMode === 'banbo' && (
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0, minHeight: 0 }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0, minHeight: 0, position: 'relative' }}>
+
+          {/* ===== 改动二+三：引导向导面板（覆盖整个伴播区域，含 Timeline） ===== */}
+          {showBanboGuide && (
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 50,
+              background: '#fff',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              padding: 32,
+            }}>
+              <div style={{ maxWidth: 400, width: '100%', textAlign: 'center' }}>
+                {/* 标题 */}
+                <div style={{ fontSize: 20, fontWeight: 700, color: '#1F2937', marginBottom: 6 }}>欢迎使用伴播功能</div>
+                <div style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 32 }}>四步配置，让你的直播间多一个虚拟伴播模特</div>
+
+                {/* 四步 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'left', marginBottom: 36 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                    <span style={{ fontSize: 24, lineHeight: 1 }}>🎉</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第一步</div>
+                      <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>给商品选一个虚拟模特</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                    <span style={{ fontSize: 24, lineHeight: 1 }}>🎤</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第二步</div>
+                      <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>设展示口令，主播说口令时模特出场或换装</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                    <span style={{ fontSize: 24, lineHeight: 1 }}>💥</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第三步</div>
+                      <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>配置动作和搭话能力</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                    <span style={{ fontSize: 24, lineHeight: 1 }}>🚀</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第四步</div>
+                      <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>一键投到抖音直播伴侣</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 开始按钮 */}
+                <button onClick={() => {
+                  setShowBanboGuide(false)
+                  localStorage.setItem('banbo_guide_dismissed', '1')
+                }} style={{
+                  padding: '12px 36px', borderRadius: 8, border: 'none',
+                  background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+                  color: '#fff', fontSize: 14, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: C.font,
+                  boxShadow: '0 4px 12px rgba(99,102,241,0.4)',
+                  transition: 'transform 0.15s',
+                }}
+                  onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
+                  onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+                >
+                  开始配置 👉
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Timeline 左栏（固定 280px，永远可见） */}
           <TimelineLeftBar
             products={products}
@@ -3462,75 +3530,7 @@ export default function CanvasPanel({ onClose }: Props) {
           />
 
           {/* 右侧：统一配置面板 */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, minHeight: 0, boxShadow: 'inset 8px 0 16px -8px rgba(0,0,0,0.06)', position: 'relative' }}>
-
-            {/* ===== 改动二+三：引导向导面板（居中遮罩层） ===== */}
-            {showBanboGuide && (
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 50,
-                background: '#fff',
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                padding: 32,
-              }}>
-                <div style={{ maxWidth: 400, width: '100%', textAlign: 'center' }}>
-                  {/* 标题 */}
-                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1F2937', marginBottom: 6 }}>欢迎使用伴播功能</div>
-                  <div style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 32 }}>四步配置，让你的直播间多一个虚拟伴播模特</div>
-
-                  {/* 四步 */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'left', marginBottom: 36 }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
-                      <span style={{ fontSize: 24, lineHeight: 1 }}>🎉</span>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第一步</div>
-                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>给商品选一个虚拟模特</div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
-                      <span style={{ fontSize: 24, lineHeight: 1 }}>🎤</span>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第二步</div>
-                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>设展示口令，主播说口令时模特出场或换装</div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
-                      <span style={{ fontSize: 24, lineHeight: 1 }}>💥</span>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第三步</div>
-                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>配置动作和搭话能力</div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
-                      <span style={{ fontSize: 24, lineHeight: 1 }}>🚀</span>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 2 }}>第四步</div>
-                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>一键投到抖音直播伴侣</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 开始按钮 */}
-                  <button onClick={() => {
-                    setShowBanboGuide(false)
-                    localStorage.setItem('banbo_guide_dismissed', '1')
-                  }} style={{
-                    padding: '12px 36px', borderRadius: 8, border: 'none',
-                    background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
-                    color: '#fff', fontSize: 14, fontWeight: 600,
-                    cursor: 'pointer', fontFamily: C.font,
-                    boxShadow: '0 4px 12px rgba(99,102,241,0.4)',
-                    transition: 'transform 0.15s',
-                  }}
-                    onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
-                    onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                  >
-                    开始配置 👉
-                  </button>
-                </div>
-              </div>
-            )}
-
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, minHeight: 0, boxShadow: 'inset 8px 0 16px -8px rgba(0,0,0,0.06)' }}>
             {/* 内容 */}
             <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
               <UnifiedBanboPanel
