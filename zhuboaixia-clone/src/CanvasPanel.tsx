@@ -1275,7 +1275,7 @@ type CommandItem = { id: string; type: CommandType; label: string; desc: string;
 const DEFAULT_COMMANDS: CommandItem[] = [
   { id: 'c1', type: 'entrance', label: '进场口令', icon: '🎭', color: '#A855F7', desc: '系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画\n适用：每次开播首次出场 / 退场后重新上场', defaultPhrase: '有请模特上场', customPhrase: '' },
   { id: 'c2', type: 'exit', label: '退场口令', icon: '🚪', color: '#FB923C', desc: '屏幕上的形象 → 播放退场动画 → 离场\n适用：临时不需要形象 / 换品前先清场', defaultPhrase: '请模特先下场', customPhrase: '' },
-  { id: 'c3', type: 'switch', label: '指定链接硬切', icon: '⚡', color: '#F59E0B', desc: '口令含链接号 → 直接切到那个链接的形象\n有形象在场 → 硬切（无过渡）/ 无形象在场 → 正常入场\n适用：快速展示不同商品的穿搭效果', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
+  { id: 'c3', type: 'switch', label: '指定链接直切', icon: '⚡', color: '#F59E0B', desc: '口令含链接号 → 直接切到那个链接的形象\n有形象在场 → 直切（无过渡）/ 无形象在场 → 正常入场\n适用：快速展示不同商品的穿搭效果', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
 ]
 
 function CommandContent() {
@@ -1398,21 +1398,6 @@ function CommandContent() {
         })}
       </div>
 
-      {/* 异常提示区域 */}
-      <div style={{
-        marginTop: 12, padding: '10px 12px', borderRadius: 8,
-        background: '#FFF7E6', border: '1px solid #FFE58F',
-      }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#B8860B', marginBottom: 6 }}>⚠️ 异常兜底规则</div>
-        <div style={{ fontSize: 10, color: '#8B6914', lineHeight: 1.8 }}>
-          • 没选讲解中商品 → 模特不知道该站哪，记得先选哦<br />
-          • 商品没绑模特 → 这件商品还没有伴播模特，去形象库选一个吧<br />
-          • 模特不在场 → 模特还没上场呢，先说进场口令吧<br />
-          • 链接没绑模特 → 该链接还没有伴播模特，去形象库挑一个吧<br />
-          • 统一原则：无匹配时画面不变化，仅工作台提示，不阻断直播
-        </div>
-      </div>
-
       {/* 事件态口令配置 */}
       <div style={{
         marginTop: 12, padding: '12px', borderRadius: 8,
@@ -1471,41 +1456,6 @@ function CommandContent() {
 }
 
 // ============ 折叠异常提示组件 ============
-function CollapsibleExceptions({ exceptions, color }: { exceptions: string[]; color: string }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div>
-      <div onClick={() => setOpen(!open)} style={{
-        fontSize: 10, color: color, cursor: 'pointer',
-        display: 'flex', alignItems: 'center', gap: 4,
-        padding: '3px 0', userSelect: 'none',
-      }}>
-        <span style={{
-          transition: 'transform 0.2s',
-          transform: open ? 'rotate(90deg)' : 'none',
-          display: 'inline-block',
-        }}>▸</span>
-        遇到问题怎么办？
-      </div>
-      {open && (
-        <div style={{
-          marginTop: 4, padding: '6px 8px', borderRadius: 6,
-          background: `${color}08`, border: `1px solid ${color}15`,
-        }}>
-          {exceptions.map((text, i) => (
-            <div key={i} style={{
-              fontSize: 10, color: '#6B7280', lineHeight: 1.7,
-              display: 'flex', alignItems: 'flex-start', gap: 4,
-            }}>
-              <span style={{ flexShrink: 0 }}>•</span>
-              <span>{text}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
 
 function FlowGuideCard() {
   const [open, setOpen] = useState(true)
@@ -1529,7 +1479,7 @@ function FlowGuideCard() {
           ① 开播时形象默认<strong>不出场</strong><br />
           ② 运营在后台切换「<strong>讲解中商品</strong>」<br />
           ③ 主播说进场口令 → 系统找到该商品绑定的形象 → 播放入场动画<br />
-          ④ 之后可以说退场口令离场，或指定链接口令硬切到另一个形象
+          ④ 之后可以说退场口令离场，或指定链接口令直切到另一个形象
         </div>
       )}
     </div>
@@ -1843,7 +1793,7 @@ function UnifiedBanboPanel({
                     {[
                       { icon: '🎭', label: '进场', type: 'entrance' as const },
                       { icon: '🚪', label: '退场', type: 'exit' as const },
-                      { icon: '⚡', label: '硬切', type: 'switch' as const },
+                      { icon: '⚡', label: '直切', type: 'switch' as const },
                     ].map(item => {
                       const cmd = commands.find(c => c.type === item.type)
                       const isConfigured = !!cmd
@@ -1870,19 +1820,6 @@ function UnifiedBanboPanel({
                   {commands.map(cmd => {
                     const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
                     const isEditing = editingCmdId === cmd.id
-                    const exceptionTexts: Record<CommandType, string[]> = {
-                      entrance: [
-                        '没选商品？模特不知道该站哪，记得先选讲解中商品哦',
-                        '这件商品还没有伴播模特，去形象库选一个吧',
-                      ],
-                      exit: [
-                        '模特还没上场呢，先说进场口令吧',
-                      ],
-                      switch: [
-                        '该链接还没有伴播模特，去形象库挑一个吧',
-                        '口令里没说切到几号，试试说「看看3号」',
-                      ],
-                    }
                     return (
                       <div key={cmd.id} style={{
                         padding: '10px', borderRadius: 8,
@@ -1957,7 +1894,6 @@ function UnifiedBanboPanel({
                             }}>改口令</button>
                           </div>
                         )}
-                        <CollapsibleExceptions exceptions={exceptionTexts[cmd.type]} color={cmd.color} />
                       </div>
                     )
                   })}
@@ -2022,20 +1958,6 @@ function UnifiedBanboPanel({
                       </div>
                     )
                   })}
-                  {/* 异常兜底规则（暖心版） */}
-                  <div style={{
-                    marginTop: 8, padding: '8px 10px', borderRadius: 6,
-                    background: '#FFF7E6', border: '1px solid #FFE58F',
-                  }}>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: '#B8860B', marginBottom: 4 }}>⚠️ 异常兜底规则</div>
-                    <div style={{ fontSize: 9, color: '#8B6914', lineHeight: 1.7 }}>
-                      • 没选讲解中商品 → 模特不知道该站哪，记得先选哦<br />
-                      • 商品没绑模特 → 这件商品还没有伴播模特，去形象库选一个吧<br />
-                      • 模特不在场 → 模特还没上场呢，先说进场口令吧<br />
-                      • 链接没绑模特 → 该链接还没有伴播模特，去形象库挑一个吧<br />
-                      • 统一原则：无匹配时画面不变化，仅工作台提示，不阻断直播
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
