@@ -2068,7 +2068,7 @@ function UnifiedBanboPanel({
                     fontSize: 9, color: C.textSec, lineHeight: 1.6, marginBottom: 8,
                   }}>
                     该模特支持实时搭话：主播说出对应口令时，模特会张嘴说出预设回复。<br/>
-                    <b style={{ color: C.orange }}>⚡ 搭话优先：当口令同时匹配搭话和事件态动作时，优先执行搭话。</b>
+                    <b style={{ color: C.orange }}>⚡ 搭话优先：当口令同时匹配搭话和特殊动作时，优先执行搭话。</b>
                   </div>
                   {/* 搭话开关 + 规则管理 */}
                   {(() => {
