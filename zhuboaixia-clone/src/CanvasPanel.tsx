@@ -1273,9 +1273,9 @@ type CommandType = 'entrance' | 'exit' | 'switch'
 type CommandItem = { id: string; type: CommandType; label: string; desc: string; defaultPhrase: string; customPhrase: string; icon: string; color: string }
 
 const DEFAULT_COMMANDS: CommandItem[] = [
-  { id: 'c1', type: 'entrance', label: '进场口令', icon: '🎭', color: '#A855F7', desc: '主播说口令 → 模特自动出现在当前商品旁边', defaultPhrase: '有请模特上场', customPhrase: '' },
-  { id: 'c2', type: 'exit', label: '退场口令', icon: '🚪', color: '#FB923C', desc: '主播说口令 → 模特挥手告别退场', defaultPhrase: '请模特先下场', customPhrase: '' },
-  { id: 'c3', type: 'switch', label: '指定链接口令', icon: '⚡', color: '#F59E0B', desc: '主播说口令（含链接号）→ 直接切到对应商品的模特', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
+  { id: 'c1', type: 'entrance', label: '进场口令', icon: '🎭', color: '#A855F7', desc: '系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画\n适用：每次开播首次出场 / 退场后重新上场', defaultPhrase: '有请模特上场', customPhrase: '' },
+  { id: 'c2', type: 'exit', label: '退场口令', icon: '🚪', color: '#FB923C', desc: '屏幕上的形象 → 播放退场动画 → 离场\n适用：临时不需要形象 / 换品前先清场', defaultPhrase: '请模特先下场', customPhrase: '' },
+  { id: 'c3', type: 'switch', label: '指定链接硬切', icon: '⚡', color: '#F59E0B', desc: '口令含链接号 → 直接切到那个链接的形象\n有形象在场 → 硬切（无过渡）/ 无形象在场 → 正常入场\n适用：快速展示不同商品的穿搭效果', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
 ]
 
 function CommandContent() {
@@ -1501,6 +1501,35 @@ function CollapsibleExceptions({ exceptions, color }: { exceptions: string[]; co
               <span>{text}</span>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FlowGuideCard() {
+  const [open, setOpen] = useState(true)
+  return (
+    <div style={{
+      marginBottom: 8, borderRadius: 8,
+      background: '#F0F4FF', border: '1px solid #D6E4FF',
+      overflow: 'hidden',
+    }}>
+      <div onClick={() => setOpen(!open)} style={{
+        padding: '8px 10px', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: '#3B82F6' }}>
+          💡 伴播形象是怎么出场的？
+        </span>
+        <span style={{ fontSize: 10, color: '#93C5FD' }}>{open ? '收起' : '展开'}</span>
+      </div>
+      {open && (
+        <div style={{ padding: '0 10px 10px', fontSize: 11, color: '#4B5563', lineHeight: 1.8 }}>
+          ① 开播时形象默认<strong>不出场</strong><br />
+          ② 运营在后台切换「<strong>讲解中商品</strong>」<br />
+          ③ 主播说进场口令 → 系统找到该商品绑定的形象 → 播放入场动画<br />
+          ④ 之后可以说退场口令离场，或指定链接口令硬切到另一个形象
         </div>
       )}
     </div>
@@ -1794,7 +1823,7 @@ function UnifiedBanboPanel({
             </div>
           )}
           {/* ===== Step 2：设定出场和退场 ===== */}
-          <StepHeader step={2} title="设定出场和退场" desc="进场口令 / 退场口令 / 指定链接口令" done={step2Confirmed} />
+          <StepHeader step={2} title="设定出场和退场" desc="理解触发流程 → 配置口令" done={step2Confirmed} />
           {expandedSteps[2] && (
             <div style={{
               margin: '0 12px', padding: '12px',
@@ -1834,6 +1863,9 @@ function UnifiedBanboPanel({
                     })}
                   </div>
 
+                  {/* 💡 全局流程说明 */}
+                  <FlowGuideCard />
+
                   {/* 三张口令卡片 */}
                   {commands.map(cmd => {
                     const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
@@ -1862,7 +1894,7 @@ function UnifiedBanboPanel({
                           <span style={{ fontSize: 16 }}>{cmd.icon}</span>
                           <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{cmd.label}</span>
                         </div>
-                        <div style={{ fontSize: 11, color: C.textSec, marginBottom: 8, paddingLeft: 2 }}>
+                        <div style={{ fontSize: 11, color: C.textSec, marginBottom: 8, paddingLeft: 2, whiteSpace: 'pre-line', lineHeight: 1.7 }}>
                           {cmd.desc}
                         </div>
                         {isEditing ? (
@@ -1929,52 +1961,6 @@ function UnifiedBanboPanel({
                       </div>
                     )
                   })}
-
-                  {/* 模拟测试区 */}
-                  <div style={{
-                    marginTop: 8, padding: '10px', borderRadius: 8,
-                    background: '#F8F0FF', border: '1px solid rgba(168,85,247,0.2)',
-                  }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: '#7C3AED', marginBottom: 6 }}>
-                      🎮 模拟测试（不等开播，现在就试）
-                    </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      {[
-                        { label: '🎭 模拟进场', type: 'entrance' as const, tip: '需先选讲解中商品' },
-                        { label: '🚪 模拟退场', type: 'exit' as const, tip: '需模特已在场' },
-                        { label: '⚡ 模拟硬切', type: 'switch' as const, tip: '测试指定链接切换' },
-                      ].map(btn => (
-                        <button key={btn.type} onClick={() => {
-                          if (btn.type === 'entrance') {
-                            const entranceEvent = eventActions.find(ev => ev.id === 'ea_entrance')
-                            if (entranceEvent) { setPreviewEventId(entranceEvent.id); setPreviewStateId(null) }
-                          }
-                          if (btn.type === 'exit') {
-                            const exitEvent = eventActions.find(ev => ev.id === 'ea_exit')
-                            if (exitEvent) { setPreviewEventId(exitEvent.id); setPreviewStateId(null) }
-                          }
-                          if (btn.type === 'switch') {
-                            // 硬切：切换预览到其他已配置形象的商品
-                            const otherWithAvatar = products.filter(p => p.boundAvatarId && p.id !== selectedProductId)
-                            if (otherWithAvatar.length > 0) {
-                              const states = NORMAL_STATES[otherWithAvatar[0].boundAvatarId!] || DEFAULT_STATES
-                              if (states.length > 0) { setPreviewStateId(states[0].id); setPreviewEventId(null) }
-                            }
-                          }
-                        }} style={{
-                          flex: 1, padding: '8px 6px', borderRadius: 6,
-                          border: '1px solid rgba(168,85,247,0.3)',
-                          background: 'rgba(168,85,247,0.08)',
-                          color: '#7C3AED', fontSize: 11, fontWeight: 500,
-                          cursor: 'pointer', fontFamily: C.font,
-                          textAlign: 'center',
-                        }}>
-                          <div>{btn.label}</div>
-                          <div style={{ fontSize: 8, color: '#A78BFA', marginTop: 2 }}>{btn.tip}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* 确认按钮 */}
                   <button onClick={confirmStep2} style={{
