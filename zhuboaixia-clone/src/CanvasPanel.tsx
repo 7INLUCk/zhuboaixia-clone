@@ -1269,12 +1269,13 @@ function ProductAvatarContent({
 }
 
 // ============ 进退场指令组件 ============
-type CommandType = 'show' | 'exit'
-type CommandItem = { id: string; type: CommandType; label: string; desc: string; defaultPhrase: string; customPhrase: string }
+type CommandType = 'entrance' | 'exit' | 'switch'
+type CommandItem = { id: string; type: CommandType; label: string; desc: string; defaultPhrase: string; customPhrase: string; icon: string; color: string }
 
 const DEFAULT_COMMANDS: CommandItem[] = [
-  { id: 'c1', type: 'show', label: '展示口令', desc: '伴播不在场 → 播放入场动画，穿着对应商品登场\n伴播已在场 → 原地换装（无进出动画）', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
-  { id: 'c2', type: 'exit', label: '退场口令', desc: '伴播播放退场动画离场。需要再次展示时，用展示口令重新登场', defaultPhrase: '请模特先下场', customPhrase: '' },
+  { id: 'c1', type: 'entrance', label: '进场口令', icon: '🎭', color: '#A855F7', desc: '主播说口令 → 模特自动出现在当前商品旁边', defaultPhrase: '有请模特上场', customPhrase: '' },
+  { id: 'c2', type: 'exit', label: '退场口令', icon: '🚪', color: '#FB923C', desc: '主播说口令 → 模特挥手告别退场', defaultPhrase: '请模特先下场', customPhrase: '' },
+  { id: 'c3', type: 'switch', label: '指定链接口令', icon: '⚡', color: '#F59E0B', desc: '主播说口令（含链接号）→ 直接切到对应商品的模特', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
 ]
 
 function CommandContent() {
@@ -1297,8 +1298,9 @@ function CommandContent() {
   }
 
   const typeConfig: Record<CommandType, { icon: string; color: string; bg: string }> = {
-    show: { icon: '🎭', color: C.green, bg: '#E8F5E9' },
-    exit: { icon: '🚪', color: C.orange, bg: '#FFF3E0' },
+    entrance: { icon: '🎭', color: '#A855F7', bg: '#F8F0FF' },
+    exit: { icon: '🚪', color: '#FB923C', bg: '#FFF3E0' },
+    switch: { icon: '⚡', color: '#F59E0B', bg: '#FFF7E6' },
   }
 
   return (
@@ -1401,11 +1403,13 @@ function CommandContent() {
         marginTop: 12, padding: '10px 12px', borderRadius: 8,
         background: '#FFF7E6', border: '1px solid #FFE58F',
       }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#B8860B', marginBottom: 6 }}>⚠️ 异常提示规则</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#B8860B', marginBottom: 6 }}>⚠️ 异常兜底规则</div>
         <div style={{ fontSize: 10, color: '#8B6914', lineHeight: 1.8 }}>
-          • 展示口令无对应链接形象 → 画面不变 + 提示「无N号链接服饰的伴播模特」<br />
-          • 退场口令但伴播不在场 → 画面不变 + 提示「无需退场」<br />
-          • 统一原则：无匹配时画面不变化，仅工作台提示，不阻断直播流程
+          • 没选讲解中商品 → 模特不知道该站哪，记得先选哦<br />
+          • 商品没绑模特 → 这件商品还没有伴播模特，去形象库选一个吧<br />
+          • 模特不在场 → 模特还没上场呢，先说进场口令吧<br />
+          • 链接没绑模特 → 该链接还没有伴播模特，去形象库挑一个吧<br />
+          • 统一原则：无匹配时画面不变化，仅工作台提示，不阻断直播
         </div>
       </div>
 
@@ -1462,6 +1466,43 @@ function CommandContent() {
           })}
         </div>
       </div>
+    </div>
+  )
+}
+
+// ============ 折叠异常提示组件 ============
+function CollapsibleExceptions({ exceptions, color }: { exceptions: string[]; color: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div>
+      <div onClick={() => setOpen(!open)} style={{
+        fontSize: 10, color: color, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: 4,
+        padding: '3px 0', userSelect: 'none',
+      }}>
+        <span style={{
+          transition: 'transform 0.2s',
+          transform: open ? 'rotate(90deg)' : 'none',
+          display: 'inline-block',
+        }}>▸</span>
+        遇到问题怎么办？
+      </div>
+      {open && (
+        <div style={{
+          marginTop: 4, padding: '6px 8px', borderRadius: 6,
+          background: `${color}08`, border: `1px solid ${color}15`,
+        }}>
+          {exceptions.map((text, i) => (
+            <div key={i} style={{
+              fontSize: 10, color: '#6B7280', lineHeight: 1.7,
+              display: 'flex', alignItems: 'flex-start', gap: 4,
+            }}>
+              <span style={{ flexShrink: 0 }}>•</span>
+              <span>{text}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -1752,9 +1793,8 @@ function UnifiedBanboPanel({
               )}
             </div>
           )}
-
           {/* ===== Step 2：设定出场和退场 ===== */}
-          <StepHeader step={2} title="设定出场和退场" desc="展示口令=出场+切品，退场口令=离场" done={step2Confirmed} />
+          <StepHeader step={2} title="设定出场和退场" desc="进场口令 / 退场口令 / 指定链接口令" done={step2Confirmed} />
           {expandedSteps[2] && (
             <div style={{
               margin: '0 12px', padding: '12px',
@@ -1767,41 +1807,87 @@ function UnifiedBanboPanel({
                 </div>
               ) : !step2Confirmed ? (
                 <div>
+                  {/* 状态总览栏 */}
+                  <div style={{
+                    display: 'flex', gap: 6, marginBottom: 10,
+                  }}>
+                    {[
+                      { icon: '🎭', label: '进场', type: 'entrance' as const },
+                      { icon: '🚪', label: '退场', type: 'exit' as const },
+                      { icon: '⚡', label: '硬切', type: 'switch' as const },
+                    ].map(item => {
+                      const cmd = commands.find(c => c.type === item.type)
+                      const isConfigured = !!cmd
+                      return (
+                        <div key={item.type} style={{
+                          flex: 1, padding: '6px 8px', borderRadius: 6,
+                          background: isConfigured ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)',
+                          border: `1px solid ${isConfigured ? 'rgba(52,211,153,0.3)' : 'rgba(251,191,36,0.3)'}`,
+                          textAlign: 'center',
+                        }}>
+                          <div style={{ fontSize: 12 }}>{item.icon} {item.label}</div>
+                          <div style={{ fontSize: 9, color: isConfigured ? '#34D399' : '#FBBF24', fontWeight: 600, marginTop: 2 }}>
+                            {isConfigured ? '✅ 已配置' : '⚠️ 待配置'}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* 三张口令卡片 */}
                   {commands.map(cmd => {
-                    const cfg = cmd.type === 'show'
-                      ? { icon: '🎭', label: '展示口令（出场+切品）', desc: cmd.desc, bg: '#E8F5E9' }
-                      : { icon: '🚪', label: '退场口令', desc: cmd.desc, bg: '#FFF3E0' }
                     const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
                     const isEditing = editingCmdId === cmd.id
+                    const exceptionTexts: Record<CommandType, string[]> = {
+                      entrance: [
+                        '没选商品？模特不知道该站哪，记得先选讲解中商品哦',
+                        '这件商品还没有伴播模特，去形象库选一个吧',
+                      ],
+                      exit: [
+                        '模特还没上场呢，先说进场口令吧',
+                      ],
+                      switch: [
+                        '该链接还没有伴播模特，去形象库挑一个吧',
+                        '口令里没说切到几号，试试说「看看3号」',
+                      ],
+                    }
                     return (
                       <div key={cmd.id} style={{
-                        padding: '10px', borderRadius: 8, background: cfg.bg,
-                        border: `1px solid ${C.border}`, marginBottom: 6,
+                        padding: '10px', borderRadius: 8,
+                        background: `${cmd.color}08`,
+                        border: `1px solid ${cmd.color}20`,
+                        marginBottom: 6,
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                          <span style={{ fontSize: 16 }}>{cfg.icon}</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{cfg.label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                          <span style={{ fontSize: 16 }}>{cmd.icon}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{cmd.label}</span>
                         </div>
-                        <div style={{ fontSize: 10, color: C.textSec, marginBottom: 8, lineHeight: 1.7 }}>
-                          {cmd.desc.split('\n').map((line, i) => <div key={i}>📍 {line}</div>)}
+                        <div style={{ fontSize: 11, color: C.textSec, marginBottom: 8, paddingLeft: 2 }}>
+                          {cmd.desc}
                         </div>
                         {isEditing ? (
-                          <div>
-                            {cmd.type === 'show' && (
+                          <div style={{ marginBottom: 6 }}>
+                            {cmd.type === 'entrance' && (
                               <div style={{
-                                fontSize: 10, color: '#6B7280', lineHeight: 1.7,
-                                marginBottom: 8, padding: '6px 8px', borderRadius: 6,
+                                fontSize: 10, color: '#6B7280', lineHeight: 1.6,
+                                marginBottom: 6, padding: '6px 8px', borderRadius: 6,
                                 background: '#F0F4FF', border: '1px solid #D6E4FF',
                               }}>
-                                ✏️ <b>自定义口令规则</b><br/>
-                                • 必须包含「{'{N}号链接」— 系统靠它匹配商品'}<br/>
-                                • 其他部分随意发挥，比如「看看{'{N}号链接穿上好不好看」'}<br/>
-                                • 口令是模糊匹配，不需要一字不差
+                                💡 进场口令匹配当前「讲解中商品」绑定的形象
+                              </div>
+                            )}
+                            {cmd.type === 'switch' && (
+                              <div style={{
+                                fontSize: 10, color: '#6B7280', lineHeight: 1.6,
+                                marginBottom: 6, padding: '6px 8px', borderRadius: 6,
+                                background: '#FFF7E6', border: '1px solid #FFE58F',
+                              }}>
+                                ✏️ 口令必须包含「{`{N}`}号链接」— 系统靠它匹配商品。其他随意发挥
                               </div>
                             )}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                               <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
-                                placeholder={cmd.type === 'show' ? '例：看看{N}号链接穿上身的效果' : ''}
+                                placeholder={cmd.type === 'switch' ? '例：看看{`{N}`}号链接穿上身的效果' : ''}
                                 style={{
                                   flex: 1, height: 30, padding: '0 10px', borderRadius: 6,
                                   border: `1px solid ${C.blue}`, fontSize: 12, fontFamily: C.font,
@@ -1823,30 +1909,76 @@ function UnifiedBanboPanel({
                             </div>
                           </div>
                         ) : (
-                          <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <span style={{
-                                fontSize: 13, fontWeight: 600, color: C.text,
-                                padding: '4px 10px', borderRadius: 6, background: '#fff',
-                                border: `1px solid ${C.border}`,
-                              }}>「{displayPhrase}」</span>
-                              <button onClick={() => {
-                                setEditingCmdId(cmd.id)
-                                setCmdEditValue(cmd.customPhrase || cmd.defaultPhrase)
-                              }} style={{
-                                padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`,
-                                background: '#fff', color: C.blue, fontSize: 11,
-                                cursor: 'pointer', fontFamily: C.font,
-                              }}>改口令</button>
-                            </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                            <span style={{
+                              fontSize: 13, fontWeight: 600, color: C.text,
+                              padding: '4px 10px', borderRadius: 6, background: '#fff',
+                              border: `1px solid ${C.border}`,
+                            }}>「{displayPhrase}」</span>
+                            <button onClick={() => {
+                              setEditingCmdId(cmd.id)
+                              setCmdEditValue(cmd.customPhrase || cmd.defaultPhrase)
+                            }} style={{
+                              padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`,
+                              background: '#fff', color: C.blue, fontSize: 11,
+                              cursor: 'pointer', fontFamily: C.font,
+                            }}>改口令</button>
                           </div>
                         )}
+                        <CollapsibleExceptions exceptions={exceptionTexts[cmd.type]} color={cmd.color} />
                       </div>
                     )
                   })}
+
+                  {/* 模拟测试区 */}
+                  <div style={{
+                    marginTop: 8, padding: '10px', borderRadius: 8,
+                    background: '#F8F0FF', border: '1px solid rgba(168,85,247,0.2)',
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: '#7C3AED', marginBottom: 6 }}>
+                      🎮 模拟测试（不等开播，现在就试）
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {[
+                        { label: '🎭 模拟进场', type: 'entrance' as const, tip: '需先选讲解中商品' },
+                        { label: '🚪 模拟退场', type: 'exit' as const, tip: '需模特已在场' },
+                        { label: '⚡ 模拟硬切', type: 'switch' as const, tip: '测试指定链接切换' },
+                      ].map(btn => (
+                        <button key={btn.type} onClick={() => {
+                          if (btn.type === 'entrance') {
+                            const entranceEvent = eventActions.find(ev => ev.id === 'ea_entrance')
+                            if (entranceEvent) { setPreviewEventId(entranceEvent.id); setPreviewStateId(null) }
+                          }
+                          if (btn.type === 'exit') {
+                            const exitEvent = eventActions.find(ev => ev.id === 'ea_exit')
+                            if (exitEvent) { setPreviewEventId(exitEvent.id); setPreviewStateId(null) }
+                          }
+                          if (btn.type === 'switch') {
+                            // 硬切：切换预览到其他已配置形象的商品
+                            const otherWithAvatar = products.filter(p => p.boundAvatarId && p.id !== selectedProductId)
+                            if (otherWithAvatar.length > 0) {
+                              const states = NORMAL_STATES[otherWithAvatar[0].boundAvatarId!] || DEFAULT_STATES
+                              if (states.length > 0) { setPreviewStateId(states[0].id); setPreviewEventId(null) }
+                            }
+                          }
+                        }} style={{
+                          flex: 1, padding: '8px 6px', borderRadius: 6,
+                          border: '1px solid rgba(168,85,247,0.3)',
+                          background: 'rgba(168,85,247,0.08)',
+                          color: '#7C3AED', fontSize: 11, fontWeight: 500,
+                          cursor: 'pointer', fontFamily: C.font,
+                          textAlign: 'center',
+                        }}>
+                          <div>{btn.label}</div>
+                          <div style={{ fontSize: 8, color: '#A78BFA', marginTop: 2 }}>{btn.tip}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* 确认按钮 */}
                   <button onClick={confirmStep2} style={{
-                    width: '100%', padding: '10px', marginTop: 6,
+                    width: '100%', padding: '10px', marginTop: 8,
                     borderRadius: 8, border: 'none',
                     background: 'linear-gradient(135deg, #60A5FA, #3B82F6)',
                     color: '#fff', fontSize: 13, fontWeight: 600,
@@ -1859,33 +1991,22 @@ function UnifiedBanboPanel({
                     ✅ 已确认，口令随时可以修改
                   </div>
                   {commands.map(cmd => {
-                    const cfg = cmd.type === 'show'
-                      ? { icon: '🎭', label: '展示口令（出场+切品）', bg: '#E8F5E9' }
-                      : { icon: '🚪', label: '退场口令', bg: '#FFF3E0' }
                     const displayPhrase = cmd.customPhrase || cmd.defaultPhrase
                     const isEditing = editingCmdId === cmd.id
                     return (
                       <div key={cmd.id} style={{
-                        padding: '8px 10px', borderRadius: 8, background: cfg.bg,
-                        border: `1px solid ${C.border}`, marginBottom: 4,
+                        padding: '8px 10px', borderRadius: 8,
+                        background: `${cmd.color}08`,
+                        border: `1px solid ${cmd.color}20`, marginBottom: 4,
                         display: 'flex', alignItems: 'center', gap: 6,
                       }}>
-                        <span style={{ fontSize: 14 }}>{cfg.icon}</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: C.text }}>{cfg.label}</span>
+                        <span style={{ fontSize: 14 }}>{cmd.icon}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: C.text }}>{cmd.label}</span>
                         {isEditing ? (
                           <div style={{ flex: 1 }}>
-                            {cmd.type === 'show' && (
-                              <div style={{
-                                fontSize: 9, color: '#6B7280', lineHeight: 1.6,
-                                marginBottom: 4, padding: '4px 6px', borderRadius: 4,
-                                background: '#F0F4FF', border: '1px solid #D6E4FF',
-                              }}>
-                                ✏️ 必须包含「{'{N}号链接」，其他随意。模糊匹配，不需一字不差'}
-                              </div>
-                            )}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               <input value={cmdEditValue} onChange={e => setCmdEditValue(e.target.value)}
-                                placeholder={cmd.type === 'show' ? '例：看看{N}号链接穿上身的效果' : ''}
+                                placeholder={cmd.type === 'switch' ? '例：看看{`{N}`}号链接穿上身的效果' : ''}
                                 style={{
                                   flex: 1, height: 26, padding: '0 8px', borderRadius: 4,
                                   border: `1px solid ${C.blue}`, fontSize: 11, fontFamily: C.font,
@@ -1915,15 +2036,17 @@ function UnifiedBanboPanel({
                       </div>
                     )
                   })}
-                  {/* 异常提示规则 */}
+                  {/* 异常兜底规则（暖心版） */}
                   <div style={{
                     marginTop: 8, padding: '8px 10px', borderRadius: 6,
                     background: '#FFF7E6', border: '1px solid #FFE58F',
                   }}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: '#B8860B', marginBottom: 4 }}>⚠️ 异常兜底规则</div>
                     <div style={{ fontSize: 9, color: '#8B6914', lineHeight: 1.7 }}>
-                      • 展示口令无对应链接形象 → 画面不变 + 提示「无该链接伴播模特」<br />
-                      • 退场口令但伴播不在场 → 画面不变 + 提示「无需退场」<br />
+                      • 没选讲解中商品 → 模特不知道该站哪，记得先选哦<br />
+                      • 商品没绑模特 → 这件商品还没有伴播模特，去形象库选一个吧<br />
+                      • 模特不在场 → 模特还没上场呢，先说进场口令吧<br />
+                      • 链接没绑模特 → 该链接还没有伴播模特，去形象库挑一个吧<br />
                       • 统一原则：无匹配时画面不变化，仅工作台提示，不阻断直播
                     </div>
                   </div>
