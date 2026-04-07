@@ -388,23 +388,125 @@ function getStepCompletion(products: ProductItem[], selectedProductId: string | 
   return { step1: false, step2: false, step3: false, status: 'new' as const }
 }
 
-// ============ Timeline 左栏组件（深色风格） ============
+// ============ 商品列表列（第一列，220px 深色） ============
+function ProductListColumn({
+  products, selectedProductId, onSelectProduct,
+  currentDemonstrationProductId, onSetDemonstrationProduct,
+}: {
+  products: ProductItem[]
+  selectedProductId: string | null
+  onSelectProduct: (id: string) => void
+  currentDemonstrationProductId: string | null
+  onSetDemonstrationProduct: (id: string | null) => void
+}) {
+  const productItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const productListRef = useRef<HTMLDivElement>(null)
+  const boundAvatars = products.filter(p => p.boundAvatarId)
+  const configuredCount = boundAvatars.length
+
+  const handleSelectProduct = (id: string) => {
+    onSelectProduct(id)
+    // 滚动选中项到可见
+    setTimeout(() => {
+      productItemRefs.current[id]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }, 0)
+  }
+
+  return (
+    <div style={{
+      width: 220, flexShrink: 0,
+      background: '#111827',
+      display: 'flex', flexDirection: 'column',
+      position: 'relative', overflow: 'hidden',
+      boxShadow: '20px 0 30px -10px rgba(0,0,0,0.25)',
+      minHeight: 0,
+    }}>
+      {/* 顶部标题 */}
+      <div style={{
+        padding: '10px 12px',
+        background: 'rgba(0,0,0,0.3)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        flexShrink: 0,
+      }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 2 }}>📹 商品列表</div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>
+          {products.length} 个商品 · {configuredCount} 个已配置
+        </div>
+      </div>
+
+      {/* 商品列表（全高可滚动） */}
+      <div ref={productListRef} style={{
+        flex: 1, overflowY: 'auto',
+        padding: '6px 8px',
+        display: 'flex', flexDirection: 'column', gap: 2,
+      }}>
+        {products.map(p => {
+          const isSelected = selectedProductId === p.id
+          const isDemo = currentDemonstrationProductId === p.id
+          const comp = getStepCompletion(products, p.id)
+          const statusStyle = comp.status === 'ready'
+            ? { label: '就绪', bg: 'rgba(52,211,153,0.2)', color: '#34D399' }
+            : comp.status === 'partial'
+            ? { label: '半配', bg: 'rgba(251,191,36,0.2)', color: '#FBBF24' }
+            : { label: '未配', bg: 'rgba(239,68,68,0.2)', color: '#EF4444' }
+          return (
+            <div key={p.id} ref={el => { productItemRefs.current[p.id] = el }} onClick={() => handleSelectProduct(p.id)} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 8px', borderRadius: 6, minHeight: 32, flexShrink: 0,
+              background: isSelected ? 'rgba(96,165,250,0.25)' : 'transparent',
+              border: isSelected ? '1px solid rgba(96,165,250,0.4)' : '1px solid transparent',
+              borderLeft: isSelected ? '3px solid #60A5FA' : '3px solid transparent',
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}>
+              <span style={{
+                fontSize: 8, padding: '1px 4px', borderRadius: 2,
+                background: isSelected ? 'rgba(96,165,250,0.2)' : 'rgba(255,255,255,0.1)',
+                color: isSelected ? '#93BBFC' : 'rgba(255,255,255,0.6)',
+                flexShrink: 0, fontWeight: 600,
+              }}>{p.linkNum}号</span>
+              <span style={{
+                flex: 1, fontSize: 11,
+                color: isSelected ? '#fff' : 'rgba(255,255,255,0.7)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>{p.name}</span>
+              {isDemo && (
+                <span style={{ fontSize: 8, flexShrink: 0 }}>🎯</span>
+              )}
+              <span style={{
+                fontSize: 8, padding: '1px 4px', borderRadius: 2, flexShrink: 0,
+                background: statusStyle.bg, color: statusStyle.color,
+              }}>{statusStyle.label}</span>
+              {/* 设为讲解中按钮 */}
+              <span
+                onClick={e => { e.stopPropagation(); onSetDemonstrationProduct(isDemo ? null : p.id) }}
+                style={{
+                  fontSize: 8, padding: '1px 3px', borderRadius: 2, flexShrink: 0,
+                  background: isDemo ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)',
+                  color: isDemo ? '#34D399' : 'rgba(255,255,255,0.3)',
+                  cursor: 'pointer', border: 'none', lineHeight: '14px',
+                }}
+                title={isDemo ? '取消讲解中' : '设为讲解中'}
+              >{isDemo ? '讲解中' : '设为讲解'}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ============ Timeline 预览列组件（深色风格） ============
 function TimelineLeftBar({
   products, selectedProductId, onSelectProduct, banboEnabled, onToggleBanbo,
   previewStateId, setPreviewStateId, previewEventId, setPreviewEventId,
-  currentDemonstrationProductId, onSetDemonstrationProduct,
 }: {
   products: ProductItem[]; selectedProductId: string | null;
   onSelectProduct: (id: string) => void; banboEnabled: boolean; onToggleBanbo: () => void;
   previewStateId: string | null; setPreviewStateId: (id: string | null) => void;
   previewEventId: string | null; setPreviewEventId: (id: string | null) => void;
-  currentDemonstrationProductId: string | null;
-  onSetDemonstrationProduct: (id: string | null) => void;
 }) {
   const totalDuration = 60 // 60秒时间轴
-  const productItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const previewCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
-  const productListRef = useRef<HTMLDivElement>(null)
   const previewAreaRef = useRef<HTMLDivElement>(null)
   const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const autoPlayResumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -489,13 +591,10 @@ function TimelineLeftBar({
     }, ev.duration * 1000)
   }
 
-  // 点击商品 → 滚动对应预览卡片到可见区域 + 选中项滚动到可见
+  // 点击商品 → 滚动对应预览卡片到可见区域
   const handleSelectProduct = (id: string) => {
     onSelectProduct(id)
-    // 滚动商品列表中选中项到可见
     setTimeout(() => {
-      productItemRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      // 滚动预览区对应卡片到可见（snap 对齐）
       previewCardRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 50)
   }
@@ -512,11 +611,11 @@ function TimelineLeftBar({
 
   return (
     <div style={{
-      width: 280, flexShrink: 0,
+      flex: 1, minWidth: 0, flexShrink: 0,
       background: '#111827',
       display: 'flex', flexDirection: 'column',
       position: 'relative', overflow: 'hidden',
-      boxShadow: '20px 0 30px -10px rgba(0,0,0,0.25)',
+      boxShadow: 'inset 20px 0 30px -10px rgba(0,0,0,0.25)',
       minHeight: 0,
     }}>
       {/* 顶部标题 */}
@@ -528,78 +627,7 @@ function TimelineLeftBar({
       }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 2 }}>📹 伴播预览</div>
         <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>
-          {products.length} 个商品 · {boundAvatars.length} 个已配置
-        </div>
-        {/* 讲解中商品选择器（模拟运营后台切换） */}
-        <div style={{ marginTop: 6 }}>
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 3 }}>
-            🎯 讲解中商品 <span style={{ color: 'rgba(255,255,255,0.25)' }}>(模拟后台切换)</span>
-          </div>
-          <select
-            value={currentDemonstrationProductId ?? ''}
-            onChange={e => onSetDemonstrationProduct(e.target.value || null)}
-            style={{
-              width: '100%', height: 26, borderRadius: 4,
-              border: '1px solid rgba(255,255,255,0.15)',
-              background: 'rgba(255,255,255,0.08)',
-              color: currentDemonstrationProductId ? '#34D399' : 'rgba(255,255,255,0.5)',
-              fontSize: 10, fontFamily: C.font,
-              padding: '0 6px', outline: 'none', cursor: 'pointer',
-            }}
-          >
-            <option value="">未选择</option>
-            {products.map(p => (
-              <option key={p.id} value={p.id} style={{ color: '#000' }}>
-                {p.linkNum}号 · {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* 商品完成度列表（精确3.5行：每行26px × 3.5 + gap 2px × 3 = 97px） */}
-      <div ref={productListRef} style={{
-        padding: '6px 8px', flexShrink: 0,
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        background: 'rgba(0,0,0,0.15)',
-      }}>
-        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 4, padding: '0 4px' }}>商品配置</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, height: 97, overflowY: 'auto' }}>
-          {products.map(p => {
-            const isSelected = selectedProductId === p.id
-            const comp = getStepCompletion(products, p.id)
-            const statusStyle = comp.status === 'ready'
-              ? { label: '就绪', bg: 'rgba(52,211,153,0.2)', color: '#34D399' }
-              : comp.status === 'partial'
-              ? { label: '半配', bg: 'rgba(251,191,36,0.2)', color: '#FBBF24' }
-              : { label: '未配', bg: 'rgba(239,68,68,0.2)', color: '#EF4444' }
-            return (
-              <div key={p.id} ref={el => { productItemRefs.current[p.id] = el }} onClick={() => handleSelectProduct(p.id)} style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '4px 8px', borderRadius: 4, height: 26, flexShrink: 0,
-                background: isSelected ? 'rgba(96,165,250,0.25)' : 'transparent',
-                border: isSelected ? '1px solid rgba(96,165,250,0.4)' : '1px solid transparent',
-                borderLeft: isSelected ? '3px solid #60A5FA' : '3px solid transparent',
-                cursor: 'pointer', transition: 'all 0.15s',
-              }}>
-                <span style={{
-                  fontSize: 8, padding: '1px 4px', borderRadius: 2,
-                  background: isSelected ? 'rgba(96,165,250,0.2)' : 'rgba(255,255,255,0.1)',
-                  color: isSelected ? '#93BBFC' : 'rgba(255,255,255,0.6)',
-                  flexShrink: 0,
-                }}>{p.linkNum}号</span>
-                <span style={{
-                  fontSize: 10, color: isSelected ? '#fff' : 'rgba(255,255,255,0.6)',
-                  fontWeight: isSelected ? 600 : 400,
-                  flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>{p.name}</span>
-                <span style={{
-                  fontSize: 8, padding: '1px 5px', borderRadius: 3, flexShrink: 0,
-                  background: statusStyle.bg, color: statusStyle.color, fontWeight: 600,
-                }}>{statusStyle.label}</span>
-              </div>
-            )
-          })}
+          {boundAvatars.length} 个已配置
         </div>
       </div>
 
@@ -3780,7 +3808,20 @@ export default function CanvasPanel({ onClose }: Props) {
       {activeMode === 'banbo' && !showBanboGuide && (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0, minHeight: 0 }}>
 
-          {/* Timeline 左栏（固定 280px，永远可见） */}
+          {/* 第一列：商品列表（固定 220px） */}
+          <ProductListColumn
+            products={products}
+            selectedProductId={selectedProductId}
+            onSelectProduct={(id) => {
+              setSelectedProductId(id)
+              setPreviewStateId(null)
+              setPreviewEventId(null)
+            }}
+            currentDemonstrationProductId={currentDemonstrationProductId}
+            onSetDemonstrationProduct={setCurrentDemonstrationProductId}
+          />
+
+          {/* 第二列：预览区（flex-1） */}
           <TimelineLeftBar
             products={products}
             selectedProductId={selectedProductId}
@@ -3795,8 +3836,6 @@ export default function CanvasPanel({ onClose }: Props) {
             setPreviewStateId={setPreviewStateId}
             previewEventId={previewEventId}
             setPreviewEventId={setPreviewEventId}
-            currentDemonstrationProductId={currentDemonstrationProductId}
-            onSetDemonstrationProduct={setCurrentDemonstrationProductId}
           />
 
           {/* 右侧：统一配置面板 */}
