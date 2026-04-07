@@ -392,11 +392,14 @@ function getStepCompletion(products: ProductItem[], selectedProductId: string | 
 function TimelineLeftBar({
   products, selectedProductId, onSelectProduct, banboEnabled, onToggleBanbo,
   previewStateId, setPreviewStateId, previewEventId, setPreviewEventId,
+  currentDemonstrationProductId, onSetDemonstrationProduct,
 }: {
   products: ProductItem[]; selectedProductId: string | null;
   onSelectProduct: (id: string) => void; banboEnabled: boolean; onToggleBanbo: () => void;
   previewStateId: string | null; setPreviewStateId: (id: string | null) => void;
   previewEventId: string | null; setPreviewEventId: (id: string | null) => void;
+  currentDemonstrationProductId: string | null;
+  onSetDemonstrationProduct: (id: string | null) => void;
 }) {
   const totalDuration = 60 // 60秒时间轴
   const productItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -526,6 +529,31 @@ function TimelineLeftBar({
         <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 2 }}>📹 伴播预览</div>
         <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>
           {products.length} 个商品 · {boundAvatars.length} 个已配置
+        </div>
+        {/* 讲解中商品选择器（模拟运营后台切换） */}
+        <div style={{ marginTop: 6 }}>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 3 }}>
+            🎯 讲解中商品 <span style={{ color: 'rgba(255,255,255,0.25)' }}>(模拟后台切换)</span>
+          </div>
+          <select
+            value={currentDemonstrationProductId ?? ''}
+            onChange={e => onSetDemonstrationProduct(e.target.value || null)}
+            style={{
+              width: '100%', height: 26, borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.15)',
+              background: 'rgba(255,255,255,0.08)',
+              color: currentDemonstrationProductId ? '#34D399' : 'rgba(255,255,255,0.5)',
+              fontSize: 10, fontFamily: C.font,
+              padding: '0 6px', outline: 'none', cursor: 'pointer',
+            }}
+          >
+            <option value="">未选择</option>
+            {products.map(p => (
+              <option key={p.id} value={p.id} style={{ color: '#000' }}>
+                {p.linkNum}号 · {p.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -1273,9 +1301,9 @@ type CommandType = 'entrance' | 'exit' | 'switch'
 type CommandItem = { id: string; type: CommandType; label: string; desc: string; defaultPhrase: string; customPhrase: string; icon: string; color: string }
 
 const DEFAULT_COMMANDS: CommandItem[] = [
-  { id: 'c1', type: 'entrance', label: '进场口令', icon: '🎭', color: '#A855F7', desc: '系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画\n适用：每次开播首次出场 / 退场后重新上场', defaultPhrase: '有请模特上场', customPhrase: '' },
+  { id: 'c1', type: 'entrance', label: '进场口令', icon: '🎭', color: '#A855F7', desc: '系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画\n适用：每次开播首次出场 / 退场后重新上场\n\n💡 运营在后台手动切换讲解中商品时，系统也会自动退旧入新', defaultPhrase: '有请模特上场', customPhrase: '' },
   { id: 'c2', type: 'exit', label: '退场口令', icon: '🚪', color: '#FB923C', desc: '屏幕上的形象 → 播放退场动画 → 离场\n适用：临时不需要形象 / 换品前先清场', defaultPhrase: '请模特先下场', customPhrase: '' },
-  { id: 'c3', type: 'switch', label: '指定链接直切', icon: '⚡', color: '#F59E0B', desc: '口令含链接号 → 直接切到那个链接的形象\n有形象在场 → 直切（无过渡）/ 无形象在场 → 正常入场\n适用：快速展示不同商品的穿搭效果', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
+  { id: 'c3', type: 'switch', label: '指定链接直切', icon: '⚡', color: '#F59E0B', desc: '口令含链接号 → 直接切到该链接形象\n系统同时自动把讲解中状态挪到该商品（后续切讲解商品时会自动退旧入新）\n有形象在场 → 直切 / 无形象 → 正常入场\n适用：快速展示不同商品的穿搭效果', defaultPhrase: '看看{N}号链接的模特上身效果', customPhrase: '' },
 ]
 
 function CommandContent() {
@@ -1477,9 +1505,10 @@ function FlowGuideCard() {
       {open && (
         <div style={{ padding: '0 10px 10px', fontSize: 11, color: '#4B5563', lineHeight: 1.8 }}>
           ① 开播时形象默认<strong>不出场</strong><br />
-          ② 运营在后台切换「<strong>讲解中商品</strong>」<br />
-          ③ 主播说进场口令 → 系统找到该商品绑定的形象 → 播放入场动画<br />
-          ④ 之后可以说退场口令离场，或指定链接口令直切到另一个形象
+          ② 运营在后台切换「<strong>讲解中商品</strong>」→ 系统<strong>自动</strong>退旧形象 + 入场新形象<br />
+          ③ 主播说进场口令 → 系统找到讲解中商品绑定的形象 → 播放入场动画<br />
+          ④ 主播说退场口令 → 离场<br />
+          ⑤ 主播说指定链接直切 → 系统<strong>自动</strong>把讲解中状态挪到该商品，形象直接切换
         </div>
       )}
     </div>
@@ -1492,6 +1521,8 @@ function UnifiedBanboPanel({
   selectedProductId, products, setProducts,
   previewStateId, setPreviewStateId,
   previewEventId, setPreviewEventId,
+  currentDemonstrationProductId, onSetDemonstrationProduct,
+  avatarOnStage, setAvatarOnStage,
 }: {
   selectedProductId: string | null
   products: ProductItem[]
@@ -1500,6 +1531,10 @@ function UnifiedBanboPanel({
   setPreviewStateId: (id: string | null) => void
   previewEventId: string | null
   setPreviewEventId: (id: string | null) => void
+  currentDemonstrationProductId: string | null
+  onSetDemonstrationProduct: (id: string | null) => void
+  avatarOnStage: boolean
+  setAvatarOnStage: (v: boolean) => void
 }) {
   const selectedProduct = products.find(p => p.id === selectedProductId)
   const boundAvatar = selectedProduct?.boundAvatarId
@@ -1843,6 +1878,7 @@ function UnifiedBanboPanel({
                                 background: '#F0F4FF', border: '1px solid #D6E4FF',
                               }}>
                                 💡 进场口令匹配当前「讲解中商品」绑定的形象
+                                <br />运营在后台切换讲解中商品时，系统也会自动退旧入新
                               </div>
                             )}
                             {cmd.type === 'switch' && (
@@ -1851,7 +1887,7 @@ function UnifiedBanboPanel({
                                 marginBottom: 6, padding: '6px 8px', borderRadius: 6,
                                 background: '#FFF7E6', border: '1px solid #FFE58F',
                               }}>
-                                ✏️ 口令必须包含「{`{N}`}号链接」— 系统靠它匹配商品。其他随意发挥
+                                ✏️ 口令必须包含「{`{N}`}号链接」— 系统靠它匹配商品。直切后讲解中状态自动同步
                               </div>
                             )}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -3537,6 +3573,73 @@ export default function CanvasPanel({ onClose }: Props) {
   const [previewStateId, setPreviewStateId] = useState<string | null>(null)
   const [previewEventId, setPreviewEventId] = useState<string | null>(null)
 
+  // 讲解中商品（运营后台手动切换，这里模拟状态）
+  const [currentDemonstrationProductId, setCurrentDemonstrationProductId] = useState<string | null>(null)
+  // 形象是否在场（是否有形象正在屏幕上展示）
+  const [avatarOnStage, setAvatarOnStage] = useState(false)
+
+  // 讲解中商品变化 → 自动退场入场动画序列
+  const prevDemoProductRef = useRef<string | null>(null)
+  useEffect(() => {
+    const prev = prevDemoProductRef.current
+    const curr = currentDemonstrationProductId
+    prevDemoProductRef.current = curr
+
+    // 首次设置或无变化，跳过
+    if (prev === null || prev === curr || !curr) return
+
+    // 新讲解中商品是否有绑定形象
+    const newProduct = products.find(p => p.id === curr)
+    if (!newProduct?.boundAvatarId) return
+
+    // 如果形象在场 → 先退场再入场
+    if (avatarOnStage) {
+      // 找到当前在场形象的退场动画
+      const currentProduct = products.find(p => p.id === prev)
+      const exitEvent = currentProduct?.boundAvatarId
+        ? (EVENT_ACTIONS[currentProduct.boundAvatarId] || DEFAULT_EVENT_ACTIONS).find(e => e.id === 'ea_exit')
+        : null
+
+      if (exitEvent?.videoUrl) {
+        setPreviewEventId('ea_exit')
+        // 退场动画播放完毕后 → 播放入场动画
+        setTimeout(() => {
+          const entranceEvent = (EVENT_ACTIONS[newProduct.boundAvatarId!] || DEFAULT_EVENT_ACTIONS).find(e => e.id === 'ea_entrance')
+          if (entranceEvent?.videoUrl) {
+            setPreviewEventId('ea_entrance')
+            setTimeout(() => {
+              setPreviewEventId(null)
+              setAvatarOnStage(true)
+            }, entranceEvent.duration * 1000)
+          } else {
+            setPreviewEventId(null)
+            setAvatarOnStage(true)
+          }
+        }, exitEvent.duration * 1000)
+      } else {
+        // 无退场动画，直接入场
+        const entranceEvent = (EVENT_ACTIONS[newProduct.boundAvatarId] || DEFAULT_EVENT_ACTIONS).find(e => e.id === 'ea_entrance')
+        if (entranceEvent?.videoUrl) {
+          setPreviewEventId('ea_entrance')
+          setTimeout(() => {
+            setPreviewEventId(null)
+            setAvatarOnStage(true)
+          }, entranceEvent.duration * 1000)
+        }
+      }
+    } else {
+      // 形象不在场 → 直接入场
+      const entranceEvent = (EVENT_ACTIONS[newProduct.boundAvatarId] || DEFAULT_EVENT_ACTIONS).find(e => e.id === 'ea_entrance')
+      if (entranceEvent?.videoUrl) {
+        setPreviewEventId('ea_entrance')
+        setTimeout(() => {
+          setPreviewEventId(null)
+          setAvatarOnStage(true)
+        }, entranceEvent.duration * 1000)
+      }
+    }
+  }, [currentDemonstrationProductId, products, avatarOnStage])
+
   // 改动二：引导向导面板（首次进入伴播 Tab 时显示）
   const [showBanboGuide, setShowBanboGuide] = useState(true)
 
@@ -3692,6 +3795,8 @@ export default function CanvasPanel({ onClose }: Props) {
             setPreviewStateId={setPreviewStateId}
             previewEventId={previewEventId}
             setPreviewEventId={setPreviewEventId}
+            currentDemonstrationProductId={currentDemonstrationProductId}
+            onSetDemonstrationProduct={setCurrentDemonstrationProductId}
           />
 
           {/* 右侧：统一配置面板 */}
@@ -3706,6 +3811,10 @@ export default function CanvasPanel({ onClose }: Props) {
                 setPreviewStateId={setPreviewStateId}
                 previewEventId={previewEventId}
                 setPreviewEventId={setPreviewEventId}
+                currentDemonstrationProductId={null}
+                onSetDemonstrationProduct={() => {}}
+                avatarOnStage={false}
+                setAvatarOnStage={() => {}}
               />
             </div>
 
