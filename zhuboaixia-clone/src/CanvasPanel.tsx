@@ -267,75 +267,6 @@ function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
   )
 }
 
-// ============ 批量配置弹窗 ============
-function BatchConfigPopup({ selectedCount, onClose, onApply }: {
-  selectedCount: number; onClose: () => void; onApply: (avatarId: string, cmds: GlobalCommands) => void
-}) {
-  const [avatarId, setAvatarId] = useState('')
-  const [cmds, setCmds] = useState<GlobalCommands>({ entrance: '有请模特上场', exit: '请模特先下场', switch: '看看{N}号链接的模特上身效果' })
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      onClick={onClose}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
-      <div style={{ position: 'relative', zIndex: 1, width: 420, background: '#fff', borderRadius: 16, overflow: 'hidden' }}
-        onClick={e => e.stopPropagation()}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #F0F0F0' }}>
-          <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 15 }}>批量配置伴播</div>
-          <div style={{ color: '#86909C', fontSize: 12, marginTop: 4 }}>将为 {selectedCount} 个商品统一配置</div>
-        </div>
-        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* 选形象 */}
-          <div>
-            <div style={{ color: '#1D2129', fontSize: 13, fontWeight: 500, marginBottom: 8 }}>选择伴播形象</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-              {AVATAR_LIBRARY.map(av => (
-                <div key={av.id} onClick={() => setAvatarId(av.id)} style={{
-                  padding: 8, borderRadius: 8, cursor: 'pointer', textAlign: 'center',
-                  border: avatarId === av.id ? '2px solid #3370FF' : '1px solid #E5E6EB',
-                  background: avatarId === av.id ? '#E8F0FE' : '#fff',
-                  transition: 'all 0.15s',
-                }}>
-                  <div style={{ width: 60, height: 80, margin: '0 auto 6px', borderRadius: 6, overflow: 'hidden', background: '#F0F0F0' }}>
-                    {av.preview.endsWith('.mp4') ? (
-                      <ChromaKeyVideo src={av.preview} autoPlay loop muted style={{ width: '100%', height: '100%' }} />
-                    ) : (
-                      <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    )}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#1D2129', fontWeight: 500 }}>{av.name}</div>
-                  <div style={{ fontSize: 9, color: av.voiceTier === 'premium' ? '#69B1FF' : '#34D399', marginTop: 2 }}>{av.voiceTier === 'premium' ? '🔵可搭话' : '🟢标准'}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* 口令配置 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              { key: 'entrance' as const, label: '入场口令', placeholder: '有请模特上场' },
-              { key: 'exit' as const, label: '退场口令', placeholder: '请模特先下场' },
-              { key: 'switch' as const, label: '直切口令', placeholder: '看看{N}号链接的模特上身效果' },
-            ].map(item => (
-              <div key={item.key}>
-                <div style={{ color: '#86909C', fontSize: 12, marginBottom: 4 }}>{item.label}</div>
-                <input value={cmds[item.key]} onChange={e => setCmds(prev => ({ ...prev, [item.key]: e.target.value }))}
-                  placeholder={item.placeholder}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #E5E6EB', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid #F0F0F0' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>取消</button>
-          <button onClick={() => { if (avatarId) onApply(avatarId, cmds) }} style={{
-            padding: '8px 20px', borderRadius: 8, border: 'none',
-            background: avatarId ? '#3370FF' : '#555', color: '#fff', fontSize: 13, fontWeight: 600, cursor: avatarId ? 'pointer' : 'not-allowed',
-          }}>一键应用</button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ============ 形象选择弹窗 ============
 function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose }: {
   currentAvatarId: string | null; onSelect: (id: string) => void; onClose: () => void
@@ -396,8 +327,7 @@ export default function CanvasPanel({ onClose }: Props) {
   })
 
   // 批量选择
-  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set())
-  const [showBatchConfig, setShowBatchConfig] = useState(false)
+
 
   // 弹窗
   const [showAvatarSwitch, setShowAvatarSwitch] = useState(false)
@@ -426,33 +356,6 @@ export default function CanvasPanel({ onClose }: Props) {
   const eventActions = selectedAvatar ? (EVENT_ACTIONS[selectedAvatar.id] || DEFAULT_EVENT_ACTIONS).filter(a => !a.isTransition) : []
   const isPremium = selectedAvatar?.voiceTier === 'premium'
 
-  // 批量选择处理
-  const toggleProductSelect = (id: string) => {
-    setSelectedProductIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-  const toggleSelectAll = () => {
-    if (selectedProductIds.size === products.length) {
-      setSelectedProductIds(new Set())
-    } else {
-      setSelectedProductIds(new Set(products.map(p => p.id)))
-    }
-  }
-
-  // 批量配置应用
-  const handleBatchApply = (avatarId: string, cmds: GlobalCommands) => {
-    setProducts(prev => prev.map(p =>
-      selectedProductIds.has(p.id) ? { ...p, boundAvatarId: avatarId } : p
-    ))
-    setGlobalCommands(cmds)
-    setSelectedProductIds(new Set())
-    setShowBatchConfig(false)
-  }
-
   // 绑定/切换形象
   const handleSelectAvatar = (avatarId: string) => {
     if (!selectedProductId) return
@@ -461,16 +364,36 @@ export default function CanvasPanel({ onClose }: Props) {
     ))
   }
 
-  // 打开预览弹窗
+  // 预览框内联预览状态
+  const [inlinePreview, setInlinePreview] = useState<{ type: 'default' | 'entrance' | 'exit'; videoUrl: string } | null>(null)
+  const [ndiEnabled, setNdiEnabled] = useState(false)
+
+  // 切换预览框内容
+  const switchInlinePreview = (type: 'default' | 'entrance' | 'exit') => {
+    if (!selectedAvatar) return
+    if (type === 'default') {
+      const ns = normalStates.find(s => s.videoUrl)
+      setInlinePreview({ type: 'default', videoUrl: ns?.videoUrl || '' })
+    } else {
+      const eaList = EVENT_ACTIONS[selectedAvatar.id] || []
+      const ea = eaList.find(a => a.id === (type === 'entrance' ? 'ea_entrance' : 'ea_exit'))
+      setInlinePreview({ type, videoUrl: ea?.videoUrl || '' })
+    }
+  }
+
+  // 选中形象时自动切到默认展示态
+  useEffect(() => {
+    if (selectedAvatar) {
+      switchInlinePreview('default')
+    } else {
+      setInlinePreview(null)
+    }
+  }, [selectedAvatar?.id])
+
+  // 打开预览弹窗（入场/退场按钮用）
   const openPreview = (type: 'entrance' | 'exit') => {
     if (!selectedAvatar) return
-    const eaList = EVENT_ACTIONS[selectedAvatar.id] || []
-    const ea = eaList.find(a => a.id === (type === 'entrance' ? 'ea_entrance' : 'ea_exit'))
-    setPreviewPopup({
-      title: type === 'entrance' ? '入场动画预览' : '退场动画预览',
-      videoUrl: ea?.videoUrl || '',
-      avatarName: selectedAvatar.name,
-    })
+    switchInlinePreview(type)
   }
 
   const openActionPreview = (ea: EventAction) => {
@@ -499,90 +422,71 @@ export default function CanvasPanel({ onClose }: Props) {
       {/* ==================== 左列：直播商品列表（约300px） ==================== */}
       <div style={{
         width: 300, flexShrink: 0,
-        background: '#FAFAFA', display: 'flex', flexDirection: 'column',
+        background: '#FFFFFF', display: 'flex', flexDirection: 'column',
         position: 'relative', overflow: 'hidden',
         boxShadow: '1px 0 0 #F0F0F0',
       }}>
         {/* 顶部标题 */}
         <div style={{ padding: '12px 16px', background: '#F7F8FA', borderBottom: '1px solid #F0F0F0', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>直播商品</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <input type="checkbox" checked={selectedProductIds.size === products.length && products.length > 0}
-                onChange={toggleSelectAll}
-                style={{ accentColor: '#3370FF', cursor: 'pointer' }} />
-              <span style={{ fontSize: 11, color: '#86909C' }}>全选</span>
-            </div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#1D2129', marginBottom: 4 }}>直播间商品</div>
+          <div style={{ fontSize: 11, color: '#86909C', marginBottom: 10 }}>
+            {products.length}个商品 {products.filter(p => p.boundAvatarId).length}个已绑定
           </div>
-          <div style={{ fontSize: 10, color: '#86909C' }}>
-            {products.length} 个商品 · {products.filter(p => p.boundAvatarId).length} 个已绑定
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#1D2129' }}>全部商品</span>
+            <button onClick={() => setShowAvatarSwitch(true)} style={{
+              padding: '4px 12px', borderRadius: 6,
+              background: '#E8F3FF', border: 'none',
+              color: '#3370FF', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+            }}>去绑定</button>
           </div>
         </div>
 
-        {/* 商品列表 */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px' }}>
+        {/* 商品列表 — 紧凑横向行 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
           {products.map(p => {
             const isSelected = selectedProductId === p.id
-            const isBatchChecked = selectedProductIds.has(p.id)
             const hasAvatar = !!p.boundAvatarId
             return (
-              <div key={p.id} style={{
-                display: 'flex', alignItems: 'flex-start', gap: 10,
-                padding: '10px 12px', marginBottom: 4, borderRadius: 10, cursor: 'pointer',
-                background: isSelected ? 'rgba(51,112,255,0.12)' : '#FAFAFA',
-                border: isSelected ? '1px solid rgba(51,112,255,0.3)' : '1px solid transparent',
-                transition: 'all 0.15s',
-              }}>
-                {/* 复选框 */}
-                <input type="checkbox" checked={isBatchChecked}
-                  onChange={() => toggleProductSelect(p.id)}
-                  onClick={e => e.stopPropagation()}
-                  style={{ marginTop: 4, accentColor: '#3370FF', cursor: 'pointer', flexShrink: 0 }} />
+              <div key={p.id}
+                onClick={() => handleSelectProductAndScroll(p.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 16px', cursor: 'pointer',
+                  background: isSelected ? '#E8F3FF' : 'transparent',
+                  borderLeft: isSelected ? '3px solid #3370FF' : '3px solid transparent',
+                  transition: 'all 0.15s',
+                }}>
                 {/* 缩略图 */}
                 <div style={{
-                  width: 56, height: 56, borderRadius: 8, flexShrink: 0,
-                  background: 'linear-gradient(135deg, #fce7f3 0%, #ede9fe 100%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
-                }}>👕</div>
+                  width: 48, height: 48, borderRadius: 8, flexShrink: 0,
+                  background: '#F2F3F5',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+                }}>👗</div>
                 {/* 信息 */}
-                <div style={{ flex: 1, minWidth: 0 }} onClick={() => handleSelectProductAndScroll(p.id)}>
-                  <div style={{ fontSize: 13, color: '#1D2129', fontWeight: 500, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</div>
-                  <div style={{ fontSize: 12, color: '#F53F3F', fontWeight: 600, marginTop: 4 }}>{p.price}</div>
-                  <div style={{ marginTop: 6 }}>
-                    <span style={{
-                      fontSize: 10, padding: '2px 8px', borderRadius: 4,
-                      background: hasAvatar ? 'rgba(0,180,42,0.15)' : 'rgba(134,144,156,0.15)',
-                      color: hasAvatar ? '#34D399' : '#86909C',
-                    }}>{hasAvatar ? '已绑定' : '未绑'}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: '#1D2129', fontWeight: 500, lineHeight: 1.3,
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {p.name}
                   </div>
+                  <div style={{ fontSize: 11, color: '#86909C', marginTop: 2 }}>ID: {p.linkNum * 100000 + 653473}</div>
                 </div>
+                {/* 操作按钮 */}
+                <button
+                  onClick={e => { e.stopPropagation(); handleSelectProductAndScroll(p.id); setShowAvatarSwitch(true) }}
+                  style={{
+                    padding: '4px 12px', borderRadius: 6, flexShrink: 0,
+                    border: 'none',
+                    background: hasAvatar ? '#F2F3F5' : '#3370FF',
+                    color: hasAvatar ? '#86909C' : '#FFFFFF',
+                    fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                  }}>
+                  {hasAvatar ? '已绑定' : '去绑定'}
+                </button>
               </div>
             )
           })}
         </div>
-
-        {/* 批量操作栏 */}
-        {selectedProductIds.size > 0 ? (
-          <div style={{
-            padding: '12px 16px', background: 'rgba(51,112,255,0.1)',
-            borderTop: '1px solid rgba(51,112,255,0.2)', flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          }}>
-            <span style={{ fontSize: 12, color: '#69B1FF' }}>已选 {selectedProductIds.size} 个商品</span>
-            <button onClick={() => setShowBatchConfig(true)} style={{
-              padding: '6px 14px', borderRadius: 6, border: 'none',
-              background: '#3370FF', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            }}>批量配置伴播</button>
-          </div>
-        ) : (
-          <div style={{
-            padding: '10px 16px', flexShrink: 0,
-            borderTop: '1px solid #F0F0F0',
-            fontSize: 11, color: '#86909C', textAlign: 'center',
-          }}>
-            💡 勾选左侧商品 → 可批量配置伴播形象
-          </div>
-        )}
       </div>
 
       {/* ==================== 右列：伴播配置 ==================== */}
@@ -631,7 +535,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
             {/* ---- 视频预览窗口 ---- */}
             <div style={{
-              width: '100%', maxWidth: 240, margin: '0 auto 12px',
+              width: '100%', maxWidth: 240, margin: '0 auto',
               aspectRatio: '9/16', borderRadius: 12, overflow: 'hidden',
               background: '#F7F8FA', position: 'relative',
               boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
@@ -640,15 +544,29 @@ export default function CanvasPanel({ onClose }: Props) {
                 <>
                   {/* 视频预览区域 */}
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ChromaKeyImage src={selectedAvatar.preview} alt={selectedAvatar.name}
-                      style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                    {inlinePreview?.videoUrl ? (
+                      <video
+                        key={inlinePreview.videoUrl}
+                        src={inlinePreview.videoUrl}
+                        autoPlay loop muted
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <ChromaKeyImage src={selectedAvatar.preview} alt={selectedAvatar.name}
+                        style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                    )}
                   </div>
                   {/* 状态标签 */}
-                  <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
-                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.5)', color: '#F53F3F', fontWeight: 600 }}>LIVE</span>
+                  <div style={{
+                    position: 'absolute', top: 8, left: 8,
+                    padding: '2px 8px', borderRadius: 4,
+                    background: 'rgba(0,0,0,0.5)', color: '#fff',
+                    fontSize: 10, fontWeight: 500,
+                  }}>
+                    {inlinePreview?.type === 'entrance' ? '入场片段' :
+                     inlinePreview?.type === 'exit' ? '退场片段' :
+                     '默认展示态'}
                   </div>
-                  {/* 形象名称 */}
-                  <div style={{ position: 'absolute', bottom: 8, right: 8, fontSize: 10, color: '#86909C' }}>{selectedAvatar.name}</div>
                 </>
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -658,19 +576,48 @@ export default function CanvasPanel({ onClose }: Props) {
               )}
             </div>
 
-            {/* ---- 预览按钮行 ---- */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16, justifyContent: 'center' }}>
-              <button onClick={() => openPreview('entrance')} disabled={!selectedAvatar} style={{
-                padding: '6px 14px', borderRadius: 8,
-                border: '1px solid rgba(51,112,255,0.3)', background: 'transparent',
-                color: selectedAvatar ? '#69B1FF' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
-              }}>🎬 入场动画 预览</button>
-              <button onClick={() => openPreview('exit')} disabled={!selectedAvatar} style={{
-                padding: '6px 14px', borderRadius: 8,
-                border: '1px solid rgba(255,125,0,0.3)', background: 'transparent',
-                color: selectedAvatar ? '#FF9A4D' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
-              }}>🚪 退场动画 预览</button>
-            </div>
+            {/* ---- 预览框下方控制栏 ---- */}
+            {selectedAvatar && (
+              <div style={{
+                maxWidth: 240, margin: '8px auto 12px',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                {/* 返回默认按钮 */}
+                {inlinePreview && inlinePreview.type !== 'default' && (
+                  <button onClick={() => switchInlinePreview('default')} style={{
+                    padding: '3px 8px', borderRadius: 6,
+                    border: '1px solid #E5E6EB', background: '#fff',
+                    color: '#4E5969', fontSize: 11, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 2,
+                  }}>← 默认</button>
+                )}
+                <div style={{ flex: 1 }} />
+                {/* NDI 输出开关 */}
+                <button onClick={() => setNdiEnabled(prev => !prev)} style={{
+                  padding: '3px 10px', borderRadius: 6,
+                  border: ndiEnabled ? '1px solid rgba(51,112,255,0.4)' : '1px solid #E5E6EB',
+                  background: ndiEnabled ? 'rgba(51,112,255,0.08)' : '#fff',
+                  color: ndiEnabled ? '#3370FF' : '#86909C',
+                  fontSize: 11, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}>
+                  {ndiEnabled ? '🟢' : '⚪'} 输出到直播伴侣
+                </button>
+              </div>
+            )}
+            {/* NDI 说明（仅开启时显示） */}
+            {selectedAvatar && ndiEnabled && (
+              <div style={{
+                maxWidth: 240, margin: '0 auto 12px',
+                padding: '8px 12px', borderRadius: 8,
+                background: '#F0F5FF', border: '1px solid #D4E0FF',
+              }}>
+                <div style={{ fontSize: 11, color: '#4E5969', lineHeight: 1.7 }}>
+                  开启后，预览画面会以 <b>NDI 格式</b>实时输出到本地网络。<br/>
+                  在「抖音直播伴侣」→ 添加素材 → 选中 NDI 通道 → 即可同步查看效果，方便调整形象位置和画面搭配。
+                </div>
+              </div>
+            )}
 
             {/* ---- 技能点 ---- */}
             <div style={{ marginBottom: 20 }}>
@@ -679,6 +626,12 @@ export default function CanvasPanel({ onClose }: Props) {
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 13, color: '#69B1FF', fontWeight: 500 }}>入场</span>
+                  <span style={{ fontSize: 11, color: '#86909C', fontStyle: 'italic', flex: 1 }}>系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画</span>
+                  <button onClick={() => openPreview('entrance')} disabled={!selectedAvatar} style={{
+                    padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
+                    background: 'transparent', color: selectedAvatar ? '#69B1FF' : '#C9CDD4',
+                    fontSize: 11, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
+                  }}>预览</button>
                 </div>
                 <input value={globalCommands.entrance}
                   onChange={e => setGlobalCommands(prev => ({ ...prev, entrance: e.target.value }))}
@@ -688,14 +641,17 @@ export default function CanvasPanel({ onClose }: Props) {
                     border: '1px solid #E5E6EB', background: '#FAFAFA',
                     color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
                   }} />
-                <div style={{ fontSize: 11, color: '#86909C', marginTop: 4, fontStyle: 'italic' }}>
-                  系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画
-                </div>
               </div>
               {/* 退场 */}
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 13, color: '#FF9A4D', fontWeight: 500 }}>退场</span>
+                  <span style={{ fontSize: 11, color: '#86909C', fontStyle: 'italic', flex: 1 }}>屏幕上的形象 → 播放退场动画 → 离场</span>
+                  <button onClick={() => openPreview('exit')} disabled={!selectedAvatar} style={{
+                    padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
+                    background: 'transparent', color: selectedAvatar ? '#69B1FF' : '#C9CDD4',
+                    fontSize: 11, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
+                  }}>预览</button>
                 </div>
                 <input value={globalCommands.exit}
                   onChange={e => setGlobalCommands(prev => ({ ...prev, exit: e.target.value }))}
@@ -705,14 +661,12 @@ export default function CanvasPanel({ onClose }: Props) {
                     border: '1px solid #E5E6EB', background: '#FAFAFA',
                     color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
                   }} />
-                <div style={{ fontSize: 11, color: '#86909C', marginTop: 4, fontStyle: 'italic' }}>
-                  屏幕上的形象 → 播放退场动画 → 离场
-                </div>
               </div>
               {/* 直切 */}
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 13, color: '#FBBF24', fontWeight: 500 }}>直切</span>
+                  <span style={{ fontSize: 11, color: '#86909C', fontStyle: 'italic', flex: 1 }}>口令含链接号 → 直接切到该链接形象，同时自动把讲解中状态挪到该商品</span>
                 </div>
                 <input value={globalCommands.switch}
                   onChange={e => setGlobalCommands(prev => ({ ...prev, switch: e.target.value }))}
@@ -722,9 +676,6 @@ export default function CanvasPanel({ onClose }: Props) {
                     border: '1px solid #E5E6EB', background: '#FAFAFA',
                     color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
                   }} />
-                <div style={{ fontSize: 11, color: '#86909C', marginTop: 4, fontStyle: 'italic' }}>
-                  口令含链接号 → 直接切到该链接形象，同时自动把讲解中状态挪到该商品
-                </div>
               </div>
               {/* 展示（只读） */}
               <div style={{
@@ -740,117 +691,13 @@ export default function CanvasPanel({ onClose }: Props) {
                 </div>
               </div>
 
-              {/* ---- 默认展示态 ---- */}
-              {selectedAvatar && normalStates.length > 0 && (
-                <div style={{
-                  padding: '12px 14px', borderRadius: 10, marginBottom: 14,
-                  background: '#F7F8FA', border: '1px solid #F0F0F0',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 500 }}>🔄 默认展示态</span>
-                    <span style={{ fontSize: 11, color: '#86909C' }}>共 {normalStates.length} 个动作轮播</span>
-                  </div>
-                  <div style={{ fontSize: 11, color: '#86909C', marginBottom: 8, lineHeight: 1.5 }}>
-                    形象在无指令时，从以下动作中随机抽取轮播展示，保持直播间生动感。
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {normalStates.map(ns => (
-                      <div key={ns.id} style={{
-                        padding: '4px 10px', borderRadius: 6, fontSize: 11,
-                        background: '#fff', border: '1px solid #E5E6EB',
-                        color: '#4E5969',
-                      }}>
-                        {ns.icon} {ns.label} <span style={{ color: '#C9CDD4', fontSize: 10 }}>{ns.duration}s</span>
-                      </div>
-                    ))}
-                  </div>
-                  {normalStates[0]?.videoUrl && (
-                    <div style={{ marginTop: 8 }}>
-                      <button onClick={() => setPreviewPopup({ title: '默认展示态预览', videoUrl: normalStates[0].videoUrl || '', avatarName: selectedAvatar.name })} style={{
-                        padding: '5px 12px', borderRadius: 6, border: '1px solid #E5E6EB',
-                        background: '#fff', color: '#86909C', fontSize: 11, cursor: 'pointer',
-                      }}>预览</button>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
-
-            {/* ---- 形象专属能力 ---- */}
-            {selectedAvatar && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>形象专属能力</div>
-                {/* 特殊动作 */}
-                {eventActions.length > 0 && (
-                  <div style={{ marginBottom: 16 }}>
-                    <div style={{ color: '#ccc', fontSize: 12, marginBottom: 8 }}>🎬 特殊动作</div>
-                    {eventActions.map(ea => (
-                      <div key={ea.id} style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '8px 12px', marginBottom: 4, borderRadius: 8,
-                        background: '#FAFAFA',
-                      }}>
-                        <Toggle checked={selectedAvatar && enabledActionIds[selectedAvatar.id]?.has(ea.id)} onChange={() => selectedAvatar && toggleActionEnabled(selectedAvatar.id, ea.id)} />
-                        <button onClick={() => openActionPreview(ea)} style={{
-                          padding: '4px 10px', borderRadius: 6, border: '1px solid #E5E6EB',
-                          background: '#fff', color: '#86909C', fontSize: 11, cursor: 'pointer',
-                        }}>预览</button>
-                        <div style={{ flex: 1 }}>
-                          <span style={{ color: '#1D2129', fontSize: 12 }}>{ea.label}</span>
-                          <span style={{ color: '#666', fontSize: 11, marginLeft: 6 }}>{ea.duration}s</span>
-                        </div>
-                        <input placeholder="触发口令" style={{
-                          width: 120, padding: '4px 8px', borderRadius: 6,
-                          border: '1px solid #E5E6EB', background: '#FAFAFA',
-                          color: '#1D2129', fontSize: 11, outline: 'none',
-                        }} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {/* 搭话能力 */}
-                {isPremium ? (
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                      <span style={{ color: '#ccc', fontSize: 12 }}>💬 搭话能力</span>
-                      <Toggle checked={selectedProduct.chatEnabled} onChange={v => {
-                        setProducts(prev => prev.map(p => p.id === selectedProductId ? { ...p, chatEnabled: v } : p))
-                      }} />
-                    </div>
-                    {selectedProduct.chatEnabled && (
-                      <div style={{ paddingLeft: 8 }}>
-                        {selectedProduct.chatRules.map(rule => (
-                          <div key={rule.id} style={{
-                            display: 'flex', gap: 8, marginBottom: 6, padding: '6px 10px',
-                            borderRadius: 6, background: '#FAFAFA',
-                          }}>
-                            <span style={{ color: '#FBBF24', fontSize: 11, flexShrink: 0 }}>触发：</span>
-                            <span style={{ color: '#1D2129', fontSize: 11, flex: 1 }}>{rule.trigger}</span>
-                            <span style={{ color: '#86909C', fontSize: 11 }}>→</span>
-                            <span style={{ color: '#ccc', fontSize: 11, flex: 1.5 }}>{rule.response}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ padding: '10px 14px', borderRadius: 8, background: '#FAFAFA', color: '#86909C', fontSize: 12, fontStyle: 'italic' }}>
-                    🔇 该形象不支持搭话，如需请升级
-                  </div>
-                )}
-              </div>
-            )}
 
             </>
         )}
       </div>
 
       {/* ==================== 弹窗 ==================== */}
-      {showBatchConfig && (
-        <BatchConfigPopup selectedCount={selectedProductIds.size}
-          onClose={() => setShowBatchConfig(false)}
-          onApply={handleBatchApply} />
-      )}
       {showAvatarSwitch && (
         <AvatarSwitchPopup currentAvatarId={selectedProduct?.boundAvatarId || null}
           onSelect={handleSelectAvatar}
