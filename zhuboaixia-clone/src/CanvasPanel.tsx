@@ -342,6 +342,32 @@ function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose, mode }: {
 
 
 // ============ 主组件 ============
+// ============ Hover 提示组件 ============
+function SkillTip() {
+  const [show, setShow] = useState(false)
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex' }}
+      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      <span style={{
+        width: 14, height: 14, borderRadius: '50%',
+        background: '#F53F3F', color: '#fff', fontSize: 9, fontWeight: 700,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'default', flexShrink: 0,
+      }}>!</span>
+      {show && (
+        <span style={{
+          position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+          marginBottom: 6, padding: '8px 12px', borderRadius: 8,
+          background: '#1D2129', color: '#fff', fontSize: 11, lineHeight: 1.6,
+          whiteSpace: 'nowrap', zIndex: 10,
+        }}>
+          伴播形象在无指令时会以该默认状态进行展示，保持直播间生动感。
+        </span>
+      )}
+    </span>
+  )
+}
+
 export default function CanvasPanel({ onClose }: Props) {
   const [products, setProducts] = useState<ProductItem[]>(PRODUCTS_INIT)
   const [selectedProductId, setSelectedProductId] = useState<string | null>('p2')
@@ -397,6 +423,7 @@ export default function CanvasPanel({ onClose }: Props) {
   // 预览框内联预览状态
   const [inlinePreview, setInlinePreview] = useState<{ type: 'default' | 'entrance' | 'exit'; videoUrl: string } | null>(null)
   const [ndiEnabled, setNdiEnabled] = useState(false)
+  const [ndiHover, setNdiHover] = useState(false)
 
   // 切换预览框内容
   const switchInlinePreview = (type: 'default' | 'entrance' | 'exit') => {
@@ -593,8 +620,8 @@ export default function CanvasPanel({ onClose }: Props) {
                     background: 'rgba(0,0,0,0.5)', color: '#fff',
                     fontSize: 10, fontWeight: 500,
                   }}>
-                    {inlinePreview?.type === 'entrance' ? '入场片段' :
-                     inlinePreview?.type === 'exit' ? '退场片段' :
+                    {inlinePreview?.type === 'entrance' ? '入场展示态' :
+                     inlinePreview?.type === 'exit' ? '退场展示态' :
                      '默认展示态'}
                   </div>
                 </>
@@ -606,46 +633,36 @@ export default function CanvasPanel({ onClose }: Props) {
               )}
             </div>
 
-            {/* ---- 预览框下方控制栏 ---- */}
+            {/* ---- 输出到直播伴侣按钮（预览区正下方，hover提示） ---- */}
             {selectedAvatar && (
-              <div style={{
-                maxWidth: 240, margin: '8px auto 12px',
-                display: 'flex', alignItems: 'center', gap: 6,
-              }}>
-                {/* 返回默认按钮 */}
-                {inlinePreview && inlinePreview.type !== 'default' && (
-                  <button onClick={() => switchInlinePreview('default')} style={{
-                    padding: '3px 8px', borderRadius: 6,
-                    border: '1px solid #E5E6EB', background: '#fff',
-                    color: '#4E5969', fontSize: 11, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 2,
-                  }}>← 默认</button>
-                )}
-                <div style={{ flex: 1 }} />
-                {/* NDI 输出开关 */}
-                <button onClick={() => setNdiEnabled(prev => !prev)} style={{
-                  padding: '3px 10px', borderRadius: 6,
-                  border: ndiEnabled ? '1px solid rgba(51,112,255,0.4)' : '1px solid #E5E6EB',
-                  background: ndiEnabled ? 'rgba(51,112,255,0.08)' : '#fff',
-                  color: ndiEnabled ? '#3370FF' : '#86909C',
-                  fontSize: 11, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 4,
-                }}>
-                  {ndiEnabled ? '🟢' : '⚪'} 输出到直播伴侣
+              <div style={{ position: 'relative', maxWidth: 240, margin: '10px auto 0', textAlign: 'center' }}
+                onMouseEnter={() => setNdiHover(true)} onMouseLeave={() => setNdiHover(false)}>
+                <button
+                  onClick={() => setNdiEnabled(prev => !prev)}
+                  style={{
+                    padding: '5px 14px', borderRadius: 6,
+                    border: ndiEnabled ? '1px solid rgba(51,112,255,0.4)' : '1px solid #E5E6EB',
+                    background: ndiEnabled ? '#F0F5FF' : '#fff',
+                    color: ndiEnabled ? '#3370FF' : '#86909C',
+                    fontSize: 12, cursor: 'pointer',
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                  }}>
+                  {ndiEnabled && <span style={{ color: '#3370FF', fontSize: 13 }}>✓</span>}
+                  输出到直播伴侣预览
                 </button>
-              </div>
-            )}
-            {/* NDI 说明（仅开启时显示） */}
-            {selectedAvatar && ndiEnabled && (
-              <div style={{
-                maxWidth: 240, margin: '0 auto 12px',
-                padding: '8px 12px', borderRadius: 8,
-                background: '#F0F5FF', border: '1px solid #D4E0FF',
-              }}>
-                <div style={{ fontSize: 11, color: '#4E5969', lineHeight: 1.7 }}>
-                  开启后，预览画面会以 <b>NDI 格式</b>实时输出到本地网络。<br/>
-                  在「抖音直播伴侣」→ 添加素材 → 选中 NDI 通道 → 即可同步查看效果，方便调整形象位置和画面搭配。
-                </div>
+                {/* Hover 弹层 */}
+                {ndiHover && (
+                  <div style={{
+                    position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+                    marginBottom: 6, padding: '8px 12px', borderRadius: 8,
+                    background: '#1D2129', color: '#fff', fontSize: 11, lineHeight: 1.6,
+                    whiteSpace: 'normal', width: 220, textAlign: 'left',
+                    zIndex: 10,
+                  }}>
+                    开启后，预览画面会以 <b>NDI 格式</b>实时输出到本地网络。<br/>
+                    在「抖音直播伴侣」→ 添加素材 → 选中 NDI 通道 → 即可同步查看效果。
+                  </div>
+                )}
               </div>
             )}
 
@@ -656,12 +673,20 @@ export default function CanvasPanel({ onClose }: Props) {
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 13, color: '#69B1FF', fontWeight: 500 }}>入场</span>
+                  <SkillTip />
                   <span style={{ fontSize: 11, color: '#86909C', fontStyle: 'italic', flex: 1 }}>系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画</span>
-                  <button onClick={() => openPreview('entrance')} disabled={!selectedAvatar} style={{
-                    padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
-                    background: 'transparent', color: selectedAvatar ? '#69B1FF' : '#C9CDD4',
-                    fontSize: 11, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
-                  }}>预览</button>
+                  {inlinePreview?.type === 'entrance' ? (
+                    <button onClick={() => switchInlinePreview('default')} style={{
+                      padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
+                      background: 'transparent', color: '#69B1FF', fontSize: 11, cursor: 'pointer',
+                    }}>取消</button>
+                  ) : (
+                    <button onClick={() => openPreview('entrance')} disabled={!selectedAvatar} style={{
+                      padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
+                      background: 'transparent', color: selectedAvatar ? '#69B1FF' : '#C9CDD4',
+                      fontSize: 11, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
+                    }}>预览</button>
+                  )}
                 </div>
                 <input value={globalCommands.entrance}
                   onChange={e => setGlobalCommands(prev => ({ ...prev, entrance: e.target.value }))}
@@ -676,12 +701,20 @@ export default function CanvasPanel({ onClose }: Props) {
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 13, color: '#FF9A4D', fontWeight: 500 }}>退场</span>
+                  <SkillTip />
                   <span style={{ fontSize: 11, color: '#86909C', fontStyle: 'italic', flex: 1 }}>屏幕上的形象 → 播放退场动画 → 离场</span>
-                  <button onClick={() => openPreview('exit')} disabled={!selectedAvatar} style={{
-                    padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
-                    background: 'transparent', color: selectedAvatar ? '#69B1FF' : '#C9CDD4',
-                    fontSize: 11, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
-                  }}>预览</button>
+                  {inlinePreview?.type === 'exit' ? (
+                    <button onClick={() => switchInlinePreview('default')} style={{
+                      padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
+                      background: 'transparent', color: '#FF9A4D', fontSize: 11, cursor: 'pointer',
+                    }}>取消</button>
+                  ) : (
+                    <button onClick={() => openPreview('exit')} disabled={!selectedAvatar} style={{
+                      padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
+                      background: 'transparent', color: selectedAvatar ? '#FF9A4D' : '#C9CDD4',
+                      fontSize: 11, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
+                    }}>预览</button>
+                  )}
                 </div>
                 <input value={globalCommands.exit}
                   onChange={e => setGlobalCommands(prev => ({ ...prev, exit: e.target.value }))}
