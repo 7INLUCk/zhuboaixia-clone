@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { tokens } from './tokens'
+import CanvasPanel from './CanvasPanel'
 
 type Props = { onNavigate: (page: any) => void }
 const T = tokens
@@ -525,7 +526,7 @@ export default function BanboPanelPage({ onNavigate }: Props) {
         boxShadow: panelOpen ? '-4px 0 20px rgba(0,0,0,0.2)' : 'none',
         zIndex: 15,
       }}>
-        {panelOpen && <BanboSidePanel />}
+        {panelOpen && <CanvasPanel onClose={() => setPanelOpen(false)} />}
       </div>
     </div>
   )

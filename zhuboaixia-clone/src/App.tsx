@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import BanboHomePage from './BanboHomePage'
 import BanboCreatePage from './BanboCreatePage'
+import BanboPanelPage from './BanboPanelPage'
 import BuyinDashboardOverlay from './BuyinDashboardOverlay'
 
 export type Mode = 'zhu' | 'ban'
@@ -430,7 +431,7 @@ export default function App() {
           ) : (
             /* CSS 页（伴播专用） */
             <>
-              {page === 'banbo-home' && <BanboHomePage onNavigate={navigate} />}
+              {page === 'banbo-home' && <BanboPanelPage onNavigate={navigate} />}
               {page === 'banbo-create' && (
                 <BanboCreatePage
                   onNavigate={navigate}
