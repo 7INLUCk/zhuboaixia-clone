@@ -219,27 +219,16 @@ const PRODUCTS_INIT: ProductItem[] = [
   { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatarId: null, chatRules: [], chatEnabled: false },
 ]
 
-// ============ 视频片段预览弹窗（增强版：时间轴+输出直播伴侣） ============
-function VideoPreviewPopup({ videoUrl, title, normalStates, eventActions, avatarName, onClose }: {
-  videoUrl: string; title: string;
-  normalStates: NormalState[]; eventActions: EventAction[]; avatarName: string;
-  onClose: () => void
+// ============ 视频片段预览弹窗（单视频版） ============
+function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
+  videoUrl: string; title: string; avatarName: string; onClose: () => void
 }) {
   const [outputting, setOutputting] = useState(false)
-  const [activeSegment, setActiveSegment] = useState<string | null>(null)
-  const [autoSwitch, setAutoSwitch] = useState(true)
-
-  // 时间轴所有片段：常规态 + 特殊动作
-  const allSegments = [
-    ...normalStates.map(ns => ({ id: ns.id, label: ns.label, icon: ns.icon, duration: ns.duration, type: 'normal' as const, videoUrl: ns.videoUrl })),
-    ...eventActions.map(ea => ({ id: ea.id, label: ea.label, icon: '⭐', duration: ea.duration, type: 'event' as const, videoUrl: ea.videoUrl })),
-  ]
-
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={onClose}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
-      <div style={{ position: 'relative', zIndex: 1, width: 520, maxHeight: '90vh', background: '#fff', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+      <div style={{ position: 'relative', zIndex: 1, width: 360, maxHeight: '85vh', background: '#fff', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
         onClick={e => e.stopPropagation()}>
         {/* 标题栏 */}
         <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F0F0F0' }}>
@@ -249,42 +238,6 @@ function VideoPreviewPopup({ videoUrl, title, normalStates, eventActions, avatar
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#999', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>
-
-        {/* 时间轴 */}
-        <div style={{ padding: '12px 20px', borderBottom: '1px solid #F0F0F0', background: '#FAFAFA' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>⏱ 时间轴</span>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#86909C', cursor: 'pointer' }}>
-              <input type="checkbox" checked={autoSwitch} onChange={e => setAutoSwitch(e.target.checked)} style={{ accentColor: '#3370FF' }} />
-              自动切换
-            </label>
-          </div>
-          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4 }}>
-            {allSegments.map(seg => (
-              <div key={seg.id}
-                onClick={() => setActiveSegment(seg.id)}
-                style={{
-                  padding: '6px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
-                  whiteSpace: 'nowrap', minWidth: 60, textAlign: 'center',
-                  background: activeSegment === seg.id
-                    ? (seg.type === 'event' ? '#FFF3E0' : '#E8F0FE')
-                    : '#fff',
-                  border: activeSegment === seg.id
-                    ? `2px solid ${seg.type === 'event' ? '#FF7D00' : '#3370FF'}`
-                    : '1px solid #E5E6EB',
-                  color: activeSegment === seg.id
-                    ? (seg.type === 'event' ? '#FF7D00' : '#3370FF')
-                    : '#4E5969',
-                  fontWeight: activeSegment === seg.id ? 600 : 400,
-                  transition: 'all 0.15s',
-                }}>
-                {seg.icon} {seg.label}
-                <div style={{ fontSize: 9, color: '#C9CDD4', marginTop: 2 }}>{seg.duration}s</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* 视频播放区 */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, minHeight: 300, background: '#F7F8FA' }}>
           {videoUrl ? (
@@ -294,11 +247,9 @@ function VideoPreviewPopup({ videoUrl, title, normalStates, eventActions, avatar
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.3 }}>🎬</div>
               <div style={{ color: '#86909C', fontSize: 14 }}>暂无视频素材</div>
-              <div style={{ color: '#C9CDD4', fontSize: 12, marginTop: 4 }}>选择上方时间轴片段预览</div>
             </div>
           )}
         </div>
-
         {/* 底部操作栏 */}
         <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F0F0F0' }}>
           <button onClick={onClose} style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid #E5E6EB', background: '#fff', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>关闭</button>
@@ -335,17 +286,25 @@ function BatchConfigPopup({ selectedCount, onClose, onApply }: {
         <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* 选形象 */}
           <div>
-            <div style={{ color: '#ccc', fontSize: 12, marginBottom: 8 }}>选择伴播形象</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ color: '#1D2129', fontSize: 13, fontWeight: 500, marginBottom: 8 }}>选择伴播形象</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               {AVATAR_LIBRARY.map(av => (
-                <button key={av.id} onClick={() => setAvatarId(av.id)} style={{
-                  padding: '6px 12px', borderRadius: 8,
-                  border: avatarId === av.id ? '2px solid #3370FF' : '1px solid rgba(255,255,255,0.1)',
-                  background: avatarId === av.id ? 'rgba(51,112,255,0.15)' : '#FAFAFA',
-                  color: '#4E5969', fontSize: 12, cursor: 'pointer',
+                <div key={av.id} onClick={() => setAvatarId(av.id)} style={{
+                  padding: 8, borderRadius: 8, cursor: 'pointer', textAlign: 'center',
+                  border: avatarId === av.id ? '2px solid #3370FF' : '1px solid #E5E6EB',
+                  background: avatarId === av.id ? '#E8F0FE' : '#fff',
+                  transition: 'all 0.15s',
                 }}>
-                  {av.name} {av.voiceTier === 'premium' ? '🔵' : '🟢'}
-                </button>
+                  <div style={{ width: 60, height: 80, margin: '0 auto 6px', borderRadius: 6, overflow: 'hidden', background: '#F0F0F0' }}>
+                    {av.preview.endsWith('.mp4') ? (
+                      <ChromaKeyVideo src={av.preview} autoPlay loop muted style={{ width: '100%', height: '100%' }} />
+                    ) : (
+                      <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    )}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#1D2129', fontWeight: 500 }}>{av.name}</div>
+                  <div style={{ fontSize: 9, color: av.voiceTier === 'premium' ? '#69B1FF' : '#34D399', marginTop: 2 }}>{av.voiceTier === 'premium' ? '🔵可搭话' : '🟢标准'}</div>
+                </div>
               ))}
             </div>
           </div>
@@ -357,7 +316,7 @@ function BatchConfigPopup({ selectedCount, onClose, onApply }: {
               { key: 'switch' as const, label: '直切口令', placeholder: '看看{N}号链接的模特上身效果' },
             ].map(item => (
               <div key={item.key}>
-                <div style={{ color: '#ccc', fontSize: 12, marginBottom: 4 }}>{item.label}</div>
+                <div style={{ color: '#86909C', fontSize: 12, marginBottom: 4 }}>{item.label}</div>
                 <input value={cmds[item.key]} onChange={e => setCmds(prev => ({ ...prev, [item.key]: e.target.value }))}
                   placeholder={item.placeholder}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #E5E6EB', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
@@ -442,7 +401,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
   // 弹窗
   const [showAvatarSwitch, setShowAvatarSwitch] = useState(false)
-  const [previewPopup, setPreviewPopup] = useState<{ title: string; videoUrl: string; normalStates: NormalState[]; eventActions: EventAction[]; avatarName: string } | null>(null)
+  const [previewPopup, setPreviewPopup] = useState<{ title: string; videoUrl: string; avatarName: string } | null>(null)
 
   // 特殊动作启用状态（每个形象各自记录）
   const [enabledActionIds, setEnabledActionIds] = useState<Record<string, Set<string>>>({})
@@ -507,24 +466,18 @@ export default function CanvasPanel({ onClose }: Props) {
     if (!selectedAvatar) return
     const eaList = EVENT_ACTIONS[selectedAvatar.id] || []
     const ea = eaList.find(a => a.id === (type === 'entrance' ? 'ea_entrance' : 'ea_exit'))
-    const allEventActions = EVENT_ACTIONS[selectedAvatar.id] || []
     setPreviewPopup({
       title: type === 'entrance' ? '入场动画预览' : '退场动画预览',
       videoUrl: ea?.videoUrl || '',
-      normalStates,
-      eventActions: allEventActions,
       avatarName: selectedAvatar.name,
     })
   }
 
   const openActionPreview = (ea: EventAction) => {
     if (!selectedAvatar) return
-    const allEventActions = EVENT_ACTIONS[selectedAvatar.id] || []
     setPreviewPopup({
       title: `${ea.label} 预览`,
       videoUrl: ea.videoUrl || '',
-      normalStates,
-      eventActions: allEventActions,
       avatarName: selectedAvatar.name,
     })
   }
@@ -609,7 +562,7 @@ export default function CanvasPanel({ onClose }: Props) {
         </div>
 
         {/* 批量操作栏 */}
-        {selectedProductIds.size > 0 && (
+        {selectedProductIds.size > 0 ? (
           <div style={{
             padding: '12px 16px', background: 'rgba(51,112,255,0.1)',
             borderTop: '1px solid rgba(51,112,255,0.2)', flexShrink: 0,
@@ -620,6 +573,14 @@ export default function CanvasPanel({ onClose }: Props) {
               padding: '6px 14px', borderRadius: 6, border: 'none',
               background: '#3370FF', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>批量配置伴播</button>
+          </div>
+        ) : (
+          <div style={{
+            padding: '10px 16px', flexShrink: 0,
+            borderTop: '1px solid #F0F0F0',
+            fontSize: 11, color: '#86909C', textAlign: 'center',
+          }}>
+            💡 勾选左侧商品 → 可批量配置伴播形象
           </div>
         )}
       </div>
@@ -713,7 +674,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
             {/* ---- 技能点 ---- */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>技能点</div>
+              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>技能点 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（所有形象 & 商品 通用）</span></div>
               {/* 入场 */}
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -772,12 +733,47 @@ export default function CanvasPanel({ onClose }: Props) {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 13, color: '#86909C', fontWeight: 500 }}>展示</span>
-                  <span style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>自动触发</span>
+                  <span style={{ fontSize: 12, color: '#86909C', fontStyle: 'italic' }}>自动触发</span>
                 </div>
                 <div style={{ fontSize: 11, color: '#C9CDD4', marginTop: 4, fontStyle: 'italic' }}>
                   讲解中商品切换时，系统自动退旧形象+入场新形象
                 </div>
               </div>
+
+              {/* ---- 默认展示态 ---- */}
+              {selectedAvatar && normalStates.length > 0 && (
+                <div style={{
+                  padding: '12px 14px', borderRadius: 10, marginBottom: 14,
+                  background: '#F7F8FA', border: '1px solid #F0F0F0',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 500 }}>🔄 默认展示态</span>
+                    <span style={{ fontSize: 11, color: '#86909C' }}>共 {normalStates.length} 个动作轮播</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#86909C', marginBottom: 8, lineHeight: 1.5 }}>
+                    形象在无指令时，从以下动作中随机抽取轮播展示，保持直播间生动感。
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {normalStates.map(ns => (
+                      <div key={ns.id} style={{
+                        padding: '4px 10px', borderRadius: 6, fontSize: 11,
+                        background: '#fff', border: '1px solid #E5E6EB',
+                        color: '#4E5969',
+                      }}>
+                        {ns.icon} {ns.label} <span style={{ color: '#C9CDD4', fontSize: 10 }}>{ns.duration}s</span>
+                      </div>
+                    ))}
+                  </div>
+                  {normalStates[0]?.videoUrl && (
+                    <div style={{ marginTop: 8 }}>
+                      <button onClick={() => setPreviewPopup({ title: '默认展示态预览', videoUrl: normalStates[0].videoUrl || '', avatarName: selectedAvatar.name })} style={{
+                        padding: '5px 12px', borderRadius: 6, border: '1px solid #E5E6EB',
+                        background: '#fff', color: '#86909C', fontSize: 11, cursor: 'pointer',
+                      }}>预览</button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ---- 形象专属能力 ---- */}
@@ -796,10 +792,9 @@ export default function CanvasPanel({ onClose }: Props) {
                       }}>
                         <Toggle checked={selectedAvatar && enabledActionIds[selectedAvatar.id]?.has(ea.id)} onChange={() => selectedAvatar && toggleActionEnabled(selectedAvatar.id, ea.id)} />
                         <button onClick={() => openActionPreview(ea)} style={{
-                          padding: '4px 8px', borderRadius: 6, border: '1px solid #E5E6EB',
+                          padding: '4px 10px', borderRadius: 6, border: '1px solid #E5E6EB',
                           background: '#fff', color: '#86909C', fontSize: 11, cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: 4,
-                        }}>👁</button>
+                        }}>预览</button>
                         <div style={{ flex: 1 }}>
                           <span style={{ color: '#1D2129', fontSize: 12 }}>{ea.label}</span>
                           <span style={{ color: '#666', fontSize: 11, marginLeft: 6 }}>{ea.duration}s</span>
@@ -864,8 +859,6 @@ export default function CanvasPanel({ onClose }: Props) {
       {previewPopup && (
         <VideoPreviewPopup videoUrl={previewPopup.videoUrl}
           title={previewPopup.title}
-          normalStates={previewPopup.normalStates}
-          eventActions={previewPopup.eventActions}
           avatarName={previewPopup.avatarName}
           onClose={() => setPreviewPopup(null)} />
       )}
