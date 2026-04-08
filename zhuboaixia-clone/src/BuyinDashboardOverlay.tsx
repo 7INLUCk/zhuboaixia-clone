@@ -39,7 +39,16 @@ export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void
           style={{ cursor: 'pointer' }} onClick={onClose} />}
       </svg>
 
-      {activePanel === 'main' && <CanvasPanel onClose={() => setActivePanel('none')} />}
+      {/* CanvasPanel 两列式面板（覆盖在右侧） */}
+      {activePanel === 'main' && (
+        <div style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0,
+          width: 380, overflow: 'hidden', zIndex: 10,
+          boxShadow: '-4px 0 20px rgba(0,0,0,0.2)',
+        }}>
+          <CanvasPanel onClose={() => setActivePanel('none')} />
+        </div>
+      )}
       {activePanel === 'livePreview' && <BuyinLivePreviewPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
       {activePanel === 'config' && <ConfigPanel onClose={() => setActivePanel('none')} />}
       {activePanel === 'avatar' && <AvatarLibraryPanel onClose={() => setActivePanel('main')} onSwitchPanel={switchPanel} onConfirmConfig={() => setActivePanel('livePreview')} />}
