@@ -504,7 +504,7 @@ export default function BanboPanelPage({ onNavigate }: Props) {
       <div
         onClick={() => setPanelOpen(!panelOpen)}
         style={{
-          position: 'absolute', top: 56, right: panelOpen ? 380 : 0,
+          position: 'absolute', top: 56, right: panelOpen ? 760 : 0,
           width: 36, height: 36, borderRadius: '8px 0 0 8px',
           background: '#5850EC', color: '#fff',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -520,7 +520,7 @@ export default function BanboPanelPage({ onNavigate }: Props) {
       {/* 伴播面板（覆盖在右侧，可收起） */}
       <div style={{
         position: 'absolute', top: 0, right: 0, bottom: 0,
-        width: panelOpen ? 380 : 0,
+        width: panelOpen ? 760 : 0,
         overflow: 'hidden',
         transition: 'width 0.3s ease',
         boxShadow: panelOpen ? '-4px 0 20px rgba(0,0,0,0.2)' : 'none',

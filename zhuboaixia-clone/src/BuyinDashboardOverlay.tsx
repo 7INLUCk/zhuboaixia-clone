@@ -43,7 +43,7 @@ export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void
       {activePanel === 'main' && (
         <div style={{
           position: 'absolute', top: 0, right: 0, bottom: 0,
-          width: 380, overflow: 'hidden', zIndex: 10,
+          width: 760, overflow: 'hidden', zIndex: 10,
           boxShadow: '-4px 0 20px rgba(0,0,0,0.2)',
         }}>
           <CanvasPanel onClose={() => setActivePanel('none')} />
