@@ -268,8 +268,8 @@ function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
 }
 
 // ============ 形象选择弹窗 ============
-function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose }: {
-  currentAvatarId: string | null; onSelect: (id: string) => void; onClose: () => void
+function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose, mode }: {
+  currentAvatarId: string | null; onSelect: (id: string) => void; onClose: () => void; mode?: 'single' | 'all'
 }) {
   const [selected, setSelected] = useState(currentAvatarId || '')
   return (
@@ -280,7 +280,7 @@ function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose }: {
         onClick={e => e.stopPropagation()}>
         {/* 标题栏 */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ color: '#1D2129', fontWeight: 600, fontSize: 15 }}>选择伴播形象</span>
+          <span style={{ color: '#1D2129', fontWeight: 600, fontSize: 15 }}>{mode === 'all' ? '全部商品绑定形象' : '选择伴播形象'}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 18, color: '#86909C', cursor: 'pointer', lineHeight: 1 }}>×</button>
         </div>
         {/* 形象网格 — 4列 */}
@@ -356,6 +356,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
   // 弹窗
   const [showAvatarSwitch, setShowAvatarSwitch] = useState(false)
+  const [bindMode, setBindMode] = useState<'single' | 'all'>('single')
   const [previewPopup, setPreviewPopup] = useState<{ title: string; videoUrl: string; avatarName: string } | null>(null)
 
   // 特殊动作启用状态（每个形象各自记录）
@@ -383,10 +384,14 @@ export default function CanvasPanel({ onClose }: Props) {
 
   // 绑定/切换形象
   const handleSelectAvatar = (avatarId: string) => {
-    if (!selectedProductId) return
-    setProducts(prev => prev.map(p =>
-      p.id === selectedProductId ? { ...p, boundAvatarId: avatarId } : p
-    ))
+    if (bindMode === 'all') {
+      setProducts(prev => prev.map(p => ({ ...p, boundAvatarId: avatarId })))
+    } else {
+      if (!selectedProductId) return
+      setProducts(prev => prev.map(p =>
+        p.id === selectedProductId ? { ...p, boundAvatarId: avatarId } : p
+      ))
+    }
   }
 
   // 预览框内联预览状态
@@ -459,7 +464,7 @@ export default function CanvasPanel({ onClose }: Props) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 13, fontWeight: 500, color: '#1D2129' }}>全部商品</span>
-            <button onClick={() => setShowAvatarSwitch(true)} style={{
+            <button onClick={() => { setBindMode('all'); setShowAvatarSwitch(true) }} style={{
               padding: '4px 12px', borderRadius: 6,
               background: '#E8F3FF', border: 'none',
               color: '#3370FF', fontSize: 12, fontWeight: 500, cursor: 'pointer',
@@ -498,7 +503,7 @@ export default function CanvasPanel({ onClose }: Props) {
                 </div>
                 {/* 操作按钮 */}
                 <button
-                  onClick={e => { e.stopPropagation(); handleSelectProductAndScroll(p.id); setShowAvatarSwitch(true) }}
+                  onClick={e => { e.stopPropagation(); handleSelectProductAndScroll(p.id); setBindMode('single'); setShowAvatarSwitch(true) }}
                   style={{
                     padding: '4px 12px', borderRadius: 6, flexShrink: 0,
                     border: 'none',
@@ -551,7 +556,7 @@ export default function CanvasPanel({ onClose }: Props) {
                   <span style={{ color: '#86909C', fontSize: 13 }}>未配置伴播形象</span>
                 )}
               </div>
-              <button onClick={() => setShowAvatarSwitch(true)} style={{
+              <button onClick={() => { setBindMode('single'); setShowAvatarSwitch(true) }} style={{
                 padding: '6px 14px', borderRadius: 6,
                 border: '1px solid rgba(51,112,255,0.3)', background: 'transparent',
                 color: '#69B1FF', fontSize: 12, cursor: 'pointer',
@@ -726,7 +731,8 @@ export default function CanvasPanel({ onClose }: Props) {
       {showAvatarSwitch && (
         <AvatarSwitchPopup currentAvatarId={selectedProduct?.boundAvatarId || null}
           onSelect={handleSelectAvatar}
-          onClose={() => setShowAvatarSwitch(false)} />
+          onClose={() => setShowAvatarSwitch(false)}
+          mode={bindMode} />
       )}
       {previewPopup && (
         <VideoPreviewPopup videoUrl={previewPopup.videoUrl}
