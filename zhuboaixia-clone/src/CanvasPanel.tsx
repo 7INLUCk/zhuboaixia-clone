@@ -271,43 +271,68 @@ function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
 function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose }: {
   currentAvatarId: string | null; onSelect: (id: string) => void; onClose: () => void
 }) {
+  const [selected, setSelected] = useState(currentAvatarId || '')
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={onClose}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
-      <div style={{ position: 'relative', zIndex: 1, width: 520, background: '#fff', borderRadius: 16, overflow: 'hidden' }}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+      <div style={{ position: 'relative', zIndex: 1, width: 480, background: '#fff', borderRadius: 12, overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #F0F0F0' }}>
-          <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 15 }}>选择伴播形象</div>
-          {currentAvatarId && <div style={{ color: '#FF7D00', fontSize: 12, marginTop: 4 }}>⚠️ 切换形象后，当前形象的特殊动作和搭话规则将被替换</div>}
+        {/* 标题栏 */}
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ color: '#1D2129', fontWeight: 600, fontSize: 15 }}>选择伴播形象</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 18, color: '#86909C', cursor: 'pointer', lineHeight: 1 }}>×</button>
         </div>
-        <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxHeight: 400, overflowY: 'auto' }}>
-          {AVATAR_LIBRARY.map(av => (
-            <div key={av.id} onClick={() => { onSelect(av.id); onClose() }} style={{
-              padding: 12, borderRadius: 12, cursor: 'pointer',
-              border: currentAvatarId === av.id ? '2px solid #3370FF' : '1px solid rgba(255,255,255,0.1)',
-              background: currentAvatarId === av.id ? 'rgba(51,112,255,0.15)' : '#FAFAFA',
-              textAlign: 'center', transition: 'all 0.2s',
-            }}>
-              <div style={{ width: 80, height: 120, margin: '0 auto 8px', borderRadius: 8, overflow: 'hidden', background: '#2a2a3e' }}>
-                {av.preview.endsWith('.mp4') ? (
-                  <ChromaKeyVideo src={av.preview} autoPlay loop muted style={{ width: '100%', height: '100%' }} />
-                ) : (
-                  <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                )}
+        {/* 形象网格 — 4列 */}
+        <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, maxHeight: 400, overflowY: 'auto' }}>
+          {AVATAR_LIBRARY.map(av => {
+            const isSelected = selected === av.id
+            return (
+              <div key={av.id} onClick={() => setSelected(av.id)} style={{
+                borderRadius: 8, cursor: 'pointer', textAlign: 'center',
+                border: isSelected ? '2px solid #3370FF' : '1px solid #E5E6EB',
+                overflow: 'hidden', transition: 'all 0.15s',
+              }}>
+                {/* 形象图片 */}
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', background: '#F7F8FA' }}>
+                  {av.preview.endsWith('.mp4') ? (
+                    <ChromaKeyVideo src={av.preview} autoPlay loop muted style={{ width: '100%', height: '100%' }} />
+                  ) : (
+                    <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  )}
+                  {/* Radio 选中标识 */}
+                  <div style={{
+                    position: 'absolute', bottom: 6, right: 6,
+                    width: 18, height: 18, borderRadius: '50%',
+                    border: isSelected ? 'none' : '2px solid #C9CDD4',
+                    background: isSelected ? '#3370FF' : 'rgba(255,255,255,0.85)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s',
+                  }}>
+                    {isSelected && <span style={{ color: '#fff', fontSize: 11, fontWeight: 700, lineHeight: 1 }}>✓</span>}
+                  </div>
+                </div>
+                {/* 名称 */}
+                <div style={{ padding: '6px 4px', fontSize: 12, color: '#1D2129', fontWeight: 500,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {av.name}
+                </div>
               </div>
-              <div style={{ color: '#1D2129', fontSize: 12, fontWeight: 500 }}>{av.name}</div>
-              <div style={{ marginTop: 4 }}>
-                <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4,
-                  background: av.voiceTier === 'premium' ? 'rgba(51,112,255,0.15)' : 'rgba(0,180,42,0.15)',
-                  color: av.voiceTier === 'premium' ? '#69B1FF' : '#34D399',
-                }}>{av.voiceTier === 'premium' ? '🔵可搭话' : '🟢标准'}</span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
-        <div style={{ padding: '12px 20px', textAlign: 'right', borderTop: '1px solid #F0F0F0' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>取消</button>
+        {/* 底部按钮 */}
+        <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{
+            padding: '7px 20px', borderRadius: 6,
+            border: '1px solid #E5E6EB', background: '#fff',
+            color: '#4E5969', fontSize: 13, cursor: 'pointer',
+          }}>取消</button>
+          <button onClick={() => { if (selected) { onSelect(selected); onClose() } }} style={{
+            padding: '7px 20px', borderRadius: 6,
+            border: 'none', background: '#3370FF',
+            color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+          }}>保存</button>
         </div>
       </div>
     </div>
