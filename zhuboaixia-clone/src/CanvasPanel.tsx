@@ -359,9 +359,9 @@ function SkillTip() {
           position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
           marginBottom: 6, padding: '8px 12px', borderRadius: 8,
           background: '#1D2129', color: '#fff', fontSize: 11, lineHeight: 1.6,
-          whiteSpace: 'nowrap', zIndex: 10,
+          whiteSpace: 'normal', width: 200, zIndex: 999,
         }}>
-          伴播形象在无指令时会以该默认状态进行展示，保持直播间生动感。
+          伴播形象在无指令时会以该默认状态进行展示，<br/>保持直播间生动感。
         </span>
       )}
     </span>
@@ -473,9 +473,25 @@ export default function CanvasPanel({ onClose }: Props) {
 
   return (
     <div style={{
-      display: 'flex', height: '100%', fontFamily: C.font,
+      display: 'flex', flexDirection: 'column', height: '100%', fontFamily: C.font,
       background: '#FFFFFF', borderRadius: 12, overflow: 'hidden',
     }}>
+      {/* 顶栏 */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 16px', borderBottom: '1px solid #F0F0F0', flexShrink: 0,
+        background: '#FFFFFF',
+      }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: '#1D2129' }}>助播虾伴播</span>
+        <button onClick={onClose} style={{
+          background: 'none', border: 'none', fontSize: 18, color: '#86909C',
+          cursor: 'pointer', lineHeight: 1, padding: '0 4px',
+        }}>×</button>
+      </div>
+      {/* 主内容区：左列+右列 */}
+      <div style={{
+        display: 'flex', flex: 1, minHeight: 0,
+      }}>
       {/* ==================== 左列：直播商品列表（约300px） ==================== */}
       <div style={{
         width: 300, flexShrink: 0,
@@ -759,6 +775,7 @@ export default function CanvasPanel({ onClose }: Props) {
             </>
         )}
       </div>
+      </div> {/* 主内容区 */}
 
       {/* ==================== 弹窗 ==================== */}
       {showAvatarSwitch && (
