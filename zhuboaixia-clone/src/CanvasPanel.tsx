@@ -5,7 +5,7 @@ type Props = { onClose: () => void }
 
 // ============ 数据类型 ============
 type NormalState = { id: string; label: string; icon: string; duration: number; videoUrl?: string }
-type EventAction = { id: string; label: string; command: string; duration: number; videoUrl?: string; isTransition?: boolean }
+type EventAction = { id: string; label: string; command: string; duration: number; videoUrl?: string; isTransition?: boolean; enabled?: boolean }
 type AvatarLibItem = { id: string; name: string; preview: string; category: 'public' | 'custom'; voiceTier: 'standard' | 'premium' }
 type ChatRule = { id: string; trigger: string; response: string }
 type ProductItem = {
@@ -219,36 +219,94 @@ const PRODUCTS_INIT: ProductItem[] = [
   { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatarId: null, chatRules: [], chatEnabled: false },
 ]
 
-// ============ 视频片段预览弹窗 ============
-function VideoPreviewPopup({ videoUrl, title, onClose }: { videoUrl: string; title: string; onClose: () => void }) {
+// ============ 视频片段预览弹窗（增强版：时间轴+输出直播伴侣） ============
+function VideoPreviewPopup({ videoUrl, title, normalStates, eventActions, avatarName, onClose }: {
+  videoUrl: string; title: string;
+  normalStates: NormalState[]; eventActions: EventAction[]; avatarName: string;
+  onClose: () => void
+}) {
   const [outputting, setOutputting] = useState(false)
+  const [activeSegment, setActiveSegment] = useState<string | null>(null)
+  const [autoSwitch, setAutoSwitch] = useState(true)
+
+  // 时间轴所有片段：常规态 + 特殊动作
+  const allSegments = [
+    ...normalStates.map(ns => ({ id: ns.id, label: ns.label, icon: ns.icon, duration: ns.duration, type: 'normal' as const, videoUrl: ns.videoUrl })),
+    ...eventActions.map(ea => ({ id: ea.id, label: ea.label, icon: '⭐', duration: ea.duration, type: 'event' as const, videoUrl: ea.videoUrl })),
+  ]
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={onClose}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} />
-      <div style={{ position: 'relative', zIndex: 1, width: 320, maxHeight: '85vh', background: '#1a1a2e', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
+      <div style={{ position: 'relative', zIndex: 1, width: 520, maxHeight: '90vh', background: '#fff', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
         onClick={e => e.stopPropagation()}>
         {/* 标题栏 */}
-        <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <span style={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>{title}</span>
+        <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F0F0F0' }}>
+          <div>
+            <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 15 }}>{title}</div>
+            {avatarName && <div style={{ color: '#86909C', fontSize: 12, marginTop: 2 }}>形象：{avatarName}</div>}
+          </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#999', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>
+
+        {/* 时间轴 */}
+        <div style={{ padding: '12px 20px', borderBottom: '1px solid #F0F0F0', background: '#FAFAFA' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>⏱ 时间轴</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#86909C', cursor: 'pointer' }}>
+              <input type="checkbox" checked={autoSwitch} onChange={e => setAutoSwitch(e.target.checked)} style={{ accentColor: '#3370FF' }} />
+              自动切换
+            </label>
+          </div>
+          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4 }}>
+            {allSegments.map(seg => (
+              <div key={seg.id}
+                onClick={() => setActiveSegment(seg.id)}
+                style={{
+                  padding: '6px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+                  whiteSpace: 'nowrap', minWidth: 60, textAlign: 'center',
+                  background: activeSegment === seg.id
+                    ? (seg.type === 'event' ? '#FFF3E0' : '#E8F0FE')
+                    : '#fff',
+                  border: activeSegment === seg.id
+                    ? `2px solid ${seg.type === 'event' ? '#FF7D00' : '#3370FF'}`
+                    : '1px solid #E5E6EB',
+                  color: activeSegment === seg.id
+                    ? (seg.type === 'event' ? '#FF7D00' : '#3370FF')
+                    : '#4E5969',
+                  fontWeight: activeSegment === seg.id ? 600 : 400,
+                  transition: 'all 0.15s',
+                }}>
+                {seg.icon} {seg.label}
+                <div style={{ fontSize: 9, color: '#C9CDD4', marginTop: 2 }}>{seg.duration}s</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* 视频播放区 */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, minHeight: 300 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, minHeight: 300, background: '#F7F8FA' }}>
           {videoUrl ? (
             <ChromaKeyVideo src={videoUrl} autoPlay loop
-              style={{ width: '100%', maxHeight: 400, borderRadius: 8 }} />
+              style={{ maxHeight: 380, borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }} />
           ) : (
-            <div style={{ color: '#666', fontSize: 14 }}>暂无视频素材</div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.3 }}>🎬</div>
+              <div style={{ color: '#86909C', fontSize: 14 }}>暂无视频素材</div>
+              <div style={{ color: '#C9CDD4', fontSize: 12, marginTop: 4 }}>选择上方时间轴片段预览</div>
+            </div>
           )}
         </div>
+
         {/* 底部操作栏 */}
-        <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#999', fontSize: 13, cursor: 'pointer' }}>关闭</button>
+        <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F0F0F0' }}>
+          <button onClick={onClose} style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid #E5E6EB', background: '#fff', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>关闭</button>
           <button onClick={() => setOutputting(!outputting)} style={{
-            padding: '8px 16px', borderRadius: 8, border: 'none',
+            padding: '8px 20px', borderRadius: 8, border: 'none',
             background: outputting ? '#F53F3F' : '#3370FF',
             color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            transition: 'all 0.2s',
           }}>
             {outputting ? '⏹ 停止输出' : '🚀 输出到直播伴侣'}
           </button>
@@ -267,12 +325,12 @@ function BatchConfigPopup({ selectedCount, onClose, onApply }: {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={onClose}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} />
-      <div style={{ position: 'relative', zIndex: 1, width: 420, background: '#1a1a2e', borderRadius: 16, overflow: 'hidden' }}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
+      <div style={{ position: 'relative', zIndex: 1, width: 420, background: '#fff', borderRadius: 16, overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ color: '#fff', fontWeight: 600, fontSize: 15 }}>批量配置伴播</div>
-          <div style={{ color: '#999', fontSize: 12, marginTop: 4 }}>将为 {selectedCount} 个商品统一配置</div>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #F0F0F0' }}>
+          <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 15 }}>批量配置伴播</div>
+          <div style={{ color: '#86909C', fontSize: 12, marginTop: 4 }}>将为 {selectedCount} 个商品统一配置</div>
         </div>
         <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* 选形象 */}
@@ -283,8 +341,8 @@ function BatchConfigPopup({ selectedCount, onClose, onApply }: {
                 <button key={av.id} onClick={() => setAvatarId(av.id)} style={{
                   padding: '6px 12px', borderRadius: 8,
                   border: avatarId === av.id ? '2px solid #3370FF' : '1px solid rgba(255,255,255,0.1)',
-                  background: avatarId === av.id ? 'rgba(51,112,255,0.15)' : 'rgba(255,255,255,0.05)',
-                  color: '#fff', fontSize: 12, cursor: 'pointer',
+                  background: avatarId === av.id ? 'rgba(51,112,255,0.15)' : '#FAFAFA',
+                  color: '#4E5969', fontSize: 12, cursor: 'pointer',
                 }}>
                   {av.name} {av.voiceTier === 'premium' ? '🔵' : '🟢'}
                 </button>
@@ -302,13 +360,13 @@ function BatchConfigPopup({ selectedCount, onClose, onApply }: {
                 <div style={{ color: '#ccc', fontSize: 12, marginBottom: 4 }}>{item.label}</div>
                 <input value={cmds[item.key]} onChange={e => setCmds(prev => ({ ...prev, [item.key]: e.target.value }))}
                   placeholder={item.placeholder}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #E5E6EB', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
               </div>
             ))}
           </div>
         </div>
-        <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#999', fontSize: 13, cursor: 'pointer' }}>取消</button>
+        <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid #F0F0F0' }}>
+          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>取消</button>
           <button onClick={() => { if (avatarId) onApply(avatarId, cmds) }} style={{
             padding: '8px 20px', borderRadius: 8, border: 'none',
             background: avatarId ? '#3370FF' : '#555', color: '#fff', fontSize: 13, fontWeight: 600, cursor: avatarId ? 'pointer' : 'not-allowed',
@@ -326,11 +384,11 @@ function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose }: {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={onClose}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} />
-      <div style={{ position: 'relative', zIndex: 1, width: 520, background: '#1a1a2e', borderRadius: 16, overflow: 'hidden' }}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
+      <div style={{ position: 'relative', zIndex: 1, width: 520, background: '#fff', borderRadius: 16, overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ color: '#fff', fontWeight: 600, fontSize: 15 }}>选择伴播形象</div>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #F0F0F0' }}>
+          <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 15 }}>选择伴播形象</div>
           {currentAvatarId && <div style={{ color: '#FF7D00', fontSize: 12, marginTop: 4 }}>⚠️ 切换形象后，当前形象的特殊动作和搭话规则将被替换</div>}
         </div>
         <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxHeight: 400, overflowY: 'auto' }}>
@@ -338,7 +396,7 @@ function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose }: {
             <div key={av.id} onClick={() => { onSelect(av.id); onClose() }} style={{
               padding: 12, borderRadius: 12, cursor: 'pointer',
               border: currentAvatarId === av.id ? '2px solid #3370FF' : '1px solid rgba(255,255,255,0.1)',
-              background: currentAvatarId === av.id ? 'rgba(51,112,255,0.15)' : 'rgba(255,255,255,0.03)',
+              background: currentAvatarId === av.id ? 'rgba(51,112,255,0.15)' : '#FAFAFA',
               textAlign: 'center', transition: 'all 0.2s',
             }}>
               <div style={{ width: 80, height: 120, margin: '0 auto 8px', borderRadius: 8, overflow: 'hidden', background: '#2a2a3e' }}>
@@ -348,7 +406,7 @@ function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose }: {
                   <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
               </div>
-              <div style={{ color: '#fff', fontSize: 12, fontWeight: 500 }}>{av.name}</div>
+              <div style={{ color: '#1D2129', fontSize: 12, fontWeight: 500 }}>{av.name}</div>
               <div style={{ marginTop: 4 }}>
                 <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4,
                   background: av.voiceTier === 'premium' ? 'rgba(51,112,255,0.15)' : 'rgba(0,180,42,0.15)',
@@ -358,58 +416,15 @@ function AvatarSwitchPopup({ currentAvatarId, onSelect, onClose }: {
             </div>
           ))}
         </div>
-        <div style={{ padding: '12px 20px', textAlign: 'right', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#999', fontSize: 13, cursor: 'pointer' }}>取消</button>
+        <div style={{ padding: '12px 20px', textAlign: 'right', borderTop: '1px solid #F0F0F0' }}>
+          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>取消</button>
         </div>
       </div>
     </div>
   )
 }
 
-// ============ 常规态时间轴（方案C：折叠） ============
-function CollapsibleTimeline({ avatarId }: { avatarId: string }) {
-  const [expanded, setExpanded] = useState(false)
-  const normalStates = NORMAL_STATES[avatarId] || DEFAULT_STATES
-  const eventActions = (EVENT_ACTIONS[avatarId] || []).filter(a => !a.isTransition)
-  return (
-    <div style={{ marginTop: 12 }}>
-      <button onClick={() => setExpanded(!expanded)} style={{
-        background: 'none', border: 'none', color: '#86909C', fontSize: 12, cursor: 'pointer',
-        padding: '4px 0', display: 'flex', alignItems: 'center', gap: 4,
-      }}>
-        {expanded ? '▼' : '▶'} 常规态时间轴
-      </button>
-      {expanded && (
-        <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
-          <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-            {normalStates.map(ns => (
-              <div key={ns.id} style={{
-                padding: '3px 8px', borderRadius: 4, fontSize: 10,
-                background: 'rgba(51,112,255,0.12)', color: '#69B1FF',
-                minWidth: `${ns.duration * 8}px`, textAlign: 'center',
-              }}>
-                {ns.icon} {ns.label} {ns.duration}s
-              </div>
-            ))}
-          </div>
-          {eventActions.length > 0 && (
-            <div style={{ display: 'flex', gap: 3, marginTop: 6, flexWrap: 'wrap' }}>
-              {eventActions.map(ea => (
-                <div key={ea.id} style={{
-                  padding: '3px 8px', borderRadius: 4, fontSize: 10,
-                  background: 'rgba(255,125,0,0.12)', color: '#FF9A4D',
-                  minWidth: `${ea.duration * 8}px`, textAlign: 'center',
-                }}>
-                  {ea.label} {ea.duration}s
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
+
 
 // ============ 主组件 ============
 export default function CanvasPanel({ onClose }: Props) {
@@ -427,7 +442,19 @@ export default function CanvasPanel({ onClose }: Props) {
 
   // 弹窗
   const [showAvatarSwitch, setShowAvatarSwitch] = useState(false)
-  const [previewPopup, setPreviewPopup] = useState<{ type: 'entrance' | 'exit'; videoUrl: string } | null>(null)
+  const [previewPopup, setPreviewPopup] = useState<{ title: string; videoUrl: string; normalStates: NormalState[]; eventActions: EventAction[]; avatarName: string } | null>(null)
+
+  // 特殊动作启用状态（每个形象各自记录）
+  const [enabledActionIds, setEnabledActionIds] = useState<Record<string, Set<string>>>({})
+  const toggleActionEnabled = (avatarId: string, actionId: string) => {
+    setEnabledActionIds(prev => {
+      const currentSet = prev[avatarId] || new Set()
+      const nextSet = new Set(currentSet)
+      if (nextSet.has(actionId)) nextSet.delete(actionId)
+      else nextSet.add(actionId)
+      return { ...prev, [avatarId]: nextSet }
+    })
+  }
 
   // 预览播放状态
   const [playingNormal, setPlayingNormal] = useState(false)
@@ -480,7 +507,26 @@ export default function CanvasPanel({ onClose }: Props) {
     if (!selectedAvatar) return
     const eaList = EVENT_ACTIONS[selectedAvatar.id] || []
     const ea = eaList.find(a => a.id === (type === 'entrance' ? 'ea_entrance' : 'ea_exit'))
-    setPreviewPopup({ type, videoUrl: ea?.videoUrl || '' })
+    const allEventActions = EVENT_ACTIONS[selectedAvatar.id] || []
+    setPreviewPopup({
+      title: type === 'entrance' ? '入场动画预览' : '退场动画预览',
+      videoUrl: ea?.videoUrl || '',
+      normalStates,
+      eventActions: allEventActions,
+      avatarName: selectedAvatar.name,
+    })
+  }
+
+  const openActionPreview = (ea: EventAction) => {
+    if (!selectedAvatar) return
+    const allEventActions = EVENT_ACTIONS[selectedAvatar.id] || []
+    setPreviewPopup({
+      title: `${ea.label} 预览`,
+      videoUrl: ea.videoUrl || '',
+      normalStates,
+      eventActions: allEventActions,
+      avatarName: selectedAvatar.name,
+    })
   }
 
   // 配置区域滚动引用
@@ -495,27 +541,27 @@ export default function CanvasPanel({ onClose }: Props) {
   return (
     <div style={{
       display: 'flex', height: '100%', fontFamily: C.font,
-      background: '#0f172a', borderRadius: 12, overflow: 'hidden',
+      background: '#FFFFFF', borderRadius: 12, overflow: 'hidden',
     }}>
       {/* ==================== 左列：直播商品列表（约300px） ==================== */}
       <div style={{
         width: 300, flexShrink: 0,
-        background: '#111827', display: 'flex', flexDirection: 'column',
+        background: '#FAFAFA', display: 'flex', flexDirection: 'column',
         position: 'relative', overflow: 'hidden',
-        boxShadow: '20px 0 30px -10px rgba(0,0,0,0.25)',
+        boxShadow: '1px 0 0 #F0F0F0',
       }}>
         {/* 顶部标题 */}
-        <div style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+        <div style={{ padding: '12px 16px', background: '#F7F8FA', borderBottom: '1px solid #F0F0F0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>直播商品</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>直播商品</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <input type="checkbox" checked={selectedProductIds.size === products.length && products.length > 0}
                 onChange={toggleSelectAll}
                 style={{ accentColor: '#3370FF', cursor: 'pointer' }} />
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>全选</span>
+              <span style={{ fontSize: 11, color: '#86909C' }}>全选</span>
             </div>
           </div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>
+          <div style={{ fontSize: 10, color: '#86909C' }}>
             {products.length} 个商品 · {products.filter(p => p.boundAvatarId).length} 个已绑定
           </div>
         </div>
@@ -530,7 +576,7 @@ export default function CanvasPanel({ onClose }: Props) {
               <div key={p.id} style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10,
                 padding: '10px 12px', marginBottom: 4, borderRadius: 10, cursor: 'pointer',
-                background: isSelected ? 'rgba(51,112,255,0.12)' : 'rgba(255,255,255,0.03)',
+                background: isSelected ? 'rgba(51,112,255,0.12)' : '#FAFAFA',
                 border: isSelected ? '1px solid rgba(51,112,255,0.3)' : '1px solid transparent',
                 transition: 'all 0.15s',
               }}>
@@ -547,7 +593,7 @@ export default function CanvasPanel({ onClose }: Props) {
                 }}>👕</div>
                 {/* 信息 */}
                 <div style={{ flex: 1, minWidth: 0 }} onClick={() => handleSelectProductAndScroll(p.id)}>
-                  <div style={{ fontSize: 13, color: '#fff', fontWeight: 500, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</div>
+                  <div style={{ fontSize: 13, color: '#1D2129', fontWeight: 500, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</div>
                   <div style={{ fontSize: 12, color: '#F53F3F', fontWeight: 600, marginTop: 4 }}>{p.price}</div>
                   <div style={{ marginTop: 6 }}>
                     <span style={{
@@ -581,10 +627,10 @@ export default function CanvasPanel({ onClose }: Props) {
       {/* ==================== 右列：伴播配置 ==================== */}
       <div ref={configRef} style={{
         flex: 1, overflowY: 'auto', padding: '16px 20px',
-        background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
+        background: '#FFFFFF',
       }}>
         {!selectedProduct ? (
-          <div style={{ textAlign: 'center', color: '#666', paddingTop: 100, fontSize: 14 }}>
+          <div style={{ textAlign: 'center', color: '#86909C', paddingTop: 100, fontSize: 14 }}>
             ← 请在左侧选择一个商品进行配置
           </div>
         ) : (
@@ -593,17 +639,17 @@ export default function CanvasPanel({ onClose }: Props) {
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '10px 14px', borderRadius: 10,
-              background: 'rgba(255,255,255,0.04)', marginBottom: 12,
+              background: '#F7F8FA', marginBottom: 12,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {selectedAvatar ? (
                   <>
-                    <div style={{ width: 36, height: 36, borderRadius: 8, overflow: 'hidden', background: '#2a2a3e' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 8, overflow: 'hidden', background: '#F0F0F0' }}>
                       <ChromaKeyImage src={selectedAvatar.preview} alt={selectedAvatar.name}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div>
-                      <div style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{selectedAvatar.name}</div>
+                      <div style={{ color: '#1D2129', fontSize: 13, fontWeight: 500 }}>{selectedAvatar.name}</div>
                       <span style={{
                         fontSize: 10, padding: '1px 6px', borderRadius: 4,
                         background: isPremium ? 'rgba(51,112,255,0.15)' : 'rgba(0,180,42,0.15)',
@@ -619,15 +665,15 @@ export default function CanvasPanel({ onClose }: Props) {
                 padding: '6px 14px', borderRadius: 6,
                 border: '1px solid rgba(51,112,255,0.3)', background: 'transparent',
                 color: '#69B1FF', fontSize: 12, cursor: 'pointer',
-              }}>更换伴播</button>
+              }}>{selectedAvatar ? '更换伴播' : '选择伴播'}</button>
             </div>
 
             {/* ---- 视频预览窗口 ---- */}
             <div style={{
               width: '100%', maxWidth: 240, margin: '0 auto 12px',
               aspectRatio: '9/16', borderRadius: 12, overflow: 'hidden',
-              background: '#1a1a2e', position: 'relative',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+              background: '#F7F8FA', position: 'relative',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
             }}>
               {selectedAvatar ? (
                 <>
@@ -638,15 +684,15 @@ export default function CanvasPanel({ onClose }: Props) {
                   </div>
                   {/* 状态标签 */}
                   <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
-                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.6)', color: '#F53F3F', fontWeight: 600 }}>LIVE</span>
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.5)', color: '#F53F3F', fontWeight: 600 }}>LIVE</span>
                   </div>
                   {/* 形象名称 */}
-                  <div style={{ position: 'absolute', bottom: 8, right: 8, fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>{selectedAvatar.name}</div>
+                  <div style={{ position: 'absolute', bottom: 8, right: 8, fontSize: 10, color: '#86909C' }}>{selectedAvatar.name}</div>
                 </>
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  <div style={{ width: 80, height: 80, borderRadius: '50%', border: '2px dashed rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🎭</div>
-                  <span style={{ color: '#555', fontSize: 12 }}>点击「更换伴播」选择形象</span>
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', border: '2px dashed #E5E6EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🎭</div>
+                  <span style={{ color: '#86909C', fontSize: 12 }}>点击「选择伴播」选择形象</span>
                 </div>
               )}
             </div>
@@ -656,18 +702,18 @@ export default function CanvasPanel({ onClose }: Props) {
               <button onClick={() => openPreview('entrance')} disabled={!selectedAvatar} style={{
                 padding: '6px 14px', borderRadius: 8,
                 border: '1px solid rgba(51,112,255,0.3)', background: 'transparent',
-                color: selectedAvatar ? '#69B1FF' : '#444', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
+                color: selectedAvatar ? '#69B1FF' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
               }}>🎬 入场动画 预览</button>
               <button onClick={() => openPreview('exit')} disabled={!selectedAvatar} style={{
                 padding: '6px 14px', borderRadius: 8,
                 border: '1px solid rgba(255,125,0,0.3)', background: 'transparent',
-                color: selectedAvatar ? '#FF9A4D' : '#444', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
+                color: selectedAvatar ? '#FF9A4D' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
               }}>🚪 退场动画 预览</button>
             </div>
 
             {/* ---- 技能点 ---- */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>技能点</div>
+              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>技能点</div>
               {/* 入场 */}
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -678,10 +724,10 @@ export default function CanvasPanel({ onClose }: Props) {
                   placeholder="有请模特上场"
                   style={{
                     width: '100%', padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)',
-                    color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box',
+                    border: '1px solid #E5E6EB', background: '#FAFAFA',
+                    color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
                   }} />
-                <div style={{ fontSize: 11, color: '#555', marginTop: 4, fontStyle: 'italic' }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginTop: 4, fontStyle: 'italic' }}>
                   系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画
                 </div>
               </div>
@@ -695,10 +741,10 @@ export default function CanvasPanel({ onClose }: Props) {
                   placeholder="请模特先下场"
                   style={{
                     width: '100%', padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)',
-                    color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box',
+                    border: '1px solid #E5E6EB', background: '#FAFAFA',
+                    color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
                   }} />
-                <div style={{ fontSize: 11, color: '#555', marginTop: 4, fontStyle: 'italic' }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginTop: 4, fontStyle: 'italic' }}>
                   屏幕上的形象 → 播放退场动画 → 离场
                 </div>
               </div>
@@ -712,23 +758,23 @@ export default function CanvasPanel({ onClose }: Props) {
                   placeholder="看看{N}号链接的模特上身效果"
                   style={{
                     width: '100%', padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)',
-                    color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box',
+                    border: '1px solid #E5E6EB', background: '#FAFAFA',
+                    color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
                   }} />
-                <div style={{ fontSize: 11, color: '#555', marginTop: 4, fontStyle: 'italic' }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginTop: 4, fontStyle: 'italic' }}>
                   口令含链接号 → 直接切到该链接形象，同时自动把讲解中状态挪到该商品
                 </div>
               </div>
               {/* 展示（只读） */}
               <div style={{
                 padding: '10px 14px', borderRadius: 8, marginBottom: 14,
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                background: '#FAFAFA', border: '1px solid #F0F0F0',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 13, color: '#86909C', fontWeight: 500 }}>展示</span>
                   <span style={{ fontSize: 12, color: '#555', fontStyle: 'italic' }}>自动触发</span>
                 </div>
-                <div style={{ fontSize: 11, color: '#444', marginTop: 4, fontStyle: 'italic' }}>
+                <div style={{ fontSize: 11, color: '#C9CDD4', marginTop: 4, fontStyle: 'italic' }}>
                   讲解中商品切换时，系统自动退旧形象+入场新形象
                 </div>
               </div>
@@ -737,7 +783,7 @@ export default function CanvasPanel({ onClose }: Props) {
             {/* ---- 形象专属能力 ---- */}
             {selectedAvatar && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>形象专属能力</div>
+                <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>形象专属能力</div>
                 {/* 特殊动作 */}
                 {eventActions.length > 0 && (
                   <div style={{ marginBottom: 16 }}>
@@ -746,17 +792,22 @@ export default function CanvasPanel({ onClose }: Props) {
                       <div key={ea.id} style={{
                         display: 'flex', alignItems: 'center', gap: 10,
                         padding: '8px 12px', marginBottom: 4, borderRadius: 8,
-                        background: 'rgba(255,255,255,0.03)',
+                        background: '#FAFAFA',
                       }}>
-                        <Toggle checked={false} onChange={() => {}} />
+                        <Toggle checked={selectedAvatar && enabledActionIds[selectedAvatar.id]?.has(ea.id)} onChange={() => selectedAvatar && toggleActionEnabled(selectedAvatar.id, ea.id)} />
+                        <button onClick={() => openActionPreview(ea)} style={{
+                          padding: '4px 8px', borderRadius: 6, border: '1px solid #E5E6EB',
+                          background: '#fff', color: '#86909C', fontSize: 11, cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: 4,
+                        }}>👁</button>
                         <div style={{ flex: 1 }}>
-                          <span style={{ color: '#fff', fontSize: 12 }}>{ea.label}</span>
+                          <span style={{ color: '#1D2129', fontSize: 12 }}>{ea.label}</span>
                           <span style={{ color: '#666', fontSize: 11, marginLeft: 6 }}>{ea.duration}s</span>
                         </div>
                         <input placeholder="触发口令" style={{
                           width: 120, padding: '4px 8px', borderRadius: 6,
-                          border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)',
-                          color: '#fff', fontSize: 11, outline: 'none',
+                          border: '1px solid #E5E6EB', background: '#FAFAFA',
+                          color: '#1D2129', fontSize: 11, outline: 'none',
                         }} />
                       </div>
                     ))}
@@ -776,10 +827,10 @@ export default function CanvasPanel({ onClose }: Props) {
                         {selectedProduct.chatRules.map(rule => (
                           <div key={rule.id} style={{
                             display: 'flex', gap: 8, marginBottom: 6, padding: '6px 10px',
-                            borderRadius: 6, background: 'rgba(255,255,255,0.03)',
+                            borderRadius: 6, background: '#FAFAFA',
                           }}>
                             <span style={{ color: '#FBBF24', fontSize: 11, flexShrink: 0 }}>触发：</span>
-                            <span style={{ color: '#fff', fontSize: 11, flex: 1 }}>{rule.trigger}</span>
+                            <span style={{ color: '#1D2129', fontSize: 11, flex: 1 }}>{rule.trigger}</span>
                             <span style={{ color: '#86909C', fontSize: 11 }}>→</span>
                             <span style={{ color: '#ccc', fontSize: 11, flex: 1.5 }}>{rule.response}</span>
                           </div>
@@ -788,16 +839,14 @@ export default function CanvasPanel({ onClose }: Props) {
                     )}
                   </div>
                 ) : (
-                  <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', color: '#555', fontSize: 12, fontStyle: 'italic' }}>
+                  <div style={{ padding: '10px 14px', borderRadius: 8, background: '#FAFAFA', color: '#86909C', fontSize: 12, fontStyle: 'italic' }}>
                     🔇 该形象不支持搭话，如需请升级
                   </div>
                 )}
               </div>
             )}
 
-            {/* ---- 折叠时间轴 ---- */}
-            {selectedAvatar && <CollapsibleTimeline avatarId={selectedAvatar.id} />}
-          </>
+            </>
         )}
       </div>
 
@@ -814,7 +863,10 @@ export default function CanvasPanel({ onClose }: Props) {
       )}
       {previewPopup && (
         <VideoPreviewPopup videoUrl={previewPopup.videoUrl}
-          title={previewPopup.type === 'entrance' ? '入场动画预览' : '退场动画预览'}
+          title={previewPopup.title}
+          normalStates={previewPopup.normalStates}
+          eventActions={previewPopup.eventActions}
+          avatarName={previewPopup.avatarName}
           onClose={() => setPreviewPopup(null)} />
       )}
     </div>
