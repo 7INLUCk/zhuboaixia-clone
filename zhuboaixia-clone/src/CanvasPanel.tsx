@@ -274,9 +274,9 @@ const SKILL_GROUPS: SkillGroup[] = [
     id: 'sk4',
     emoji: '🙏',
     name: '感谢下单',
-    description: '系统自动识别用户下单行为',
-    triggerType: 'auto',
-    defaultKeywords: [],
+    description: '主播感谢用户下单时触发',
+    triggerType: 'keyword',
+    defaultKeywords: ['宝宝已下单', '感谢支持', '下单了', '已拍', '感谢宝宝'],
     actions: [
       { id: 'ska1', label: '鞠躬', duration: 5 },
       { id: 'ska2', label: '双手合十感谢', duration: 6 },
@@ -920,56 +920,51 @@ export default function CanvasPanel({ onClose }: Props) {
                           ))}
                         </div>
                         
-                        {/* 触发关键词（感谢下单组无关键词） */}
-                        {group.triggerType === 'keyword' && (
-                          <div style={{ marginBottom: 8 }}>
-                            <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>触发关键词：</div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-                              {keywords.map((kw, idx) => (
-                                <span key={idx} style={{ 
-                                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                                  padding: '3px 8px', borderRadius: 4, 
-                                  background: '#F0F0F0', fontSize: 11, color: '#1D2129',
-                                }}>
-                                  {kw}
-                                  <span 
-                                    onClick={() => setSkillGroupKeywords(prev => ({ 
-                                      ...prev, 
-                                      [group.id]: prev[group.id].filter((_, i) => i !== idx) 
-                                    }))}
-                                    style={{ cursor: 'pointer', color: '#C9CDD4', fontSize: 12 }}
-                                  >×</span>
-                                </span>
-                              ))}
-                              <input
-                                value={newKeyword}
-                                onChange={e => setNewKeywordInput(prev => ({ ...prev, [group.id]: e.target.value }))}
-                                onKeyDown={e => {
-                                  if (e.key === 'Enter' && newKeyword.trim()) {
-                                    setSkillGroupKeywords(prev => ({ 
-                                      ...prev, 
-                                      [group.id]: [...prev[group.id], newKeyword.trim()] 
-                                    }))
-                                    setNewKeywordInput(prev => ({ ...prev, [group.id]: '' }))
-                                  }
-                                }}
-                                placeholder="+添加"
-                                style={{ 
-                                  width: 60, padding: '3px 6px', borderRadius: 4,
-                                  border: '1px solid #E5E6EB', fontSize: 11,
-                                  outline: 'none', background: 'transparent',
-                                }}
-                              />
-                            </div>
+                        {/* 触发关键词 */}
+                        <div style={{ marginBottom: 8 }}>
+                          <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>触发关键词：</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                            {keywords.map((kw, idx) => (
+                              <span key={idx} style={{ 
+                                display: 'inline-flex', alignItems: 'center', gap: 4,
+                                padding: '3px 8px', borderRadius: 4, 
+                                background: '#F0F0F0', fontSize: 11, color: '#1D2129',
+                              }}>
+                                {kw}
+                                <span 
+                                  onClick={() => setSkillGroupKeywords(prev => ({ 
+                                    ...prev, 
+                                    [group.id]: prev[group.id].filter((_, i) => i !== idx) 
+                                  }))}
+                                  style={{ cursor: 'pointer', color: '#C9CDD4', fontSize: 12 }}
+                                >×</span>
+                              </span>
+                            ))}
+                            <input
+                              value={newKeyword}
+                              onChange={e => setNewKeywordInput(prev => ({ ...prev, [group.id]: e.target.value }))}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' && newKeyword.trim()) {
+                                  setSkillGroupKeywords(prev => ({ 
+                                    ...prev, 
+                                    [group.id]: [...prev[group.id], newKeyword.trim()] 
+                                  }))
+                                  setNewKeywordInput(prev => ({ ...prev, [group.id]: '' }))
+                                }
+                              }}
+                              placeholder="+添加"
+                              style={{ 
+                                width: 60, padding: '3px 6px', borderRadius: 4,
+                                border: '1px solid #E5E6EB', fontSize: 11,
+                                outline: 'none', background: 'transparent',
+                              }}
+                            />
                           </div>
-                        )}
+                        </div>
                         
                         {/* 触发逻辑说明 */}
                         <div style={{ fontSize: 10, color: '#C9CDD4', fontStyle: 'italic' }}>
-                          {group.triggerType === 'keyword' 
-                            ? `当主播话术命中关键词时，随机播放组内一个动作片段`
-                            : `系统自动识别用户下单行为，随机播放组内一个动作片段`
-                          }
+                          当主播话术命中关键词时，随机播放组内一个动作片段
                         </div>
                       </div>
                     )}
