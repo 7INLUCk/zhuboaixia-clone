@@ -11,6 +11,6 @@ echo "🔨 Building..."
 npm run build
 
 echo "🚀 Deploying to Cloudflare Pages..."
-CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" npx wrangler pages deploy ./dist --project-name="$PROJECT_NAME" --branch=b --commit-dirty=true
+CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" npx wrangler pages deploy ./dist --project-name="$PROJECT_NAME" --branch=b --commit-dirty=true --commit-message "deploy"
 
 echo "✅ Done!"
