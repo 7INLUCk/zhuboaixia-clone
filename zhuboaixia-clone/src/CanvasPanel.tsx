@@ -424,9 +424,7 @@ export default function CanvasPanel({ onClose }: Props) {
   const [inlinePreview, setInlinePreview] = useState<{ type: 'default' | 'entrance' | 'exit'; videoUrl: string } | null>(null)
   const [ndiEnabled, setNdiEnabled] = useState(false)
   const [ndiHover, setNdiHover] = useState(false)
-  const [fixedChatEnabled, setFixedChatEnabled] = useState(false)
-  const [ttsEnabled, setTtsEnabled] = useState(true)
-  const [aiScriptEnabled, setAiScriptEnabled] = useState(false)
+
 
   // 切换预览框内容
   const switchInlinePreview = (type: 'default' | 'entrance' | 'exit') => {
@@ -775,94 +773,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
             </div>
 
-            {/* ---- 搭话 ---- */}
-            {isPremium ? (
-              <div style={{
-                padding: '14px 16px', borderRadius: 10,
-                background: '#fff', border: '1px solid #E5E6EB',
-              }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#1D2129', marginBottom: 12 }}>搭话</div>
-                {/* 固定搭话 */}
-                <div style={{
-                  padding: '10px 12px', borderRadius: 8, marginBottom: 10,
-                  border: '1px solid #E5E6EB', background: '#FAFAFA',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>
-                        💬 固定搭话
-                      </div>
-                      <div style={{ fontSize: 11, color: '#86909C', marginTop: 2 }}>关键词触发，特定回复（上限30组）</div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 11, color: '#3370FF', cursor: 'pointer' }}>去配置 →</span>
-                      <Toggle checked={fixedChatEnabled} onChange={setFixedChatEnabled} />
-                    </div>
-                  </div>
-                </div>
-                {/* 智能搭话 */}
-                <div style={{
-                  padding: '10px 12px', borderRadius: 8,
-                  border: '1px solid #E5E6EB', background: '#FAFAFA',
-                }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#1D2129', marginBottom: 8 }}>🤖 智能搭话</div>
-                  {/* 搭话频率 */}
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>搭话频率</div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      {[{ key: 'high', label: '高频搭话' },
-                        { key: 'mid', label: '中频搭话' },
-                        { key: 'low', label: '低频搭话' },
-                      ].map(freq => (
-                        <button key={freq.key} style={{
-                          flex: 1, padding: '6px 4px', borderRadius: 6,
-                          border: freq.key === 'high' ? '1.5px solid #3370FF' : '1px solid #E5E6EB',
-                          background: freq.key === 'high' ? 'rgba(51,112,255,0.06)' : '#fff',
-                          cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
-                        }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: freq.key === 'high' ? '#3370FF' : '#1D2129' }}>{freq.label}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {/* TTS 语音 */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10,
-                    padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid #E5E6EB', background: '#fff',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 14 }}>🔊</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>TTS 语音</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0,180,42,0.1)', color: '#00B42A' }}>默认开启</span>
-                      <Toggle checked={ttsEnabled} onChange={setTtsEnabled} />
-                    </div>
-                  </div>
-                  {/* AI 话术生成开关 */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid #E5E6EB', background: '#fff',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 14 }}>🎯</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>AI 话术生成开关</span>
-                    </div>
-                    <Toggle checked={aiScriptEnabled} onChange={setAiScriptEnabled} />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div style={{
-                padding: '10px 14px', borderRadius: 8,
-                background: '#FAFAFA', color: '#86909C', fontSize: 12,
-                fontStyle: 'italic', border: '1px solid #F0F0F0',
-              }}>
-                🔇 该形象不支持搭话，如需请升级
-              </div>
-            )}
+
 
             </>
         )}
