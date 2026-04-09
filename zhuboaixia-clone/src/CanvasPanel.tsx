@@ -772,6 +772,132 @@ export default function CanvasPanel({ onClose }: Props) {
 
             </div>
 
+            {/* ---- 搭话（自动互动） ---- */}
+            {isPremium ? (
+              <div style={{
+                padding: '14px 16px', borderRadius: 10,
+                background: '#fff', border: '1px solid #E5E6EB',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1D2129' }}>💬 搭话</span>
+                  <span style={{ fontSize: 11, color: '#86909C' }}>伴播 AI 自动识别主播话术，实时互动搭话</span>
+                </div>
+                {/* 覆盖场景 */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <div style={{
+                    flex: 1, padding: '8px 12px', borderRadius: 8,
+                    border: '1.5px solid #3370FF', background: 'rgba(51,112,255,0.06)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <span style={{ fontSize: 14 }}>🛍</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#3370FF' }}>带货场景</span>
+                      <span style={{ marginLeft: 'auto', fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'rgba(51,112,255,0.1)', color: '#3370FF' }}>始终开启</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: '#86909C' }}>主播说「版型显瘦」→ 伴播「对的！」</div>
+                  </div>
+                  <div style={{
+                    flex: 1, padding: '8px 12px', borderRadius: 8,
+                    border: '1.5px solid #00B42A', background: 'rgba(0,180,42,0.06)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <span style={{ fontSize: 14 }}>🎮</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#00B42A' }}>互动场景</span>
+                      <span style={{ marginLeft: 'auto', fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'rgba(0,180,42,0.1)', color: '#00B42A' }}>始终开启</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: '#86909C' }}>主播问「好不好看？」→ 伴播「好看！」</div>
+                  </div>
+                </div>
+                {/* 特别交代 */}
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#1D2129', marginBottom: 4 }}>
+                    特别交代 <span style={{ fontWeight: 400, color: '#86909C', fontSize: 11 }}>（AI 自学习）</span>
+                  </div>
+                  <input
+                    placeholder="例：主播强调面料用的是定制棉，凉感透气，伴播要顺着回应…"
+                    style={{
+                      width: '100%', padding: '8px 12px', borderRadius: 8,
+                      border: '1px solid #E5E6EB', background: '#FAFAFA',
+                      color: '#1D2129', fontSize: 12, outline: 'none', boxSizing: 'border-box',
+                    }} />
+                </div>
+                {/* 搭话频率 */}
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#1D2129', marginBottom: 6 }}>搭话频率</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[{ key: 'high', label: '高频搭话', desc: '节奏快、互动强（默认）' },
+                      { key: 'mid', label: '中频搭话', desc: '讲解为主，互动适中' },
+                      { key: 'low', label: '低频搭话', desc: '种草型，节奏慢' },
+                    ].map(freq => (
+                      <button key={freq.key} style={{
+                        flex: 1, padding: '8px 6px', borderRadius: 8,
+                        border: freq.key === 'high' ? '1.5px solid #3370FF' : '1px solid #E5E6EB',
+                        background: freq.key === 'high' ? 'rgba(51,112,255,0.06)' : '#fff',
+                        cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
+                      }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: freq.key === 'high' ? '#3370FF' : '#1D2129', marginBottom: 1 }}>{freq.label}</div>
+                        <div style={{ fontSize: 10, color: '#86909C' }}>{freq.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* 输出方式 */}
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#1D2129', marginBottom: 6 }}>输出方式</div>
+                  <div style={{
+                    padding: '8px 12px', borderRadius: 8,
+                    border: '1.5px solid #00B42A', background: 'rgba(0,180,42,0.06)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 14 }}>🔊</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#00B42A' }}>TTS 语音</span>
+                      <span style={{ marginLeft: 'auto', fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'rgba(0,180,42,0.1)', color: '#00B42A' }}>默认开启</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: '#86909C', marginTop: 2 }}>伴播用音色库的声音说出搭话内容</div>
+                  </div>
+                </div>
+                {/* 固定搭话 */}
+                <div style={{
+                  padding: '10px 12px', borderRadius: 8, marginBottom: 10,
+                  border: '1px solid #E5E6EB', background: '#FAFAFA',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>
+                        🎯 固定搭话 <span style={{ fontWeight: 400, color: '#C9CDD4', fontSize: 10 }}>可选</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#86909C', marginTop: 1 }}>关键词 → 回复话术 + 造型切换（上限30组）</div>
+                    </div>
+                    <span style={{ fontSize: 11, color: '#3370FF', cursor: 'pointer' }}>去配置 →</span>
+                  </div>
+                </div>
+                {/* 工作流程 */}
+                <div style={{
+                  padding: '10px 12px', borderRadius: 8,
+                  background: 'linear-gradient(135deg, #F0F5FF 0%, #FAFAFA 100%)',
+                  border: '1px solid #E5E6EB',
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#1D2129', marginBottom: 6 }}>🔗 搭话流程</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#86909C' }}>
+                    <span style={{ padding: '3px 6px', background: '#fff', borderRadius: 4, border: '1px solid #E5E6EB' }}>🎤 主播说话</span>
+                    <span style={{ color: '#C9CDD4' }}>→</span>
+                    <span style={{ padding: '3px 6px', background: '#fff', borderRadius: 4, border: '1px solid #E5E6EB' }}>🧠 AI 理解</span>
+                    <span style={{ color: '#C9CDD4' }}>→</span>
+                    <span style={{ padding: '3px 6px', background: '#E8F5E9', borderRadius: 4, border: '1px solid #A5D6A7', color: '#00B42A' }}>🔊 TTS 说话</span>
+                    <span style={{ color: '#C9CDD4' }}>+</span>
+                    <span style={{ padding: '3px 6px', background: '#FFF3E0', borderRadius: 4, border: '1px solid #FFCC80', color: '#FF7D00' }}>👗 切造型</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                padding: '10px 14px', borderRadius: 8,
+                background: '#FAFAFA', color: '#86909C', fontSize: 12,
+                fontStyle: 'italic', border: '1px solid #F0F0F0',
+              }}>
+                🔇 该形象不支持搭话，如需请升级
+              </div>
+            )}
+
             </>
         )}
       </div>
