@@ -267,6 +267,14 @@
 - 趋势页：保持不变（边栏+单列）
 - Settings：未改（低优先级）
 
+## 2026-04-09 内置 image 工具配置修复（长期）
+- **问题**：内置 image 工具底层用 `anthropic/claude-opus-4-6`，该模型已下线，持续 403
+- **解法**：查 OpenClaw 文档确认 `agents.defaults.imageModel` 控制 image 工具底层模型
+- **改动1**：`openclaw.json` → `bailian/qwen3.5-plus` 的 `input` 从 `["text"]` 改为 `["text", "image"]`
+- **改动2**：`agents.defaults` 下新增 `"imageModel": "bailian/qwen3.5-plus"`
+- **验证**：重启 gateway 后 image 工具正常返回
+- **飞书卡片教训**：发卡片必须用 feishu-card-composer skill 的模板（report.json 等），不要自定义 JSON
+
 ## 2026-03-17 广场详情页文字颜色修复（项目记录）
 - 底部信息区文字从 gray-900/500 改为白色系 + drop-shadow
 - 原因：深色渐变遮罩上灰色文字不可见

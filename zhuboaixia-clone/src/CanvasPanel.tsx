@@ -22,6 +22,18 @@ type GlobalCommands = {
   switch: string
 }
 
+// 技能组类型
+type SkillAction = { id: string; label: string; duration: number; videoUrl?: string }
+type SkillGroup = {
+  id: string
+  emoji: string
+  name: string
+  description: string
+  triggerType: 'keyword' | 'auto' // keyword=关键词触发, auto=系统自动识别
+  defaultKeywords: string[]
+  actions: SkillAction[]
+}
+
 // ============ Chroma Key 抠绿组件 ============
 function ChromaKeyImage({ src, alt, style, draggable }: {
   src: string; alt: string; style?: React.CSSProperties; draggable?: boolean
@@ -217,6 +229,72 @@ const PRODUCTS_INIT: ProductItem[] = [
   { id: 'p4', linkNum: 4, name: '女童百褶半身裙', price: '¥99', boundAvatarId: 'av6', chatRules: [{ id: 'cr2', trigger: '有优惠吗', response: '现在下单立减20元！' }, { id: 'cr3', trigger: '质量怎么样', response: '纯棉面料，亲肤透气，宝宝穿很舒服~' }], chatEnabled: true },
   { id: 'p5', linkNum: 5, name: '男童运动裤', price: '¥79', boundAvatarId: null, chatRules: [], chatEnabled: false },
   { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatarId: null, chatRules: [], chatEnabled: false },
+]
+
+// ============ 技能组数据（5个预设组） ============
+const SKILL_GROUPS: SkillGroup[] = [
+  {
+    id: 'sk1',
+    emoji: '👍',
+    name: '效果肯定',
+    description: '主播塑品时触发',
+    triggerType: 'keyword',
+    defaultKeywords: ['全球第一', '国家专利', '不脱妆不化妆', '防水防汗', '防刮防蹭'],
+    actions: [
+      { id: 'ska1', label: '点头认可', duration: 5 },
+      { id: 'ska2', label: '指向脸部', duration: 5 },
+    ],
+  },
+  {
+    id: 'sk2',
+    emoji: '🔥',
+    name: '逼单助攻',
+    description: '主播逼单时触发',
+    triggerType: 'keyword',
+    defaultKeywords: ['拍1号链接', '认准1号链接', '赶快下单', '最后几单', '数量不多'],
+    actions: [
+      { id: 'ska1', label: '指向小黄车', duration: 10 },
+      { id: 'ska2', label: '操作手机下单', duration: 14 },
+      { id: 'ska3', label: '倒数321', duration: 6 },
+    ],
+  },
+  {
+    id: 'sk3',
+    emoji: '🧴',
+    name: '使用演示',
+    description: '主播演示产品时触发',
+    triggerType: 'keyword',
+    defaultKeywords: ['三明治定妆法', '喷头很细腻', '轻如烟薄如雾', '喷出来是水雾', '沙漠大干皮'],
+    actions: [
+      { id: 'ska1', label: '轻拍脸颊', duration: 10 },
+      { id: 'ska2', label: 'OK手势', duration: 8 },
+    ],
+  },
+  {
+    id: 'sk4',
+    emoji: '🙏',
+    name: '感谢下单',
+    description: '系统自动识别用户下单行为',
+    triggerType: 'auto',
+    defaultKeywords: [],
+    actions: [
+      { id: 'ska1', label: '鞠躬', duration: 5 },
+      { id: 'ska2', label: '双手合十感谢', duration: 6 },
+    ],
+  },
+  {
+    id: 'sk5',
+    emoji: '🎉',
+    name: '整活表演',
+    description: '主播念口令触发',
+    triggerType: 'keyword',
+    defaultKeywords: ['整个活', 'wakuku', '给姐妹们表演'],
+    actions: [
+      { id: 'ska1', label: '鲨鱼摇', duration: 22 },
+      { id: 'ska2', label: '刀马刀马', duration: 17 },
+      { id: 'ska3', label: '大舌头', duration: 12 },
+    ],
+  },
 ]
 
 // ============ 视频片段预览弹窗（单视频版） ============
@@ -424,6 +502,20 @@ export default function CanvasPanel({ onClose }: Props) {
   const [inlinePreview, setInlinePreview] = useState<{ type: 'default' | 'entrance' | 'exit'; videoUrl: string } | null>(null)
   const [ndiEnabled, setNdiEnabled] = useState(false)
   const [ndiHover, setNdiHover] = useState(false)
+
+  // 技能组状态
+  const [expandedSkillGroupId, setExpandedSkillGroupId] = useState<string | null>(null)
+  const [skillGroupEnabled, setSkillGroupEnabled] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {}
+    SKILL_GROUPS.forEach(g => init[g.id] = true)
+    return init
+  })
+  const [skillGroupKeywords, setSkillGroupKeywords] = useState<Record<string, string[]>>(() => {
+    const init: Record<string, string[]> = {}
+    SKILL_GROUPS.forEach(g => init[g.id] = [...g.defaultKeywords])
+    return init
+  })
+  const [newKeywordInput, setNewKeywordInput] = useState<Record<string, string>>({})
 
 
   // 切换预览框内容
@@ -771,6 +863,119 @@ export default function CanvasPanel({ onClose }: Props) {
                 </div>
               </div>
 
+            </div>
+
+            {/* ---- 技能组 ---- */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>技能组 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（关键词触发伴播动作）</span></div>
+              
+              {SKILL_GROUPS.map(group => {
+                const isExpanded = expandedSkillGroupId === group.id
+                const isEnabled = skillGroupEnabled[group.id]
+                const keywords = skillGroupKeywords[group.id] || []
+                const newKeyword = newKeywordInput[group.id] || ''
+                
+                return (
+                  <div key={group.id} style={{ marginBottom: 10, borderRadius: 8, border: '1px solid #E5E6EB', overflow: 'hidden' }}>
+                    {/* 标题行 */}
+                    <div 
+                      onClick={() => setExpandedSkillGroupId(isExpanded ? null : group.id)}
+                      style={{ 
+                        display: 'flex', alignItems: 'center', gap: 8, 
+                        padding: '10px 14px', cursor: 'pointer',
+                        background: isExpanded ? '#F7F8FA' : '#fff',
+                      }}>
+                      <span style={{ fontSize: 16 }}>{group.emoji}</span>
+                      <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 500, flex: 1 }}>{group.name}</span>
+                      <span style={{ fontSize: 11, color: '#86909C' }}>{group.actions.length}个动作</span>
+                      <div onClick={e => e.stopPropagation()}>
+                        <Toggle 
+                          checked={isEnabled} 
+                          onChange={() => setSkillGroupEnabled(prev => ({ ...prev, [group.id]: !prev[group.id] }))} 
+                        />
+                      </div>
+                      <span style={{ fontSize: 12, color: '#C9CDD4', marginLeft: 4 }}>{isExpanded ? '▲' : '▼'}</span>
+                    </div>
+                    
+                    {/* 展开内容 */}
+                    {isExpanded && (
+                      <div style={{ padding: '12px 14px', background: '#FAFAFA', borderTop: '1px solid #E5E6EB' }}>
+                        {/* 动作片段列表 */}
+                        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 10 }}>
+                          {group.actions.map(action => (
+                            <div key={action.id} style={{ 
+                              flexShrink: 0, width: 80, borderRadius: 8, overflow: 'hidden',
+                              background: '#E8F4FF', position: 'relative',
+                            }}>
+                              <div style={{ aspectRatio: '9/16', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontSize: 24 }}>🎭</span>
+                              </div>
+                              <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 9, padding: '1px 4px', borderRadius: 3 }}>
+                                00:{String(action.duration).padStart(2, '0')}
+                              </div>
+                              <div style={{ padding: '4px 6px', fontSize: 10, color: '#1D2129', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {action.label}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* 触发关键词（感谢下单组无关键词） */}
+                        {group.triggerType === 'keyword' && (
+                          <div style={{ marginBottom: 8 }}>
+                            <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>触发关键词：</div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                              {keywords.map((kw, idx) => (
+                                <span key={idx} style={{ 
+                                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                                  padding: '3px 8px', borderRadius: 4, 
+                                  background: '#F0F0F0', fontSize: 11, color: '#1D2129',
+                                }}>
+                                  {kw}
+                                  <span 
+                                    onClick={() => setSkillGroupKeywords(prev => ({ 
+                                      ...prev, 
+                                      [group.id]: prev[group.id].filter((_, i) => i !== idx) 
+                                    }))}
+                                    style={{ cursor: 'pointer', color: '#C9CDD4', fontSize: 12 }}
+                                  >×</span>
+                                </span>
+                              ))}
+                              <input
+                                value={newKeyword}
+                                onChange={e => setNewKeywordInput(prev => ({ ...prev, [group.id]: e.target.value }))}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter' && newKeyword.trim()) {
+                                    setSkillGroupKeywords(prev => ({ 
+                                      ...prev, 
+                                      [group.id]: [...prev[group.id], newKeyword.trim()] 
+                                    }))
+                                    setNewKeywordInput(prev => ({ ...prev, [group.id]: '' }))
+                                  }
+                                }}
+                                placeholder="+添加"
+                                style={{ 
+                                  width: 60, padding: '3px 6px', borderRadius: 4,
+                                  border: '1px solid #E5E6EB', fontSize: 11,
+                                  outline: 'none', background: 'transparent',
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* 触发逻辑说明 */}
+                        <div style={{ fontSize: 10, color: '#C9CDD4', fontStyle: 'italic' }}>
+                          {group.triggerType === 'keyword' 
+                            ? `当主播话术命中关键词时，等当前默认展示态播完，随机播放组内一个动作片段`
+                            : `系统自动识别用户下单行为，随机播放组内一个动作片段`
+                          }
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
 
 
