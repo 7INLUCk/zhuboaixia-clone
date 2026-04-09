@@ -327,16 +327,39 @@ const AVATAR_SKILL_ACTIONS: Record<string, Record<string, SkillAction[]>> = {
   },
 }
 
-// ============ 视频片段预览弹窗（单视频版） ============
+// ============ 视频片段预览弹窗（单视频版，带音量控制） ============
 function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
   videoUrl: string; title: string; avatarName: string; onClose: () => void
 }) {
   const [outputting, setOutputting] = useState(false)
+  const [playing, setPlaying] = useState(true)
+  const [muted, setMuted] = useState(false)
+  const [volume, setVolume] = useState(0.5)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume
+      videoRef.current.muted = muted
+    }
+  }, [volume, muted])
+  
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (playing) {
+        videoRef.current.pause()
+      } else {
+        videoRef.current.play()
+      }
+      setPlaying(!playing)
+    }
+  }
+  
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={onClose}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
-      <div style={{ position: 'relative', zIndex: 1, width: 360, maxHeight: '85vh', background: '#fff', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+      <div style={{ position: 'relative', zIndex: 1, width: 400, maxHeight: '90vh', background: '#fff', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
         onClick={e => e.stopPropagation()}>
         {/* 标题栏 */}
         <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F0F0F0' }}>
@@ -349,8 +372,8 @@ function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
         {/* 视频播放区 */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, minHeight: 300, background: '#F7F8FA' }}>
           {videoUrl ? (
-            <ChromaKeyVideo src={videoUrl} autoPlay loop
-              style={{ maxHeight: 380, borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }} />
+            <video ref={videoRef} src={videoUrl} autoPlay loop
+              style={{ maxHeight: 420, borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }} />
           ) : (
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.3 }}>🎬</div>
@@ -358,8 +381,22 @@ function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
             </div>
           )}
         </div>
-        {/* 底部操作栏 */}
-        <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F0F0F0' }}>
+        {/* 底部控制栏 */}
+        <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, borderTop: '1px solid #F0F0F0' }}>
+          {/* 播放/暂停 */}
+          <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}>
+            {playing ? '⏸' : '▶️'}
+          </button>
+          {/* 音量 */}
+          <button onClick={() => setMuted(!muted)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}>
+            {muted ? '🔇' : '🔊'}
+          </button>
+          <input type="range" min="0" max="1" step="0.1" value={volume}
+            onChange={e => setVolume(parseFloat(e.target.value))}
+            style={{ width: 80, cursor: 'pointer' }} />
+          {/* 占位 */}
+          <div style={{ flex: 1 }} />
+          {/* 关闭按钮 */}
           <button onClick={onClose} style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid #E5E6EB', background: '#fff', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>关闭</button>
           <button onClick={() => setOutputting(!outputting)} style={{
             padding: '8px 20px', borderRadius: 8, border: 'none',
@@ -367,7 +404,7 @@ function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
             color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
             transition: 'all 0.2s',
           }}>
-            {outputting ? '⏹ 停止输出' : '🚀 输出到直播伴侣'}
+            {outputting ? '⏹ 停止' : '🚀 输出'}
           </button>
         </div>
       </div>
@@ -961,10 +998,26 @@ export default function CanvasPanel({ onClose }: Props) {
                             {/* 动作片段列表 */}
                             <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 10 }}>
                               {actions.map(action => (
-                                <div key={action.id} style={{ 
+                                <div key={action.id} 
+                                  onClick={() => setPreviewPopup({ title: action.label, videoUrl: action.videoUrl || '', avatarName: selectedAvatar?.name || '' })}
+                                  style={{ 
                                   flexShrink: 0, width: 80, borderRadius: 8, overflow: 'hidden',
                                   background: '#E8F4FF', position: 'relative',
-                                }}>
+                                  cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s',
+                                }}
+                                  onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)' }}
+                                  onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none' }}
+                                >
+                                  {/* hover播放图标 */}
+                                  <div style={{ 
+                                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: 'rgba(0,0,0,0.2)', opacity: 0, transition: 'opacity 0.2s',
+                                  }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0'}
+                                  >
+                                    <span style={{ fontSize: 20 }}>▶️</span>
+                                  </div>
                                   <div style={{ aspectRatio: '9/16', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <span style={{ fontSize: 24 }}>🎭</span>
                                   </div>
