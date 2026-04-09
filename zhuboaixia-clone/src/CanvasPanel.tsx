@@ -231,7 +231,7 @@ const PRODUCTS_INIT: ProductItem[] = [
   { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatarId: null, chatRules: [], chatEnabled: false },
 ]
 
-// ============ 技能组数据（5个预设组） ============
+// ============ 技能组数据（5个预设组，动作跟随形象） ============
 const SKILL_GROUPS: SkillGroup[] = [
   {
     id: 'sk1',
@@ -240,10 +240,7 @@ const SKILL_GROUPS: SkillGroup[] = [
     description: '主播塑品时触发',
     triggerType: 'keyword',
     defaultKeywords: ['全球第一', '国家专利', '不脱妆不化妆', '防水防汗', '防刮防蹭'],
-    actions: [
-      { id: 'ska1', label: '点头认可', duration: 5 },
-      { id: 'ska2', label: '指向脸部', duration: 5 },
-    ],
+    actions: [], // 动作由 AVATAR_SKILL_ACTIONS 提供
   },
   {
     id: 'sk2',
@@ -252,11 +249,7 @@ const SKILL_GROUPS: SkillGroup[] = [
     description: '主播逼单时触发',
     triggerType: 'keyword',
     defaultKeywords: ['拍1号链接', '认准1号链接', '赶快下单', '最后几单', '数量不多'],
-    actions: [
-      { id: 'ska1', label: '指向小黄车', duration: 10 },
-      { id: 'ska2', label: '操作手机下单', duration: 14 },
-      { id: 'ska3', label: '倒数321', duration: 6 },
-    ],
+    actions: [],
   },
   {
     id: 'sk3',
@@ -265,10 +258,7 @@ const SKILL_GROUPS: SkillGroup[] = [
     description: '主播演示产品时触发',
     triggerType: 'keyword',
     defaultKeywords: ['三明治定妆法', '喷头很细腻', '轻如烟薄如雾', '喷出来是水雾', '沙漠大干皮'],
-    actions: [
-      { id: 'ska1', label: '轻拍脸颊', duration: 10 },
-      { id: 'ska2', label: 'OK手势', duration: 8 },
-    ],
+    actions: [],
   },
   {
     id: 'sk4',
@@ -277,10 +267,7 @@ const SKILL_GROUPS: SkillGroup[] = [
     description: '主播感谢用户下单时触发',
     triggerType: 'keyword',
     defaultKeywords: ['宝宝已下单', '感谢支持', '下单了', '已拍', '感谢宝宝'],
-    actions: [
-      { id: 'ska1', label: '鞠躬', duration: 5 },
-      { id: 'ska2', label: '双手合十感谢', duration: 6 },
-    ],
+    actions: [],
   },
   {
     id: 'sk5',
@@ -289,13 +276,56 @@ const SKILL_GROUPS: SkillGroup[] = [
     description: '主播念口令触发',
     triggerType: 'keyword',
     defaultKeywords: ['整个活', 'wakuku', '给姐妹们表演'],
-    actions: [
-      { id: 'ska1', label: '鲨鱼摇', duration: 22 },
-      { id: 'ska2', label: '刀马刀马', duration: 17 },
-      { id: 'ska3', label: '大舌头', duration: 12 },
-    ],
+    actions: [],
   },
 ]
+
+// 形象 × 技能组 动作映射（演示用：部分形象部分技能组无动作）
+const AVATAR_SKILL_ACTIONS: Record<string, Record<string, SkillAction[]>> = {
+  av1: { // 篮球小子-蓝（标准）：无整活表演
+    sk1: [{ id: 'ska1', label: '点头认可', duration: 5 }, { id: 'ska2', label: '指向脸部', duration: 5 }],
+    sk2: [{ id: 'ska1', label: '指向小黄车', duration: 10 }, { id: 'ska2', label: '操作手机下单', duration: 14 }, { id: 'ska3', label: '倒数321', duration: 6 }],
+    sk3: [{ id: 'ska1', label: '轻拍脸颊', duration: 10 }, { id: 'ska2', label: 'OK手势', duration: 8 }],
+    sk4: [{ id: 'ska1', label: '鞠躬', duration: 5 }, { id: 'ska2', label: '双手合十感谢', duration: 6 }],
+    // sk5 无动作
+  },
+  av2: { // 篮球小子-红（标准）：无使用演示、无整活表演
+    sk1: [{ id: 'ska1', label: '点头认可', duration: 5 }],
+    sk2: [{ id: 'ska1', label: '指向小黄车', duration: 10 }, { id: 'ska2', label: '倒数321', duration: 6 }],
+    sk4: [{ id: 'ska1', label: '鞠躬', duration: 5 }],
+  },
+  av3: { // 篮球小子-黑（高级）：全技能
+    sk1: [{ id: 'ska1', label: '点头认可', duration: 5 }, { id: 'ska2', label: '指向脸部', duration: 5 }],
+    sk2: [{ id: 'ska1', label: '指向小黄车', duration: 10 }, { id: 'ska2', label: '操作手机下单', duration: 14 }, { id: 'ska3', label: '倒数321', duration: 6 }],
+    sk3: [{ id: 'ska1', label: '轻拍脸颊', duration: 10 }],
+    sk4: [{ id: 'ska1', label: '鞠躬', duration: 5 }, { id: 'ska2', label: '双手合十感谢', duration: 6 }],
+    sk5: [{ id: 'ska1', label: '鲨鱼摇', duration: 22 }, { id: 'ska2', label: '刀马刀马', duration: 17 }],
+  },
+  av4: { // 篮球小子-白（标准）：无整活表演
+    sk1: [{ id: 'ska1', label: '点头认可', duration: 5 }],
+    sk2: [{ id: 'ska1', label: '指向小黄车', duration: 10 }],
+    sk3: [{ id: 'ska1', label: '轻拍脸颊', duration: 10 }, { id: 'ska2', label: 'OK手势', duration: 8 }],
+    sk4: [{ id: 'ska1', label: '双手合十感谢', duration: 6 }],
+  },
+  av5: { // 小小碎花裙（高级）：全技能
+    sk1: [{ id: 'ska1', label: '点头认可', duration: 5 }, { id: 'ska2', label: '指向脸部', duration: 5 }],
+    sk2: [{ id: 'ska1', label: '指向小黄车', duration: 10 }, { id: 'ska2', label: '操作手机下单', duration: 14 }],
+    sk3: [{ id: 'ska1', label: '轻拍脸颊', duration: 10 }],
+    sk4: [{ id: 'ska1', label: '鞠躬', duration: 5 }],
+    sk5: [{ id: 'ska1', label: '鲨鱼摇', duration: 22 }, { id: 'ska2', label: '大舌头', duration: 12 }],
+  },
+  av6: { // 榴莲宝贝3D（高级）：全技能
+    sk1: [{ id: 'ska1', label: '点头认可', duration: 5 }],
+    sk2: [{ id: 'ska1', label: '倒数321', duration: 6 }],
+    sk3: [{ id: 'ska1', label: 'OK手势', duration: 8 }],
+    sk4: [{ id: 'ska1', label: '双手合十感谢', duration: 6 }],
+    sk5: [{ id: 'ska1', label: '刀马刀马', duration: 17 }],
+  },
+  av7: { // 卡通小猫（标准）：最少
+    sk1: [{ id: 'ska1', label: '点头认可', duration: 5 }],
+    sk4: [{ id: 'ska1', label: '鞠躬', duration: 5 }],
+  },
+}
 
 // ============ 视频片段预览弹窗（单视频版） ============
 function VideoPreviewPopup({ videoUrl, title, avatarName, onClose }: {
@@ -896,9 +926,12 @@ export default function CanvasPanel({ onClose }: Props) {
                 const isEnabled = skillGroupEnabled[group.id]
                 const keywords = skillGroupKeywords[group.id] || []
                 const newKeyword = newKeywordInput[group.id] || ''
+                // 形象 × 技能组 动作
+                const actions = selectedAvatar ? (AVATAR_SKILL_ACTIONS[selectedAvatar.id]?.[group.id] || []) : []
+                const hasActions = actions.length > 0
                 
                 return (
-                  <div key={group.id} style={{ marginBottom: 10, borderRadius: 8, border: '1px solid #E5E6EB', overflow: 'hidden' }}>
+                  <div key={group.id} style={{ marginBottom: 10, borderRadius: 8, border: '1px solid #E5E6EB', overflow: 'hidden', opacity: hasActions ? 1 : 0.7 }}>
                     {/* 标题行 */}
                     <div 
                       onClick={() => setExpandedSkillGroupId(isExpanded ? null : group.id)}
@@ -909,11 +942,12 @@ export default function CanvasPanel({ onClose }: Props) {
                       }}>
                       <span style={{ fontSize: 16 }}>{group.emoji}</span>
                       <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 500, flex: 1 }}>{group.name}</span>
-                      <span style={{ fontSize: 11, color: '#86909C' }}>{group.actions.length}个动作</span>
+                      <span style={{ fontSize: 11, color: hasActions ? '#86909C' : '#C9CDD4' }}>{hasActions ? `${actions.length}个动作` : '暂无动作'}</span>
                       <div onClick={e => e.stopPropagation()}>
                         <Toggle 
-                          checked={isEnabled} 
-                          onChange={() => setSkillGroupEnabled(prev => ({ ...prev, [group.id]: !prev[group.id] }))} 
+                          checked={hasActions && isEnabled} 
+                          onChange={() => hasActions && setSkillGroupEnabled(prev => ({ ...prev, [group.id]: !prev[group.id] }))}
+                          disabled={!hasActions}
                         />
                       </div>
                       <span style={{ fontSize: 12, color: '#C9CDD4', marginLeft: 4 }}>{isExpanded ? '▲' : '▼'}</span>
@@ -922,72 +956,82 @@ export default function CanvasPanel({ onClose }: Props) {
                     {/* 展开内容 */}
                     {isExpanded && (
                       <div style={{ padding: '12px 14px', background: '#FAFAFA', borderTop: '1px solid #E5E6EB' }}>
-                        {/* 动作片段列表 */}
-                        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 10 }}>
-                          {group.actions.map(action => (
-                            <div key={action.id} style={{ 
-                              flexShrink: 0, width: 80, borderRadius: 8, overflow: 'hidden',
-                              background: '#E8F4FF', position: 'relative',
-                            }}>
-                              <div style={{ aspectRatio: '9/16', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ fontSize: 24 }}>🎭</span>
-                              </div>
-                              <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 9, padding: '1px 4px', borderRadius: 3 }}>
-                                00:{String(action.duration).padStart(2, '0')}
-                              </div>
-                              <div style={{ padding: '4px 6px', fontSize: 10, color: '#1D2129', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {action.label}
+                        {hasActions ? (
+                          <>
+                            {/* 动作片段列表 */}
+                            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 10 }}>
+                              {actions.map(action => (
+                                <div key={action.id} style={{ 
+                                  flexShrink: 0, width: 80, borderRadius: 8, overflow: 'hidden',
+                                  background: '#E8F4FF', position: 'relative',
+                                }}>
+                                  <div style={{ aspectRatio: '9/16', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <span style={{ fontSize: 24 }}>🎭</span>
+                                  </div>
+                                  <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 9, padding: '1px 4px', borderRadius: 3 }}>
+                                    00:{String(action.duration).padStart(2, '0')}
+                                  </div>
+                                  <div style={{ padding: '4px 6px', fontSize: 10, color: '#1D2129', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {action.label}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* 触发关键词 */}
+                            <div style={{ marginBottom: 8 }}>
+                              <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>触发关键词：</div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                                {keywords.map((kw, idx) => (
+                                  <span key={idx} style={{ 
+                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    padding: '3px 8px', borderRadius: 4, 
+                                    background: '#F0F0F0', fontSize: 11, color: '#1D2129',
+                                  }}>
+                                    {kw}
+                                    <span 
+                                      onClick={() => setSkillGroupKeywords(prev => ({ 
+                                        ...prev, 
+                                        [group.id]: prev[group.id].filter((_, i) => i !== idx) 
+                                      }))}
+                                      style={{ cursor: 'pointer', color: '#C9CDD4', fontSize: 12 }}
+                                    >×</span>
+                                  </span>
+                                ))}
+                                <input
+                                  value={newKeyword}
+                                  onChange={e => setNewKeywordInput(prev => ({ ...prev, [group.id]: e.target.value }))}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter' && newKeyword.trim()) {
+                                      setSkillGroupKeywords(prev => ({ 
+                                        ...prev, 
+                                        [group.id]: [...prev[group.id], newKeyword.trim()] 
+                                      }))
+                                      setNewKeywordInput(prev => ({ ...prev, [group.id]: '' }))
+                                    }
+                                  }}
+                                  placeholder="+添加"
+                                  style={{ 
+                                    width: 60, padding: '3px 6px', borderRadius: 4,
+                                    border: '1px solid #E5E6EB', fontSize: 11,
+                                    outline: 'none', background: 'transparent',
+                                  }}
+                                />
                               </div>
                             </div>
-                          ))}
-                        </div>
-                        
-                        {/* 触发关键词 */}
-                        <div style={{ marginBottom: 8 }}>
-                          <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>触发关键词：</div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-                            {keywords.map((kw, idx) => (
-                              <span key={idx} style={{ 
-                                display: 'inline-flex', alignItems: 'center', gap: 4,
-                                padding: '3px 8px', borderRadius: 4, 
-                                background: '#F0F0F0', fontSize: 11, color: '#1D2129',
-                              }}>
-                                {kw}
-                                <span 
-                                  onClick={() => setSkillGroupKeywords(prev => ({ 
-                                    ...prev, 
-                                    [group.id]: prev[group.id].filter((_, i) => i !== idx) 
-                                  }))}
-                                  style={{ cursor: 'pointer', color: '#C9CDD4', fontSize: 12 }}
-                                >×</span>
-                              </span>
-                            ))}
-                            <input
-                              value={newKeyword}
-                              onChange={e => setNewKeywordInput(prev => ({ ...prev, [group.id]: e.target.value }))}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter' && newKeyword.trim()) {
-                                  setSkillGroupKeywords(prev => ({ 
-                                    ...prev, 
-                                    [group.id]: [...prev[group.id], newKeyword.trim()] 
-                                  }))
-                                  setNewKeywordInput(prev => ({ ...prev, [group.id]: '' }))
-                                }
-                              }}
-                              placeholder="+添加"
-                              style={{ 
-                                width: 60, padding: '3px 6px', borderRadius: 4,
-                                border: '1px solid #E5E6EB', fontSize: 11,
-                                outline: 'none', background: 'transparent',
-                              }}
-                            />
+                            
+                            {/* 触发逻辑说明 */}
+                            <div style={{ fontSize: 10, color: '#C9CDD4', fontStyle: 'italic' }}>
+                              当主播话术命中关键词时，随机播放组内一个动作片段
+                            </div>
+                          </>
+                        ) : (
+                          /* 空状态 */
+                          <div style={{ padding: '20px 0', textAlign: 'center' }}>
+                            <div style={{ fontSize: 32, marginBottom: 8 }}>🎭</div>
+                            <div style={{ fontSize: 12, color: '#86909C' }}>该形象暂无此技能的动作片段</div>
                           </div>
-                        </div>
-                        
-                        {/* 触发逻辑说明 */}
-                        <div style={{ fontSize: 10, color: '#C9CDD4', fontStyle: 'italic' }}>
-                          当主播话术命中关键词时，随机播放组内一个动作片段
-                        </div>
+                        )}
                       </div>
                     )}
                   </div>

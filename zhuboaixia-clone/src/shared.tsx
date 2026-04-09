@@ -14,12 +14,14 @@ const C = {
   font: '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif',
 }
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <div onClick={() => onChange(!checked)} style={{
-      width: 40, height: 22, borderRadius: 11, background: checked ? C.blue : '#C9CDD4',
-      padding: 2, cursor: 'pointer', transition: 'background 0.2s',
+    <div onClick={() => !disabled && onChange(!checked)} style={{
+      width: 40, height: 22, borderRadius: 11, 
+      background: disabled ? '#E5E6EB' : (checked ? C.blue : '#C9CDD4'),
+      padding: 2, cursor: disabled ? 'not-allowed' : 'pointer', transition: 'background 0.2s',
       display: 'flex', alignItems: 'center', justifyContent: checked ? 'flex-end' : 'flex-start',
+      opacity: disabled ? 0.6 : 1,
     }}>
       <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
     </div>
