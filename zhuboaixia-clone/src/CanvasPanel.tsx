@@ -777,7 +777,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
             {/* ---- 技能点 ---- */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>技能点 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（所有形象 & 商品 通用）</span></div>
+              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>全局指令 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（所有伴播形象通用）</span></div>
               {/* 入场 */}
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -867,7 +867,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
             {/* ---- 技能组 ---- */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>技能组 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（关键词触发伴播动作）</span></div>
+              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>形象技能 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（仅当前伴播形象适用）</span></div>
               
               {SKILL_GROUPS.map(group => {
                 const isExpanded = expandedSkillGroupId === group.id
@@ -967,7 +967,7 @@ export default function CanvasPanel({ onClose }: Props) {
                         {/* 触发逻辑说明 */}
                         <div style={{ fontSize: 10, color: '#C9CDD4', fontStyle: 'italic' }}>
                           {group.triggerType === 'keyword' 
-                            ? `当主播话术命中关键词时，等当前默认展示态播完，随机播放组内一个动作片段`
+                            ? `当主播话术命中关键词时，随机播放组内一个动作片段`
                             : `系统自动识别用户下单行为，随机播放组内一个动作片段`
                           }
                         </div>
