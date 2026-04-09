@@ -865,9 +865,31 @@ export default function CanvasPanel({ onClose }: Props) {
 
             </div>
 
-            {/* ---- 技能组 ---- */}
+            {/* ---- 形象技能 ---- */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>形象技能 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（仅当前伴播形象适用）</span></div>
+              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 8 }}>形象技能 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（仅当前伴播形象适用）</span></div>
+              
+              {/* 提示卡：区分标准/高级音质 */}
+              {selectedAvatar && (
+                <div style={{ 
+                  display: 'flex', alignItems: 'flex-start', gap: 8,
+                  padding: '8px 12px', marginBottom: 12,
+                  background: '#F0F5FF', borderRadius: 6,
+                }}>
+                  <span style={{ fontSize: 14 }}>💡</span>
+                  <div style={{ fontSize: 11, color: '#4E5969', lineHeight: 1.5 }}>
+                    {isPremium ? (
+                      <>
+                        此处仅配置动作片段。如需让形象说指定话术，
+                        <span style={{ color: '#3370FF', cursor: 'pointer', textDecoration: 'underline' }}
+                          onClick={() => alert('跳转到智能搭话模块')}>请前往「智能搭话」模块</span>
+                      </>
+                    ) : (
+                      <>当前形象仅支持播放预制动作片段，无法自定义说话内容</>
+                    )}
+                  </div>
+                </div>
+              )}
               
               {SKILL_GROUPS.map(group => {
                 const isExpanded = expandedSkillGroupId === group.id
