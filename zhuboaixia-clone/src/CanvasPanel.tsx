@@ -22,16 +22,15 @@ type GlobalCommands = {
   switch: string
 }
 
-// 技能组类型
-type SkillAction = { id: string; label: string; duration: number; videoUrl?: string }
-type SkillGroup = {
+// 技能点类型（按 Figma 设计稿）
+type SkillPoint = {
   id: string
-  emoji: string
   name: string
+  triggerType: 'command' | 'auto'
   description: string
-  triggerType: 'keyword' | 'auto' // keyword=关键词触发, auto=系统自动识别
-  defaultKeywords: string[]
-  actions: SkillAction[]
+  placeholder?: string
+  defaultValue?: string
+  hasPreview?: boolean
 }
 
 // ============ Chroma Key 抠绿组件 ============
@@ -231,57 +230,21 @@ const PRODUCTS_INIT: ProductItem[] = [
   { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatarId: null, chatRules: [], chatEnabled: false },
 ]
 
-// ============ 技能组数据（5个预设组，动作跟随形象） ============
-const SKILL_GROUPS: SkillGroup[] = [
-  {
-    id: 'sk1',
-    emoji: '👍',
-    name: '效果肯定',
-    description: '主播塑品时触发',
-    triggerType: 'keyword',
-    defaultKeywords: ['全球第一', '国家专利', '不脱妆不化妆', '防水防汗', '防刮防蹭'],
-    actions: [], // 动作由 AVATAR_SKILL_ACTIONS 提供
-  },
-  {
-    id: 'sk2',
-    emoji: '🔥',
-    name: '逼单助攻',
-    description: '主播逼单时触发',
-    triggerType: 'keyword',
-    defaultKeywords: ['拍1号链接', '认准1号链接', '赶快下单', '最后几单', '数量不多'],
-    actions: [],
-  },
-  {
-    id: 'sk3',
-    emoji: '🧴',
-    name: '使用演示',
-    description: '主播演示产品时触发',
-    triggerType: 'keyword',
-    defaultKeywords: ['三明治定妆法', '喷头很细腻', '轻如烟薄如雾', '喷出来是水雾', '沙漠大干皮'],
-    actions: [],
-  },
-  {
-    id: 'sk4',
-    emoji: '🙏',
-    name: '感谢下单',
-    description: '主播感谢用户下单时触发',
-    triggerType: 'keyword',
-    defaultKeywords: ['宝宝已下单', '感谢支持', '下单了', '已拍', '感谢宝宝'],
-    actions: [],
-  },
-  {
-    id: 'sk5',
-    emoji: '🎉',
-    name: '整活表演',
-    description: '主播念口令触发',
-    triggerType: 'keyword',
-    defaultKeywords: ['整个活', 'wakuku', '给姐妹们表演'],
-    actions: [],
-  },
+// ============ 技能点数据（9 个，按 Figma 设计稿） ============
+const SKILL_POINTS: SkillPoint[] = [
+  { id: 'sp1', name: '伴播进入直播间', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '有请模特入场', hasPreview: true },
+  { id: 'sp2', name: '伴播退出直播间', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '请模特先下场', hasPreview: true },
+  { id: 'sp3', name: '伴播换装', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '看看 [N] 号链接的模特上身效果', hasPreview: false },
+  { id: 'sp4', name: '伴播展示穿版效果', triggerType: 'auto', description: '智能触发，根据讲解商品自动切换伴播形象', hasPreview: false },
+  { id: 'sp5', name: '效果肯定', triggerType: 'auto', description: '智能触发，主播塑品时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：效果很好，质量不错，值得买', hasPreview: true },
+  { id: 'sp6', name: '逼单助攻', triggerType: 'auto', description: '智能触发，主播逼单时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：现在下单，优惠有限，抓紧抢', hasPreview: true },
+  { id: 'sp7', name: '产品演示', triggerType: 'auto', description: '智能触发，主播演示产品时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：看看这个，展示一下，细节在这', hasPreview: true },
+  { id: 'sp8', name: '感谢下单', triggerType: 'auto', description: '智能触发，主播感谢用户下单时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：感谢支持，谢谢宝宝，下单了', hasPreview: true },
+  { id: 'sp9', name: '整活表演', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '给大家表演一下才艺', hasPreview: true },
 ]
 
 // 形象 × 技能组 动作映射（演示用：部分形象部分技能组无动作）
-const AVATAR_SKILL_ACTIONS: Record<string, Record<string, SkillAction[]>> = {
+const AVATAR_SKILL_ACTIONS: Record<string, Record<string, any[]>> = {
   av1: { // 篮球小子-蓝（标准）：无整活表演
     sk1: [{ id: 'ska1', label: '点头认可', duration: 5 }, { id: 'ska2', label: '指向脸部', duration: 5 }],
     sk2: [{ id: 'ska1', label: '指向小黄车', duration: 10 }, { id: 'ska2', label: '操作手机下单', duration: 14 }, { id: 'ska3', label: '倒数321', duration: 6 }],
@@ -566,23 +529,80 @@ export default function CanvasPanel({ onClose }: Props) {
   }
 
   // 预览框内联预览状态
-  const [inlinePreview, setInlinePreview] = useState<{ type: 'default' | 'entrance' | 'exit'; videoUrl: string } | null>(null)
+  const [inlinePreview, setInlinePreview] = useState<{ type: 'default' | 'entrance' | 'exit' | 'skill'; videoUrl: string; skillGroupName?: string } | null>(null)
   const [ndiEnabled, setNdiEnabled] = useState(false)
   const [ndiHover, setNdiHover] = useState(false)
 
-  // 技能组状态
-  const [expandedSkillGroupId, setExpandedSkillGroupId] = useState<string | null>(null)
-  const [skillGroupEnabled, setSkillGroupEnabled] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {}
-    SKILL_GROUPS.forEach(g => init[g.id] = true)
-    return init
-  })
-  const [skillGroupKeywords, setSkillGroupKeywords] = useState<Record<string, string[]>>(() => {
+  // 技能点输入值状态（智能触发类）—— 支持多条话术（逗号分隔）
+  const [skillPointValues, setSkillPointValues] = useState<Record<string, string[]>>(() => {
     const init: Record<string, string[]> = {}
-    SKILL_GROUPS.forEach(g => init[g.id] = [...g.defaultKeywords])
+    SKILL_POINTS.filter(p => p.triggerType === 'auto' && p.placeholder).forEach(p => init[p.id] = [])
     return init
   })
-  const [newKeywordInput, setNewKeywordInput] = useState<Record<string, string>>({})
+
+  // 技能点编辑态管理（哪些技能点正在编辑）
+  const [editingSkill, setEditingSkill] = useState<string | null>(null)
+  const [editDraft, setEditDraft] = useState('')
+
+  // 获取技能点的当前值（智能触发类返回数组，口令类返回字符串）
+  const getSkillValue = (id: string): string | string[] => {
+    if (id === 'sp1') return globalCommands.entrance
+    if (id === 'sp2') return globalCommands.exit
+    if (id === 'sp3') return globalCommands.switch
+    return skillPointValues[id] || []
+  }
+
+  // 获取技能点的显示文本（智能触发类：数组拼接成逗号分隔字符串）
+  const getSkillDisplayText = (id: string): string => {
+    const val = getSkillValue(id)
+    if (typeof val === 'string') return val
+    return (val as string[]).join(', ')
+  }
+
+  // 设置技能点的值
+  const setSkillValue = (id: string, val: string | string[]) => {
+    if (id === 'sp1') setGlobalCommands(prev => ({ ...prev, entrance: val as string }))
+    else if (id === 'sp2') setGlobalCommands(prev => ({ ...prev, exit: val as string }))
+    else if (id === 'sp3') setGlobalCommands(prev => ({ ...prev, switch: val as string }))
+    else setSkillPointValues(prev => ({ ...prev, [id]: val as string[] }))
+  }
+
+  // 进入编辑态
+  const startEditing = (id: string) => {
+    const point = SKILL_POINTS.find(p => p.id === id)!
+    const val = getSkillValue(id)
+    // 智能触发类：数组转成逗号分隔字符串
+    const displayText = typeof val === 'string' ? val : (val as string[]).join(', ')
+    setEditDraft(displayText || point.defaultValue || '')
+    setEditingSkill(id)
+  }
+
+  // 保存编辑（智能触发类：逗号分隔字符串转数组）
+  const saveEditing = () => {
+    if (editingSkill) {
+      const point = SKILL_POINTS.find(p => p.id === editingSkill)!
+      // 口令触发类：空值时恢复默认
+      if (point.triggerType === 'command' && !editDraft.trim()) {
+        setSkillValue(editingSkill, point.defaultValue || '')
+      } else {
+        // 智能触发类：按中英文逗号拆分成数组
+        if (point.triggerType === 'auto' && point.placeholder) {
+          const phrases = editDraft.split(/[,，]/).map(s => s.trim()).filter(s => s.length > 0)
+          setSkillValue(editingSkill, phrases)
+        } else {
+          setSkillValue(editingSkill, editDraft)
+        }
+      }
+      setEditingSkill(null)
+      setEditDraft('')
+    }
+  }
+
+  // 取消编辑
+  const cancelEditing = () => {
+    setEditingSkill(null)
+    setEditDraft('')
+  }
 
 
   // 切换预览框内容
@@ -613,7 +633,7 @@ export default function CanvasPanel({ onClose }: Props) {
     switchInlinePreview(type)
   }
 
-  const openActionPreview = (ea: EventAction) => {
+const openActionPreview = (ea: EventAction) => {
     if (!selectedAvatar) return
     setPreviewPopup({
       title: `${ea.label} 预览`,
@@ -798,6 +818,7 @@ export default function CanvasPanel({ onClose }: Props) {
                   }}>
                     {inlinePreview?.type === 'entrance' ? '入场展示态' :
                      inlinePreview?.type === 'exit' ? '退场展示态' :
+                     inlinePreview?.type === 'skill' ? inlinePreview.skillGroupName || '技能预览' :
                      '默认展示态'}
                   </div>
                 </>
@@ -842,251 +863,153 @@ export default function CanvasPanel({ onClose }: Props) {
               </div>
             )}
 
-            {/* ---- 技能点 ---- */}
+            {/* ---- 技能点（9 个，按 Figma 设计稿） ---- */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>全局指令 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（所有伴播形象通用）</span></div>
-              {/* 入场 */}
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, color: '#69B1FF', fontWeight: 500 }}>入场</span>
-                  <SkillTip />
-                  <span style={{ fontSize: 11, color: '#86909C', fontStyle: 'italic', flex: 1 }}>系统找「讲解中商品」→ 找到绑定的形象 → 播放入场动画</span>
-                  {inlinePreview?.type === 'entrance' ? (
-                    <button onClick={() => switchInlinePreview('default')} style={{
-                      padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
-                      background: 'transparent', color: '#69B1FF', fontSize: 11, cursor: 'pointer',
-                    }}>取消</button>
-                  ) : (
-                    <button onClick={() => openPreview('entrance')} disabled={!selectedAvatar} style={{
-                      padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
-                      background: 'transparent', color: selectedAvatar ? '#69B1FF' : '#C9CDD4',
-                      fontSize: 11, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
-                    }}>预览</button>
-                  )}
-                </div>
-                <input value={globalCommands.entrance}
-                  onChange={e => setGlobalCommands(prev => ({ ...prev, entrance: e.target.value }))}
-                  placeholder="有请模特上场"
-                  style={{
-                    width: '100%', padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid #E5E6EB', background: '#FAFAFA',
-                    color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
-                  }} />
-              </div>
-              {/* 退场 */}
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, color: '#FF9A4D', fontWeight: 500 }}>退场</span>
-                  <SkillTip />
-                  <span style={{ fontSize: 11, color: '#86909C', fontStyle: 'italic', flex: 1 }}>屏幕上的形象 → 播放退场动画 → 离场</span>
-                  {inlinePreview?.type === 'exit' ? (
-                    <button onClick={() => switchInlinePreview('default')} style={{
-                      padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
-                      background: 'transparent', color: '#FF9A4D', fontSize: 11, cursor: 'pointer',
-                    }}>取消</button>
-                  ) : (
-                    <button onClick={() => openPreview('exit')} disabled={!selectedAvatar} style={{
-                      padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)',
-                      background: 'transparent', color: selectedAvatar ? '#FF9A4D' : '#C9CDD4',
-                      fontSize: 11, cursor: selectedAvatar ? 'pointer' : 'not-allowed',
-                    }}>预览</button>
-                  )}
-                </div>
-                <input value={globalCommands.exit}
-                  onChange={e => setGlobalCommands(prev => ({ ...prev, exit: e.target.value }))}
-                  placeholder="请模特先下场"
-                  style={{
-                    width: '100%', padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid #E5E6EB', background: '#FAFAFA',
-                    color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
-                  }} />
-              </div>
-              {/* 直切 */}
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, color: '#FBBF24', fontWeight: 500 }}>直切</span>
-                  <span style={{ fontSize: 11, color: '#86909C', fontStyle: 'italic', flex: 1 }}>口令含链接号 → 直接切到该链接形象，同时自动把讲解中状态挪到该商品</span>
-                </div>
-                <input value={globalCommands.switch}
-                  onChange={e => setGlobalCommands(prev => ({ ...prev, switch: e.target.value }))}
-                  placeholder="看看{N}号链接的模特上身效果"
-                  style={{
-                    width: '100%', padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid #E5E6EB', background: '#FAFAFA',
-                    color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box',
-                  }} />
-              </div>
-              {/* 展示（只读） */}
-              <div style={{
-                padding: '10px 14px', borderRadius: 8, marginBottom: 14,
-                background: '#FAFAFA', border: '1px solid #F0F0F0',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 13, color: '#86909C', fontWeight: 500 }}>展示</span>
-                  <span style={{ fontSize: 12, color: '#86909C', fontStyle: 'italic' }}>自动触发</span>
-                </div>
-                <div style={{ fontSize: 11, color: '#C9CDD4', marginTop: 4, fontStyle: 'italic' }}>
-                  讲解中商品切换时，系统自动退旧形象+入场新形象
-                </div>
-              </div>
+              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12, borderLeft: '3px solid #3370FF', paddingLeft: 8 }}>技能点</div>
+              {SKILL_POINTS.map(point => {
+                const isCommand = point.triggerType === 'command'
+                const isEditing = editingSkill === point.id
+                const currentValue = getSkillValue(point.id)
+                // 智能触发类值是数组，口令类值是字符串
+                const isAutoType = point.triggerType === 'auto' && !!point.placeholder
+                const phrases = isAutoType ? (currentValue as string[]) : []
+                const hasValue = isAutoType ? phrases.length > 0 : !!(currentValue && (currentValue as string).trim())
+                const isReadOnly = point.id === 'sp4' // 伴播展示穿版效果永远只读
+                const hasPreview = point.hasPreview
 
-            </div>
-
-            {/* ---- 形象技能 ---- */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 8 }}>形象技能 <span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}>（仅当前伴播形象适用）</span></div>
-              
-              {/* 提示卡：区分标准/高级音质 */}
-              {selectedAvatar && (
-                <div style={{ 
-                  display: 'flex', alignItems: 'flex-start', gap: 8,
-                  padding: '8px 12px', marginBottom: 12,
-                  background: '#F0F5FF', borderRadius: 6,
-                }}>
-                  <span style={{ fontSize: 14 }}>💡</span>
-                  <div style={{ fontSize: 11, color: '#4E5969', lineHeight: 1.5 }}>
-                    {isPremium ? (
-                      <>
-                        此处仅配置动作片段。如需让形象说指定话术，
-                        <span style={{ color: '#3370FF', cursor: 'pointer', textDecoration: 'underline' }}
-                          onClick={() => alert('跳转到智能搭话模块')}>请前往「智能搭话」模块</span>
-                      </>
+                // 渲染预览按钮
+                const renderPreviewButton = () => {
+                  if (!hasPreview) return null
+                  if (point.id === 'sp1') {
+                    return inlinePreview?.type === 'entrance' ? (
+                      <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
                     ) : (
-                      <>当前形象仅支持播放预制动作片段，无法自定义说话内容</>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {SKILL_GROUPS.map(group => {
-                const isExpanded = expandedSkillGroupId === group.id
-                const isEnabled = skillGroupEnabled[group.id]
-                const keywords = skillGroupKeywords[group.id] || []
-                const newKeyword = newKeywordInput[group.id] || ''
-                // 形象 × 技能组 动作
-                const actions = selectedAvatar ? (AVATAR_SKILL_ACTIONS[selectedAvatar.id]?.[group.id] || []) : []
-                const hasActions = actions.length > 0
-                
-                return (
-                  <div key={group.id} style={{ marginBottom: 10, borderRadius: 8, border: '1px solid #E5E6EB', overflow: 'hidden', opacity: hasActions ? 1 : 0.7 }}>
-                    {/* 标题行 */}
-                    <div 
-                      onClick={() => setExpandedSkillGroupId(isExpanded ? null : group.id)}
-                      style={{ 
-                        display: 'flex', alignItems: 'center', gap: 8, 
-                        padding: '10px 14px', cursor: 'pointer',
-                        background: isExpanded ? '#F7F8FA' : '#fff',
-                      }}>
-                      <span style={{ fontSize: 16 }}>{group.emoji}</span>
-                      <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 500, flex: 1 }}>{group.name}</span>
-                      <span style={{ fontSize: 11, color: hasActions ? '#86909C' : '#C9CDD4' }}>{hasActions ? `${actions.length}个动作` : '暂无动作'}</span>
-                      <div onClick={e => e.stopPropagation()}>
-                        <Toggle 
-                          checked={hasActions && isEnabled} 
-                          onChange={() => hasActions && setSkillGroupEnabled(prev => ({ ...prev, [group.id]: !prev[group.id] }))}
-                          disabled={!hasActions}
+                      <button onClick={() => openPreview('entrance')} disabled={!selectedAvatar} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: selectedAvatar ? '#3370FF' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed' }}>预览效果</button>
+                    )
+                  }
+                  if (point.id === 'sp2') {
+                    return inlinePreview?.type === 'exit' ? (
+                      <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                    ) : (
+                      <button onClick={() => openPreview('exit')} disabled={!selectedAvatar} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: selectedAvatar ? '#3370FF' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed' }}>预览效果</button>
+                    )
+                  }
+                  // 其他有预览的技能点
+                  return (
+                    <button onClick={() => {
+                      const videoMap: Record<string, { url: string, label: string }> = {
+                        'sp5': { url: 'https://assets.miimii.ai/b/avatar-effect-positive.mp4', label: '效果肯定' },
+                        'sp6': { url: 'https://assets.miimii.ai/b/avatar-effect-push.mp4', label: '逼单助攻' },
+                        'sp7': { url: 'https://assets.miimii.ai/b/avatar-effect-demo.mp4', label: '产品演示' },
+                        'sp8': { url: 'https://assets.miimii.ai/b/avatar-effect-thanks.mp4', label: '感谢下单' },
+                        'sp9': { url: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', label: '整活表演' },
+                      }
+                      const v = videoMap[point.id]
+                      if (v && selectedAvatar) {
+                        const avatarName = AVATAR_LIBRARY.find(a => a.id === selectedAvatar.id)?.name || ''
+                        setPreviewPopup({ videoUrl: v.url, title: `${v.label} 预览`, avatarName })
+                      }
+                    }} disabled={!selectedAvatar} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: selectedAvatar ? '#3370FF' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed' }}>预览效果</button>
+                  )
+                }
+
+                // 渲染编辑按钮（显示态时）
+                const renderEditButton = () => {
+                  if (isReadOnly) return null
+                  if (isCommand) {
+                    // 口令触发类：总有值，显示✏️
+                    return (
+                      <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>
+                    )
+                  } else {
+                    // 智能触发类：有值显示✏️，无值显示+补充
+                    return hasValue ? (
+                      <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>
+                    ) : (
+                      <button onClick={() => startEditing(point.id)} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>+ 补充</button>
+                    )
+                  }
+                }
+
+                // 渲染值区域（显示态/编辑态）
+                const renderValueArea = () => {
+                  if (isReadOnly) return null
+                  if (isEditing) {
+                    // 编辑态：输入框
+                    return (
+                      <div style={{ marginTop: 8 }}>
+                        <input
+                          value={editDraft}
+                          onChange={e => setEditDraft(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') saveEditing()
+                            if (e.key === 'Escape') cancelEditing()
+                          }}
+                          onBlur={saveEditing}
+                          autoFocus
+                          placeholder={point.defaultValue || point.placeholder || ''}
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
                         />
-                      </div>
-                      <span style={{ fontSize: 12, color: '#C9CDD4', marginLeft: 4 }}>{isExpanded ? '▲' : '▼'}</span>
-                    </div>
-                    
-                    {/* 展开内容 */}
-                    {isExpanded && (
-                      <div style={{ padding: '12px 14px', background: '#FAFAFA', borderTop: '1px solid #E5E6EB' }}>
-                        {hasActions ? (
-                          <>
-                            {/* 动作片段列表 */}
-                            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 10 }}>
-                              {actions.map(action => (
-                                <div key={action.id} 
-                                  onClick={() => setPreviewPopup({ title: action.label, videoUrl: action.videoUrl || '', avatarName: selectedAvatar?.name || '' })}
-                                  style={{ 
-                                  flexShrink: 0, width: 80, borderRadius: 8, overflow: 'hidden',
-                                  background: '#E8F4FF', position: 'relative',
-                                  cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s',
-                                }}
-                                  onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)' }}
-                                  onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none' }}
-                                >
-                                  {/* hover播放图标 */}
-                                  <div style={{ 
-                                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    background: 'rgba(0,0,0,0.2)', opacity: 0, transition: 'opacity 0.2s',
-                                  }}
-                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                                    onMouseLeave={e => e.currentTarget.style.opacity = '0'}
-                                  >
-                                    <span style={{ fontSize: 20 }}>▶️</span>
-                                  </div>
-                                  <div style={{ aspectRatio: '9/16', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <span style={{ fontSize: 24 }}>🎭</span>
-                                  </div>
-                                  <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 9, padding: '1px 4px', borderRadius: 3 }}>
-                                    00:{String(action.duration).padStart(2, '0')}
-                                  </div>
-                                  <div style={{ padding: '4px 6px', fontSize: 10, color: '#1D2129', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {action.label}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            
-                            {/* 触发关键词 */}
-                            <div style={{ marginBottom: 8 }}>
-                              <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>触发关键词：</div>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-                                {keywords.map((kw, idx) => (
-                                  <span key={idx} style={{ 
-                                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                                    padding: '3px 8px', borderRadius: 4, 
-                                    background: '#F0F0F0', fontSize: 11, color: '#1D2129',
-                                  }}>
-                                    {kw}
-                                    <span 
-                                      onClick={() => setSkillGroupKeywords(prev => ({ 
-                                        ...prev, 
-                                        [group.id]: prev[group.id].filter((_, i) => i !== idx) 
-                                      }))}
-                                      style={{ cursor: 'pointer', color: '#C9CDD4', fontSize: 12 }}
-                                    >×</span>
-                                  </span>
-                                ))}
-                                <input
-                                  value={newKeyword}
-                                  onChange={e => setNewKeywordInput(prev => ({ ...prev, [group.id]: e.target.value }))}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter' && newKeyword.trim()) {
-                                      setSkillGroupKeywords(prev => ({ 
-                                        ...prev, 
-                                        [group.id]: [...prev[group.id], newKeyword.trim()] 
-                                      }))
-                                      setNewKeywordInput(prev => ({ ...prev, [group.id]: '' }))
-                                    }
-                                  }}
-                                  placeholder="+添加"
-                                  style={{ 
-                                    width: 60, padding: '3px 6px', borderRadius: 4,
-                                    border: '1px solid #E5E6EB', fontSize: 11,
-                                    outline: 'none', background: 'transparent',
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            
-                            {/* 触发逻辑说明 */}
-                            <div style={{ fontSize: 10, color: '#C9CDD4', fontStyle: 'italic' }}>
-                              当主播话术命中关键词时，随机播放组内一个动作片段
-                            </div>
-                          </>
-                        ) : (
-                          /* 空状态 */
-                          <div style={{ padding: '20px 0', textAlign: 'center' }}>
-                            <div style={{ fontSize: 32, marginBottom: 8 }}>🎭</div>
-                            <div style={{ fontSize: 12, color: '#86909C' }}>该形象暂无此技能的动作片段</div>
-                          </div>
+                        {isAutoType && (
+                          <div style={{ fontSize: 11, color: '#C9CDD4', marginTop: 4, paddingLeft: 4 }}>💡 支持中英文逗号分隔，多条话术将自动拆分</div>
                         )}
                       </div>
-                    )}
+                    )
+                  } else {
+                    // 显示态
+                    if (isCommand) {
+                      // 口令触发类：显示当前值（纯文本）
+                      const displayValue = hasValue ? currentValue : (point.defaultValue || '')
+                      return (
+                        <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 13, color: '#1D2129', padding: '8px 12px', background: '#FAFAFA', borderRadius: 8, flex: 1 }}>{displayValue}</span>
+                          {renderEditButton()}
+                        </div>
+                      )
+                    } else {
+                      // 智能触发类
+                      if (hasValue) {
+                        return (
+                          <div style={{ marginTop: 8 }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 6 }}>
+                              {phrases.map((phrase: string, idx: number) => (
+                                <span key={idx} style={{
+                                  padding: '4px 10px', borderRadius: 6,
+                                  background: '#F2F3F5', color: '#1D2129',
+                                  fontSize: 12, fontWeight: 400,
+                                }}>{phrase}</span>
+                              ))}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <span style={{ fontSize: 11, color: '#C9CDD4' }}>共{phrases.length}条话术</span>
+                              {renderEditButton()}
+                            </div>
+                          </div>
+                        )
+                      } else {
+                        // 未补充：显示提示+补充按钮
+                        return (
+                          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: 12, color: '#C9CDD4', fontStyle: 'italic' }}>点击补充直播高频话术...</span>
+                            {renderEditButton()}
+                          </div>
+                        )
+                      }
+                    }
+                  }
+                }
+
+                return (
+                  <div key={point.id} style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
+                    {/* 标题行 */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{point.name}</span>
+                      {renderPreviewButton()}
+                    </div>
+                    {/* 说明文字 */}
+                    <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6, fontStyle: 'italic' }}>{point.description}</div>
+                    {/* 值区域（显示态/编辑态） */}
+                    {renderValueArea()}
                   </div>
                 )
               })}
