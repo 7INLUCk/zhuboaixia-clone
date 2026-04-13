@@ -8,12 +8,21 @@ type NormalState = { id: string; label: string; icon: string; duration: number; 
 type EventAction = { id: string; label: string; command: string; duration: number; videoUrl?: string; isTransition?: boolean; enabled?: boolean }
 type AvatarLibItem = { id: string; name: string; preview: string; category: 'public' | 'custom'; voiceTier: 'standard' | 'premium' }
 type ChatRule = { id: string; trigger: string; response: string }
+type BoundAvatar = {
+  avatarId: string
+  tag: string
+  skills: Record<string, string[]>  // 形象级技能点（sp3-sp8）
+}
 type ProductItem = {
   id: string; linkNum: number; name: string; price: string;
-  boundAvatarId: string | null
+  boundAvatars: BoundAvatar[]
   chatRules: ChatRule[]
   chatEnabled: boolean
 }
+
+// 全局技能点ID
+const GLOBAL_SKILL_IDS = ['sp1', 'sp2', 'sp9']
+const AVATAR_SKILL_IDS = ['sp3', 'sp4', 'sp5', 'sp6', 'sp7', 'sp8']
 
 // 全局口令配置
 type GlobalCommands = {
@@ -143,13 +152,13 @@ function PlayButton({ playing, onClick, color, size }: { playing: boolean; onCli
 
 // ============ 形象库数据 ============
 const AVATAR_LIBRARY: AvatarLibItem[] = [
-  { id: 'av1', name: '篮球小子-蓝', preview: '/avatars/chroma-keyed/av1.png', category: 'public', voiceTier: 'standard' },
-  { id: 'av2', name: '篮球小子-红', preview: '/avatars/chroma-keyed/av2.png', category: 'public', voiceTier: 'standard' },
-  { id: 'av3', name: '篮球小子-黑', preview: '/avatars/generated/av3.jpg', category: 'public', voiceTier: 'premium' },
-  { id: 'av4', name: '篮球小子-白', preview: '/avatars/generated/av4.jpg', category: 'public', voiceTier: 'standard' },
-  { id: 'av5', name: '小小碎花裙', preview: '/avatars/generated/av5.jpg', category: 'public', voiceTier: 'premium' },
-  { id: 'av6', name: '榴莲宝贝3D', preview: '/avatars/chroma-keyed/av6.png', category: 'custom', voiceTier: 'premium' },
-  { id: 'av7', name: '卡通小猫', preview: '/avatars/generated/av7.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av1', name: '小蓝', preview: '/avatars/chroma-keyed/av1.png', category: 'public', voiceTier: 'standard' },
+  { id: 'av2', name: '小红', preview: '/avatars/chroma-keyed/av2.png', category: 'public', voiceTier: 'standard' },
+  { id: 'av3', name: '小黑', preview: '/avatars/generated/av3.jpg', category: 'public', voiceTier: 'premium' },
+  { id: 'av4', name: '小白', preview: '/avatars/generated/av4.jpg', category: 'public', voiceTier: 'standard' },
+  { id: 'av5', name: '花花', preview: '/avatars/generated/av5.jpg', category: 'public', voiceTier: 'premium' },
+  { id: 'av6', name: '榴莲', preview: '/avatars/chroma-keyed/av6.png', category: 'custom', voiceTier: 'premium' },
+  { id: 'av7', name: '猫猫', preview: '/avatars/generated/av7.jpg', category: 'public', voiceTier: 'standard' },
 ]
 
 const NORMAL_STATES: Record<string, NormalState[]> = {
@@ -221,20 +230,21 @@ const DEFAULT_EVENT_ACTIONS: EventAction[] = [
   { id: 'ea2', label: '展示', command: '', duration: 10 },
 ]
 
+const mkSkills = (): Record<string, string[]> => ({ sp3: [], sp4: [], sp5: [], sp6: [], sp7: [], sp8: [] })
 const PRODUCTS_INIT: ProductItem[] = [
-  { id: 'p1', linkNum: 1, name: '女童春款碎花连衣裙', price: '¥129', boundAvatarId: null, chatRules: [], chatEnabled: false },
-  { id: 'p2', linkNum: 2, name: '男童纯棉印花T恤', price: '¥89', boundAvatarId: 'av1', chatRules: [], chatEnabled: false },
-  { id: 'p3', linkNum: 3, name: '儿童防晒衣外套', price: '¥159', boundAvatarId: null, chatRules: [], chatEnabled: false },
-  { id: 'p4', linkNum: 4, name: '女童百褶半身裙', price: '¥99', boundAvatarId: 'av6', chatRules: [{ id: 'cr2', trigger: '有优惠吗', response: '现在下单立减20元！' }, { id: 'cr3', trigger: '质量怎么样', response: '纯棉面料，亲肤透气，宝宝穿很舒服~' }], chatEnabled: true },
-  { id: 'p5', linkNum: 5, name: '男童运动裤', price: '¥79', boundAvatarId: null, chatRules: [], chatEnabled: false },
-  { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatarId: null, chatRules: [], chatEnabled: false },
+  { id: 'p1', linkNum: 1, name: '女童春款碎花连衣裙', price: '¥129', boundAvatars: [], chatRules: [], chatEnabled: false },
+  { id: 'p2', linkNum: 2, name: '男童纯棉印花T恤', price: '¥89', boundAvatars: [{ avatarId: 'av1', tag: '蓝小子', skills: mkSkills() }], chatRules: [], chatEnabled: false },
+  { id: 'p3', linkNum: 3, name: '儿童防晒衣外套', price: '¥159', boundAvatars: [], chatRules: [], chatEnabled: false },
+  { id: 'p4', linkNum: 4, name: '女童百褶半身裙', price: '¥99', boundAvatars: [{ avatarId: 'av6', tag: '榴莲宝', skills: mkSkills() }], chatRules: [{ id: 'cr2', trigger: '有优惠吗', response: '现在下单立减20元！' }, { id: 'cr3', trigger: '质量怎么样', response: '纯棉面料，亲肤透气，宝宝穿很舒服~' }], chatEnabled: true },
+  { id: 'p5', linkNum: 5, name: '男童运动裤', price: '¥79', boundAvatars: [], chatRules: [], chatEnabled: false },
+  { id: 'p6', linkNum: 6, name: '女童蕾丝上衣', price: '¥109', boundAvatars: [], chatRules: [], chatEnabled: false },
 ]
 
 // ============ 技能点数据（9 个，按 Figma 设计稿） ============
 const SKILL_POINTS: SkillPoint[] = [
   { id: 'sp1', name: '伴播进入直播间', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '有请模特入场', hasPreview: true },
   { id: 'sp2', name: '伴播退出直播间', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '请模特先下场', hasPreview: true },
-  { id: 'sp3', name: '伴播换装', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '看看 [N] 号链接的模特上身效果', hasPreview: false },
+  { id: 'sp3', name: '伴播换装', triggerType: 'command', description: '主播报商品链接号或说出形象指定词时切换；链接号口令全局生效，形象指定词在下方按形象配置', defaultValue: '看看 [N] 号链接的模特上身效果', hasPreview: false },
   { id: 'sp4', name: '伴播展示穿版效果', triggerType: 'auto', description: '智能触发，根据讲解商品自动切换伴播形象', hasPreview: false },
   { id: 'sp5', name: '效果肯定', triggerType: 'auto', description: '智能触发，主播塑品时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：效果很好，质量不错，值得买', hasPreview: true },
   { id: 'sp6', name: '逼单助攻', triggerType: 'auto', description: '智能触发，主播逼单时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：现在下单，优惠有限，抓紧抢', hasPreview: true },
@@ -477,8 +487,17 @@ function SkillTip() {
 }
 
 export default function CanvasPanel({ onClose }: Props) {
+  // ===== 选中状态（替代 mode：null=未选，live=整场形象，product=商品） =====
+  const [activeSection, setActiveSection] = useState<'live' | 'product' | null>(null)
+  const [liveAvatarCollapsed, setLiveAvatarCollapsed] = useState(false) // 整场直播区块默认展开
   const [products, setProducts] = useState<ProductItem[]>(PRODUCTS_INIT)
-  const [selectedProductId, setSelectedProductId] = useState<string | null>('p2')
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const [selectedLiveAvatarIdx, setSelectedLiveAvatarIdx] = useState(0)
+  const [selectedProductAvatarIdx, setSelectedProductAvatarIdx] = useState(0)
+  const [liveAvatars, setLiveAvatars] = useState<BoundAvatar[]>([
+    { avatarId: 'av1', tag: '小蓝', skills: mkSkills() },
+    { avatarId: 'av2', tag: '小红', skills: mkSkills() },
+  ])
   const [globalCommands, setGlobalCommands] = useState<GlobalCommands>({
     entrance: '有请模特上场',
     exit: '请模特先下场',
@@ -490,6 +509,7 @@ export default function CanvasPanel({ onClose }: Props) {
 
   // 弹窗
   const [showAvatarSwitch, setShowAvatarSwitch] = useState(false)
+  const [addingToLiveSection, setAddingToLiveSection] = useState(false) // true=从直播形象区打开弹窗
   const [bindMode, setBindMode] = useState<'single' | 'all'>('single')
   const [previewPopup, setPreviewPopup] = useState<{ title: string; videoUrl: string; avatarName: string } | null>(null)
 
@@ -510,20 +530,30 @@ export default function CanvasPanel({ onClose }: Props) {
   const [playingEntrance, setPlayingEntrance] = useState(false)
   const [playingExit, setPlayingExit] = useState(false)
 
+  // 当前选中的形象（根据模式不同来源不同）
   const selectedProduct = products.find(p => p.id === selectedProductId)
-  const selectedAvatar = selectedProduct?.boundAvatarId ? AVATAR_LIBRARY.find(a => a.id === selectedProduct.boundAvatarId) : null
+  const currentBoundAvatars = activeSection === 'live' ? liveAvatars : (selectedProduct?.boundAvatars || [])
+  const currentAvatarIdx = activeSection === 'live' ? selectedLiveAvatarIdx : selectedProductAvatarIdx
+  const currentBoundAvatar = currentBoundAvatars[currentAvatarIdx] || null
+  const selectedAvatar = currentBoundAvatar ? AVATAR_LIBRARY.find(a => a.id === currentBoundAvatar.avatarId) : null
   const normalStates = selectedAvatar ? (NORMAL_STATES[selectedAvatar.id] || DEFAULT_STATES) : []
   const eventActions = selectedAvatar ? (EVENT_ACTIONS[selectedAvatar.id] || DEFAULT_EVENT_ACTIONS).filter(a => !a.isTransition) : []
   const isPremium = selectedAvatar?.voiceTier === 'premium'
 
   // 绑定/切换形象
   const handleSelectAvatar = (avatarId: string) => {
-    if (bindMode === 'all') {
-      setProducts(prev => prev.map(p => ({ ...p, boundAvatarId: avatarId })))
+    if (addingToLiveSection) {
+      if (!liveAvatars.find(ba => ba.avatarId === avatarId)) {
+        const av = AVATAR_LIBRARY.find(a => a.id === avatarId)
+        setLiveAvatars(prev => [...prev, { avatarId, tag: av?.name || '', skills: mkSkills() }])
+      }
+      setAddingToLiveSection(false)
+    } else if (bindMode === 'all') {
+      setProducts(prev => prev.map(p => ({ ...p, boundAvatars: [{ avatarId, tag: '', skills: mkSkills() }] })))
     } else {
       if (!selectedProductId) return
       setProducts(prev => prev.map(p =>
-        p.id === selectedProductId ? { ...p, boundAvatarId: avatarId } : p
+        p.id === selectedProductId ? { ...p, boundAvatars: [...p.boundAvatars, { avatarId, tag: '', skills: mkSkills() }] } : p
       ))
     }
   }
@@ -544,12 +574,78 @@ export default function CanvasPanel({ onClose }: Props) {
   const [editingSkill, setEditingSkill] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState('')
 
+  // 添加标签状态（智能触发类：点击+弹出的输入框）
+  const [addingSkill, setAddingSkill] = useState<string | null>(null)
+  const [addDraft, setAddDraft] = useState('')
+
+  // 删除单条话术
+  const removeSkillPhrase = (pointId: string, index: number) => {
+    setSkillPointValues(prev => {
+      const current = prev[pointId] || []
+      const next = [...current]
+      next.splice(index, 1)
+      return { ...prev, [pointId]: next }
+    })
+  }
+
+  // 添加单条话术
+  const addSkillPhrase = (pointId: string) => {
+    const trimmed = addDraft.trim()
+    if (!trimmed) return
+    setSkillPointValues(prev => {
+      const current = prev[pointId] || []
+      if (current.includes(trimmed)) return prev // 防重复
+      return { ...prev, [pointId]: [...current, trimmed] }
+    })
+    setAddDraft('')
+    setAddingSkill(null)
+  }
+
+  // 判断是否是新样式技能点（sp5/sp6/sp7/sp8）
+  const isNewStyleSkill = (id: string) => ['sp5', 'sp6', 'sp7', 'sp8'].includes(id)
+
+  // 更新当前选中形象的技能点
+  const updateAvatarSkill = (skillId: string, value: string[]) => {
+    if (activeSection === 'live') {
+      setLiveAvatars(prev => {
+        const n = [...prev]
+        if (n[selectedLiveAvatarIdx]) {
+          n[selectedLiveAvatarIdx] = { ...n[selectedLiveAvatarIdx], skills: { ...n[selectedLiveAvatarIdx].skills, [skillId]: value } }
+        }
+        return n
+      })
+    } else if (selectedProductId) {
+      setProducts(prev => prev.map(p => {
+        if (p.id !== selectedProductId) return p
+        const next = [...p.boundAvatars]
+        if (next[selectedProductAvatarIdx]) {
+          next[selectedProductAvatarIdx] = { ...next[selectedProductAvatarIdx], skills: { ...next[selectedProductAvatarIdx].skills, [skillId]: value } }
+        }
+        return { ...p, boundAvatars: next }
+      }))
+    }
+  }
+
+  // 给当前形象添加一条话术
+  const addAvatarSkillPhrase = (skillId: string) => {
+    const trimmed = addDraft.trim()
+    if (!trimmed) return
+    const current = currentBoundAvatar?.skills?.[skillId] || []
+    if (current.includes(trimmed)) { setAddDraft(''); setAddingSkill(null); return }
+    updateAvatarSkill(skillId, [...current, trimmed])
+    setAddDraft('')
+    setAddingSkill(null)
+  }
+
   // 获取技能点的当前值（智能触发类返回数组，口令类返回字符串）
   const getSkillValue = (id: string): string | string[] => {
     if (id === 'sp1') return globalCommands.entrance
     if (id === 'sp2') return globalCommands.exit
     if (id === 'sp3') return globalCommands.switch
-    return skillPointValues[id] || []
+    const point = SKILL_POINTS.find(p => p.id === id)
+    // command 类型返回字符串，auto 类型返回数组
+    if (point?.triggerType === 'command') return (skillPointValues[id] as unknown as string) || point.defaultValue || ''
+    return (skillPointValues[id] as unknown as string[]) || []
   }
 
   // 获取技能点的显示文本（智能触发类：数组拼接成逗号分隔字符串）
@@ -648,6 +744,7 @@ const openActionPreview = (ea: EventAction) => {
   // 商品卡片点击后右列滚动到顶部
   const handleSelectProductAndScroll = (id: string) => {
     setSelectedProductId(id)
+    setSelectedProductAvatarIdx(0)
     configRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -672,73 +769,111 @@ const openActionPreview = (ea: EventAction) => {
       <div style={{
         display: 'flex', flex: 1, minHeight: 0,
       }}>
-      {/* ==================== 左列：直播商品列表（约300px） ==================== */}
+      {/* ==================== 左列（约300px） ==================== */}
       <div style={{
         width: 300, flexShrink: 0,
         background: '#FFFFFF', display: 'flex', flexDirection: 'column',
         position: 'relative', overflow: 'hidden',
         boxShadow: '1px 0 0 #F0F0F0',
       }}>
-        {/* 顶部标题 */}
-        <div style={{ padding: '12px 16px', background: '#F7F8FA', borderBottom: '1px solid #F0F0F0', flexShrink: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#1D2129', marginBottom: 4 }}>直播间商品</div>
-          <div style={{ fontSize: 11, color: '#86909C', marginBottom: 10 }}>
-            {products.length}个商品 {products.filter(p => p.boundAvatarId).length}个已绑定
+        {/* ===== 上半部分：整场直播形象（可折叠） ===== */}
+        <div style={{ flexShrink: 0, borderBottom: '1px solid #F0F0F0' }}>
+          <div
+            onClick={() => setLiveAvatarCollapsed(c => !c)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '10px 16px', background: '#F7F8FA', cursor: 'pointer', userSelect: 'none',
+            }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>整场直播形象</div>
+              <div style={{ fontSize: 11, color: '#86909C', marginTop: 1 }}>{liveAvatars.length}个形象 · 通过口令tag切换</div>
+            </div>
+            <span style={{ fontSize: 10, color: '#86909C', transform: liveAvatarCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', display: 'inline-block' }}>▼</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#1D2129' }}>全部商品</span>
-            <button onClick={() => { setBindMode('all'); setShowAvatarSwitch(true) }} style={{
-              padding: '4px 12px', borderRadius: 6,
-              background: '#E8F3FF', border: 'none',
-              color: '#3370FF', fontSize: 12, fontWeight: 500, cursor: 'pointer',
-            }}>去绑定</button>
-          </div>
-        </div>
-
-        {/* 商品列表 — 紧凑横向行 */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
-          {products.map(p => {
-            const isSelected = selectedProductId === p.id
-            const hasAvatar = !!p.boundAvatarId
-            return (
-              <div key={p.id}
-                onClick={() => handleSelectProductAndScroll(p.id)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 16px', cursor: 'pointer',
-                  background: isSelected ? '#E8F3FF' : 'transparent',
-                  borderLeft: isSelected ? '3px solid #3370FF' : '3px solid transparent',
-                  transition: 'all 0.15s',
-                }}>
-                {/* 缩略图 */}
-                <div style={{
-                  width: 48, height: 48, borderRadius: 8, flexShrink: 0,
-                  background: '#F2F3F5',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
-                }}>👗</div>
-                {/* 信息 */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, color: '#1D2129', fontWeight: 500, lineHeight: 1.3,
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {p.name}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#86909C', marginTop: 2 }}>ID: {p.linkNum * 100000 + 653473}</div>
-                </div>
-                {/* 操作按钮 */}
-                <button
-                  onClick={e => { e.stopPropagation(); handleSelectProductAndScroll(p.id); setBindMode('single'); setShowAvatarSwitch(true) }}
-                  style={{
-                    padding: '4px 12px', borderRadius: 6, flexShrink: 0,
-                    border: 'none',
-                    background: hasAvatar ? '#F2F3F5' : '#3370FF',
-                    color: hasAvatar ? '#86909C' : '#FFFFFF',
-                    fontSize: 12, fontWeight: 500, cursor: 'pointer',
-                  }}>
-                  {hasAvatar ? '已绑定' : '去绑定'}
-                </button>
+          {!liveAvatarCollapsed && (
+            <>
+              <div style={{ maxHeight: 200, overflowY: 'auto', padding: '4px 0' }}>
+                {liveAvatars.map((ba, idx) => {
+                  const av = AVATAR_LIBRARY.find(a => a.id === ba.avatarId)
+                  const isSelected = activeSection === 'live' && selectedLiveAvatarIdx === idx
+                  return (
+                    <div key={idx} onClick={() => { setSelectedLiveAvatarIdx(idx); setActiveSection('live') }} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 16px', cursor: 'pointer',
+                      background: isSelected ? '#E8F3FF' : 'transparent',
+                      transition: 'all 0.15s',
+                    }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 8, overflow: 'hidden', background: '#F0F0F0', flexShrink: 0 }}>
+                        {av && <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, color: '#1D2129', fontWeight: 500 }}>{av?.name || '未知'}</div>
+                        <div style={{ fontSize: 11, color: ba.tag ? '#3370FF' : '#C9CDD4', marginTop: 2 }}>Tag: {ba.tag || '未设置'}</div>
+                      </div>
+                      <button onClick={e => { e.stopPropagation(); setLiveAvatars(prev => prev.filter((_, i) => i !== idx)); if (selectedLiveAvatarIdx >= liveAvatars.length - 1) setSelectedLiveAvatarIdx(Math.max(0, liveAvatars.length - 2)) }} style={{ background: 'none', border: 'none', color: '#F53F3F', cursor: 'pointer', fontSize: 12 }}>🗑</button>
+                    </div>
+                  )
+                })}
               </div>
-            )
-          })}
+              <div style={{ padding: '8px 16px' }}>
+                <button onClick={() => { setAddingToLiveSection(true); setShowAvatarSwitch(true) }} style={{
+                  width: '100%', padding: '7px 0', borderRadius: 8,
+                  border: '1px dashed #3370FF', background: 'transparent',
+                  color: '#3370FF', fontSize: 12, cursor: 'pointer', fontWeight: 500,
+                }}>+ 添加形象</button>
+              </div>
+            </>
+          )}
+        </div>
+        {/* ===== 下半部分：直播间商品 ===== */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div style={{ padding: '10px 16px', background: '#F7F8FA', flexShrink: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>直播间商品</div>
+            <div style={{ fontSize: 11, color: '#86909C', marginTop: 1 }}>
+              {products.length}个商品 · {products.filter(p => p.boundAvatars.length > 0).length}个已绑定
+            </div>
+            <div style={{ fontSize: 10, color: '#C9CDD4', marginTop: 3 }}>每个商品可绑多个形象，报链接时自动切换</div>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
+            {products.map(p => {
+              const isSelected = activeSection === 'product' && selectedProductId === p.id
+              const hasAvatar = p.boundAvatars.length > 0
+              return (
+                <div key={p.id}
+                  onClick={() => { handleSelectProductAndScroll(p.id); setActiveSection('product') }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '10px 16px', cursor: 'pointer',
+                    background: isSelected ? '#E8F3FF' : 'transparent',
+                    transition: 'all 0.15s',
+                  }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 8, flexShrink: 0,
+                    background: '#F2F3F5',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+                  }}>👗</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: '#1D2129', fontWeight: 500, lineHeight: 1.3,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {p.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#86909C', marginTop: 2 }}>ID: {p.linkNum * 100000 + 653473}</div>
+                  </div>
+                  <button
+                    onClick={e => { e.stopPropagation(); handleSelectProductAndScroll(p.id); setActiveSection('product'); setBindMode('single'); setShowAvatarSwitch(true) }}
+                    style={{
+                      padding: '4px 12px', borderRadius: 6, flexShrink: 0,
+                      border: 'none',
+                      background: hasAvatar ? '#F2F3F5' : '#3370FF',
+                      color: hasAvatar ? '#86909C' : '#FFFFFF',
+                      fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                    }}>
+                    {hasAvatar ? `${p.boundAvatars.length}个形象 +` : '去绑定'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
@@ -747,44 +882,185 @@ const openActionPreview = (ea: EventAction) => {
         flex: 1, overflowY: 'auto', padding: '16px 20px',
         background: '#FFFFFF',
       }}>
-        {!selectedProduct ? (
+        {activeSection === null ? (
+          <div style={{ textAlign: 'center', color: '#86909C', paddingTop: 100, fontSize: 14 }}>← 请在左侧选择形象或商品进行配置</div>
+        ) : activeSection === 'live' ? (
+          /* ========== 整场直播形象：与商品模式结构完全一致 ========== */
+          <>
+            {!selectedAvatar ? (
+              <div style={{ textAlign: 'center', color: '#86909C', paddingTop: 100, fontSize: 14 }}>← 请在左侧点击一个形象进行配置</div>
+            ) : (
+              <>
+                {/* ---- 视频预览窗口 ---- */}
+                <div style={{ width: '100%', maxWidth: 240, margin: '0 auto', aspectRatio: '9/16', borderRadius: 12, overflow: 'hidden', background: '#F7F8FA', position: 'relative', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {inlinePreview?.videoUrl ? (
+                      <video key={inlinePreview.videoUrl} src={inlinePreview.videoUrl} autoPlay loop muted style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      <ChromaKeyImage src={selectedAvatar.preview} alt={selectedAvatar.name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                    )}
+                  </div>
+                  <div style={{ position: 'absolute', top: 8, left: 8, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.5)', color: '#fff', fontSize: 10, fontWeight: 500 }}>
+                    {inlinePreview?.type === 'entrance' ? '入场展示态' : inlinePreview?.type === 'exit' ? '退场展示态' : inlinePreview?.type === 'skill' ? inlinePreview.skillGroupName || '技能预览' : '默认展示态'}
+                  </div>
+                </div>
+
+                {/* ---- 输出到直播伴侣按钮 ---- */}
+                <div style={{ position: 'relative', maxWidth: 240, margin: '10px auto 0', textAlign: 'center' }}
+                  onMouseEnter={() => setNdiHover(true)} onMouseLeave={() => setNdiHover(false)}>
+                  <button onClick={() => setNdiEnabled(prev => !prev)} style={{ padding: '5px 14px', borderRadius: 6, border: ndiEnabled ? '1px solid rgba(51,112,255,0.4)' : '1px solid #E5E6EB', background: ndiEnabled ? '#F0F5FF' : '#fff', color: ndiEnabled ? '#3370FF' : '#86909C', fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    {ndiEnabled && <span style={{ color: '#3370FF', fontSize: 13 }}>✓</span>}
+                    输出到直播伴侣预览
+                  </button>
+                  {ndiHover && (
+                    <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, padding: '8px 12px', borderRadius: 8, background: '#1D2129', color: '#fff', fontSize: 11, lineHeight: 1.6, whiteSpace: 'normal', width: 220, textAlign: 'left', zIndex: 10 }}>
+                      开启后，预览画面会以 <b>NDI 格式</b>实时输出到本地网络。<br/>
+                      在「抖音直播伴侣」→ 添加素材 → 选中 NDI 通道 → 即可同步查看效果。
+                    </div>
+                  )}
+                </div>
+
+                {/* ---- 技能点 ---- */}
+                <div style={{ marginBottom: 20, marginTop: 16 }}>
+                  <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12, borderLeft: '3px solid #3370FF', paddingLeft: 8 }}>技能点</div>
+                  {SKILL_POINTS.map(point => {
+                    const isCommand = point.triggerType === 'command'
+                    const isEditing = editingSkill === point.id
+                    const currentValue = getSkillValue(point.id)
+                    const isAutoType = point.triggerType === 'auto' && !!point.placeholder
+                    const phrases = isAutoType ? (currentValue as string[]) : (currentBoundAvatar?.skills?.[point.id] || [])
+                    const hasValue = isAutoType ? phrases.length > 0 : !!(currentValue && typeof currentValue === 'string' && currentValue.trim())
+                    const isReadOnly = point.id === 'sp4'
+
+                    const renderLivePreviewButton = () => {
+                      if (!point.hasPreview) return null
+                      if (point.id === 'sp1') return inlinePreview?.type === 'entrance' ? (
+                        <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                      ) : (
+                        <button onClick={() => openPreview('entrance')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
+                      )
+                      if (point.id === 'sp2') return inlinePreview?.type === 'exit' ? (
+                        <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                      ) : (
+                        <button onClick={() => openPreview('exit')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
+                      )
+                      const videoMap: Record<string, { url: string; label: string }> = { 'sp5': { url: 'https://assets.miimii.ai/b/avatar-effect-positive.mp4', label: '效果肯定' }, 'sp6': { url: 'https://assets.miimii.ai/b/avatar-effect-push.mp4', label: '逼单助攻' }, 'sp7': { url: 'https://assets.miimii.ai/b/avatar-effect-demo.mp4', label: '产品演示' }, 'sp8': { url: 'https://assets.miimii.ai/b/avatar-effect-thanks.mp4', label: '感谢下单' }, 'sp9': { url: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', label: '整活表演' } }
+                      const v = videoMap[point.id]
+                      return v ? <button onClick={() => setPreviewPopup({ videoUrl: v.url, title: `${v.label} 预览`, avatarName: selectedAvatar.name })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button> : null
+                    }
+
+                    const renderLiveValueArea = () => {
+                      if (isReadOnly) return null
+                      // sp3 特殊：全局口令模板 + 本形象换装指定词
+                      if (point.id === 'sp3') {
+                        return (
+                          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div>
+                              <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>链接号口令（全局）</div>
+                              {isEditing ? (
+                                <input value={editDraft} onChange={e => setEditDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveEditing(); if (e.key === 'Escape') cancelEditing() }} onBlur={saveEditing} autoFocus placeholder={point.defaultValue || ''} style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                              ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <span style={{ fontSize: 13, color: '#1D2129', padding: '7px 10px', background: '#FAFAFA', borderRadius: 6, flex: 1 }}>{getSkillDisplayText('sp3')}</span>
+                                  <button onClick={() => startEditing('sp3')} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>此形象的换装指定词</div>
+                              <input
+                                value={currentBoundAvatar?.tag || ''}
+                                onChange={e => setLiveAvatars(prev => { const n = [...prev]; n[selectedLiveAvatarIdx] = { ...n[selectedLiveAvatarIdx], tag: e.target.value }; return n })}
+                                placeholder={selectedAvatar?.name}
+                                style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid #E5E6EB', fontSize: 13, outline: 'none', color: '#1D2129', background: '#FFFFFF', boxSizing: 'border-box' }}
+                              />
+                              <div style={{ fontSize: 10, color: '#C9CDD4', marginTop: 4 }}>
+                                主播说「{currentBoundAvatar?.tag || selectedAvatar?.name || ''}」→ 切换到 {selectedAvatar?.name}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      }
+                      if (isNewStyleSkill(point.id)) {
+                        const avatarPhrases = currentBoundAvatar?.skills?.[point.id] || []
+                        const isAdding = addingSkill === point.id
+                        return (
+                          <div style={{ marginTop: 8 }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                              {avatarPhrases.map((phrase: string, idx: number) => (
+                                <span key={idx} style={{ padding: '6px 12px', borderRadius: 6, background: '#F2F3F5', border: '1px solid #E5E6EB', fontSize: 13, color: '#1D2129', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                  {phrase}
+                                  <span onClick={() => { const next = [...avatarPhrases]; next.splice(idx, 1); updateAvatarSkill(point.id, next) }} style={{ cursor: 'pointer', opacity: 0.6, fontSize: 12 }}>🗑</span>
+                                </span>
+                              ))}
+                              {!isAdding && <span onClick={() => setAddingSkill(point.id)} style={{ padding: '6px 12px', borderRadius: 6, background: 'transparent', border: '1px solid #E5E6EB', fontSize: 13, color: '#86909C', cursor: 'pointer' }}>+</span>}
+                            </div>
+                            {isAdding && <input value={addDraft} onChange={e => setAddDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addAvatarSkillPhrase(point.id); if (e.key === 'Escape') { setAddDraft(''); setAddingSkill(null) } }} onBlur={() => { if (addDraft.trim()) addAvatarSkillPhrase(point.id); else { setAddDraft(''); setAddingSkill(null) } }} autoFocus placeholder="输入话术后按 Enter 添加" style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box', marginTop: 6 }} />}
+                            {avatarPhrases.length > 0 && !isAdding && <div style={{ fontSize: 11, color: '#C9CDD4', marginTop: 6 }}>共{avatarPhrases.length}条话术</div>}
+                          </div>
+                        )
+                      }
+                      if (isEditing) return (
+                        <div style={{ marginTop: 8 }}>
+                          <input value={editDraft} onChange={e => setEditDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveEditing(); if (e.key === 'Escape') cancelEditing() }} onBlur={saveEditing} autoFocus placeholder={point.defaultValue || ''} style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                        </div>
+                      )
+                      const displayValue = hasValue ? (currentValue as string) : (point.defaultValue || '')
+                      return (
+                        <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 13, color: '#1D2129', padding: '8px 12px', background: '#FAFAFA', borderRadius: 8, flex: 1 }}>{displayValue}</span>
+                          {!isReadOnly && <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>}
+                        </div>
+                      )
+                    }
+
+                    return (
+                      <div key={point.id} style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{point.name}</span>
+                          {renderLivePreviewButton()}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6, fontStyle: 'italic' }}>{point.description}</div>
+                        {renderLiveValueArea()}
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </>
+        ) : !selectedProduct ? (
           <div style={{ textAlign: 'center', color: '#86909C', paddingTop: 100, fontSize: 14 }}>
             ← 请在左侧选择一个商品进行配置
           </div>
         ) : (
           <>
-            {/* ---- 形象信息栏 ---- */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '10px 14px', borderRadius: 10,
-              background: '#F7F8FA', marginBottom: 12,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {selectedAvatar ? (
-                  <>
-                    <div style={{ width: 36, height: 36, borderRadius: 8, overflow: 'hidden', background: '#F0F0F0' }}>
-                      <ChromaKeyImage src={selectedAvatar.preview} alt={selectedAvatar.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <div>
-                      <div style={{ color: '#1D2129', fontSize: 13, fontWeight: 500 }}>{selectedAvatar.name}</div>
-                      <span style={{
-                        fontSize: 10, padding: '1px 6px', borderRadius: 4,
-                        background: isPremium ? 'rgba(51,112,255,0.15)' : 'rgba(0,180,42,0.15)',
-                        color: isPremium ? '#69B1FF' : '#34D399',
-                      }}>{isPremium ? '🔵可搭话' : '🟢标准'}</span>
-                    </div>
-                  </>
-                ) : (
-                  <span style={{ color: '#86909C', fontSize: 13 }}>未配置伴播形象</span>
-                )}
+            {/* ---- 形象切换条（有绑定时显示） ---- */}
+            {selectedProduct && selectedProduct.boundAvatars.length > 0 ? (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>已绑形象 · 点击切换配置</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {selectedProduct.boundAvatars.map((ba, idx) => {
+                    const av = AVATAR_LIBRARY.find(a => a.id === ba.avatarId)
+                    const isSelected = selectedProductAvatarIdx === idx
+                    return (
+                      <div key={idx} onClick={() => setSelectedProductAvatarIdx(idx)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, background: isSelected ? '#E8F3FF' : '#F7F8FA', border: isSelected ? '1px solid #3370FF' : '1px solid #E5E6EB', transition: 'all 0.15s' }}>
+                        <div style={{ width: 22, height: 22, borderRadius: 4, overflow: 'hidden', background: '#F0F0F0', flexShrink: 0 }}>
+                          {av && <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                        </div>
+                        <span style={{ fontSize: 12, color: isSelected ? '#3370FF' : '#1D2129', fontWeight: isSelected ? 500 : 400 }}>{av?.name || '未知'}</span>
+                        <span onClick={e => {
+                          e.stopPropagation()
+                          setProducts(prev => prev.map(p => p.id === selectedProductId ? { ...p, boundAvatars: p.boundAvatars.filter((_, i) => i !== idx) } : p))
+                          if (selectedProductAvatarIdx >= selectedProduct.boundAvatars.length - 1) setSelectedProductAvatarIdx(Math.max(0, selectedProduct.boundAvatars.length - 2))
+                        }} style={{ fontSize: 11, color: '#C9CDD4', cursor: 'pointer', marginLeft: 2, lineHeight: 1 }}>✕</span>
+                      </div>
+                    )
+                  })}
+                  <button onClick={() => { setBindMode('single'); setShowAvatarSwitch(true) }} style={{ padding: '6px 10px', borderRadius: 8, border: '1px dashed #3370FF', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>+ 再绑一个</button>
+                </div>
               </div>
-              <button onClick={() => { setBindMode('single'); setShowAvatarSwitch(true) }} style={{
-                padding: '6px 14px', borderRadius: 6,
-                border: '1px solid rgba(51,112,255,0.3)', background: 'transparent',
-                color: '#69B1FF', fontSize: 12, cursor: 'pointer',
-              }}>{selectedAvatar ? '更换伴播' : '选择伴播'}</button>
-            </div>
+            ) : null}
 
             {/* ---- 视频预览窗口 ---- */}
             <div style={{
@@ -873,7 +1149,7 @@ const openActionPreview = (ea: EventAction) => {
                 // 智能触发类值是数组，口令类值是字符串
                 const isAutoType = point.triggerType === 'auto' && !!point.placeholder
                 const phrases = isAutoType ? (currentValue as string[]) : []
-                const hasValue = isAutoType ? phrases.length > 0 : !!(currentValue && (currentValue as string).trim())
+                const hasValue = isAutoType ? phrases.length > 0 : !!(currentValue && typeof currentValue === 'string' && currentValue.trim())
                 const isReadOnly = point.id === 'sp4' // 伴播展示穿版效果永远只读
                 const hasPreview = point.hasPreview
 
@@ -934,6 +1210,107 @@ const openActionPreview = (ea: EventAction) => {
                 // 渲染值区域（显示态/编辑态）
                 const renderValueArea = () => {
                   if (isReadOnly) return null
+
+                  // sp3 特殊：全局口令模板 + 本形象换装指定词
+                  if (point.id === 'sp3') {
+                    return (
+                      <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>链接号口令（全局）</div>
+                          {isEditing ? (
+                            <input value={editDraft} onChange={e => setEditDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveEditing(); if (e.key === 'Escape') cancelEditing() }} onBlur={saveEditing} autoFocus placeholder={point.defaultValue || ''} style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <span style={{ fontSize: 13, color: '#1D2129', padding: '7px 10px', background: '#FAFAFA', borderRadius: 6, flex: 1 }}>{getSkillDisplayText('sp3')}</span>
+                              <button onClick={() => startEditing('sp3')} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>此形象的换装指定词</div>
+                          <input
+                            value={currentBoundAvatar?.tag || ''}
+                            onChange={e => {
+                              const val = e.target.value
+                              setProducts(prev => prev.map(p => {
+                                if (p.id !== selectedProductId) return p
+                                const next = [...p.boundAvatars]
+                                if (next[selectedProductAvatarIdx]) next[selectedProductAvatarIdx] = { ...next[selectedProductAvatarIdx], tag: val }
+                                return { ...p, boundAvatars: next }
+                              }))
+                            }}
+                            placeholder={selectedAvatar?.name}
+                            style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid #E5E6EB', fontSize: 13, outline: 'none', color: '#1D2129', background: '#FFFFFF', boxSizing: 'border-box' }}
+                          />
+                          <div style={{ fontSize: 10, color: '#C9CDD4', marginTop: 4 }}>
+                            主播说「{currentBoundAvatar?.tag || selectedAvatar?.name || ''}」→ 切换到 {selectedAvatar?.name}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  // 新样式：sp5/sp6/sp7/sp8 标签网格模式
+                  if (isNewStyleSkill(point.id)) {
+                    const isAdding = addingSkill === point.id
+                    return (
+                      <div style={{ marginTop: 8 }}>
+                        {/* 标签网格 */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                          {phrases.map((phrase: string, idx: number) => (
+                            <span key={idx} style={{
+                              padding: '6px 12px', borderRadius: 6,
+                              background: '#F2F3F5', border: '1px solid #E5E6EB',
+                              fontSize: 13, color: '#1D2129', fontWeight: 400,
+                              display: 'inline-flex', alignItems: 'center', gap: 6,
+                            }}>
+                              {phrase}
+                              {/* 垃圾桶删除 */}
+                              <span
+                                onClick={() => removeSkillPhrase(point.id, idx)}
+                                style={{ cursor: 'pointer', opacity: 0.6, fontSize: 12 }}
+                              >🗑</span>
+                            </span>
+                          ))}
+                          {/* + 添加按钮 */}
+                          {!isAdding && (
+                            <span
+                              onClick={() => setAddingSkill(point.id)}
+                              style={{
+                                padding: '6px 12px', borderRadius: 6,
+                                background: 'transparent', border: '1px solid #E5E6EB',
+                                fontSize: 13, color: '#86909C', fontWeight: 400,
+                                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
+                              }}
+                            >+</span>
+                          )}
+                        </div>
+                        {/* 添加输入框 */}
+                        {isAdding && (
+                          <div style={{ marginTop: 6 }}>
+                            <input
+                              value={addDraft}
+                              onChange={e => setAddDraft(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') addSkillPhrase(point.id)
+                                if (e.key === 'Escape') { setAddDraft(''); setAddingSkill(null) }
+                              }}
+                              onBlur={() => { if (addDraft.trim()) addSkillPhrase(point.id); else { setAddDraft(''); setAddingSkill(null) } }}
+                              autoFocus
+                              placeholder="输入话术后按 Enter 添加"
+                              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                        )}
+                        {/* 话术数量提示 */}
+                        {phrases.length > 0 && !isAdding && (
+                          <div style={{ fontSize: 11, color: '#C9CDD4', marginTop: 6 }}>共{phrases.length}条话术</div>
+                        )}
+                      </div>
+                    )
+                  }
+
+                  // 原样式：其他技能点
                   if (isEditing) {
                     // 编辑态：输入框
                     return (
@@ -967,7 +1344,7 @@ const openActionPreview = (ea: EventAction) => {
                         </div>
                       )
                     } else {
-                      // 智能触发类
+                      // 其他智能触发类（非新样式）
                       if (hasValue) {
                         return (
                           <div style={{ marginTop: 8 }}>
@@ -1024,9 +1401,9 @@ const openActionPreview = (ea: EventAction) => {
 
       {/* ==================== 弹窗 ==================== */}
       {showAvatarSwitch && (
-        <AvatarSwitchPopup currentAvatarId={selectedProduct?.boundAvatarId || null}
-          onSelect={handleSelectAvatar}
-          onClose={() => setShowAvatarSwitch(false)}
+        <AvatarSwitchPopup currentAvatarId={selectedProduct?.boundAvatars?.[0]?.avatarId || null}
+          onSelect={avatarId => { handleSelectAvatar(avatarId); setShowAvatarSwitch(false) }}
+          onClose={() => { setShowAvatarSwitch(false); setAddingToLiveSection(false) }}
           mode={bindMode} />
       )}
       {previewPopup && (
