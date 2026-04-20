@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 type PanelKey = 'avatar' | 'voice' | 'voiceSwitch' | 'autoChat' | 'sceneLayout' | 'autoComment' | 'welcomeThanks' | 'priceControl' | 'coupons' | 'luckyBag' | 'systemSettings'
 type Props = { onClose: () => void; onSwitchPanel?: (panel: PanelKey) => void; onConfirmConfig?: () => void }
 
-export const C = {
+const C = {
   blue: '#3370FF', blueLight: 'rgba(51,112,255,0.08)',
   orange: '#FF7D00', orangeLight: 'rgba(255,125,0,0.08)',
   green: '#00B42A', greenLight: 'rgba(0,180,42,0.08)',

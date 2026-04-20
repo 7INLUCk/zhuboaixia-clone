@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { tokens } from './tokens'
 import CanvasPanel from './CanvasPanel'
+import BanboSetupWizard from './BanboSetupWizard'
+import type { WizardResult } from './wizard/types'
 
 type Props = { onNavigate: (page: any) => void }
 const T = tokens
@@ -494,6 +496,13 @@ function BanboSidePanel() {
 // ====== 主页面 ======
 export default function BanboPanelPage({ onNavigate }: Props) {
   const [panelOpen, setPanelOpen] = useState(true)
+  const [wizardDone, setWizardDone] = useState(false)
+  const [wizardResult, setWizardResult] = useState<WizardResult | null>(null)
+
+  const handleWizardComplete = (result: WizardResult) => {
+    setWizardResult(result)
+    setWizardDone(true)
+  }
 
   return (
     <div style={{ position: 'relative', height: '100%', fontFamily: T.fonts.family, overflow: 'hidden' }}>
@@ -526,7 +535,11 @@ export default function BanboPanelPage({ onNavigate }: Props) {
         boxShadow: panelOpen ? '-4px 0 20px rgba(0,0,0,0.2)' : 'none',
         zIndex: 15,
       }}>
-        {panelOpen && <CanvasPanel onClose={() => setPanelOpen(false)} />}
+        {panelOpen && (
+          wizardDone
+            ? <CanvasPanel onClose={() => setPanelOpen(false)} />
+            : <BanboSetupWizard onComplete={handleWizardComplete} />
+        )}
       </div>
     </div>
   )
