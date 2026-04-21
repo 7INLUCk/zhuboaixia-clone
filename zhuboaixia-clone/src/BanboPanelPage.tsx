@@ -2,7 +2,11 @@ import React, { useState } from 'react'
 import { tokens } from './tokens'
 import CanvasPanel from './CanvasPanel'
 import BanboSetupWizard from './BanboSetupWizard'
+import BanboEntryScreen from './BanboEntryScreen'
+import BanboUpdateFlow from './BanboUpdateFlow'
 import type { WizardResult } from './wizard/types'
+
+type PanelState = 'unconfigured' | 'wizard' | 'configured' | 'updating'
 
 type Props = { onNavigate: (page: any) => void }
 const T = tokens
@@ -496,13 +500,8 @@ function BanboSidePanel() {
 // ====== 主页面 ======
 export default function BanboPanelPage({ onNavigate }: Props) {
   const [panelOpen, setPanelOpen] = useState(true)
-  const [wizardDone, setWizardDone] = useState(false)
+  const [panelState, setPanelState] = useState<PanelState>('unconfigured')
   const [wizardResult, setWizardResult] = useState<WizardResult | null>(null)
-
-  const handleWizardComplete = (result: WizardResult) => {
-    setWizardResult(result)
-    setWizardDone(true)
-  }
 
   return (
     <div style={{ position: 'relative', height: '100%', fontFamily: T.fonts.family, overflow: 'hidden' }}>
@@ -535,10 +534,47 @@ export default function BanboPanelPage({ onNavigate }: Props) {
         boxShadow: panelOpen ? '-4px 0 20px rgba(0,0,0,0.2)' : 'none',
         zIndex: 15,
       }}>
-        {panelOpen && (
-          wizardDone
-            ? <CanvasPanel onClose={() => setPanelOpen(false)} />
-            : <BanboSetupWizard onComplete={handleWizardComplete} />
+        {panelOpen && panelState === 'unconfigured' && (
+          <BanboEntryScreen onStart={() => setPanelState('wizard')} />
+        )}
+
+        {panelOpen && panelState === 'wizard' && (
+          <BanboSetupWizard onComplete={(result) => {
+            setWizardResult(result)
+            setPanelState('configured')
+          }} />
+        )}
+
+        {panelOpen && panelState === 'configured' && (
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <CanvasPanel onClose={() => setPanelOpen(false)} />
+            {/* 模拟货盘更新按钮（原型 mock） */}
+            <button
+              onClick={() => setPanelState('updating')}
+              style={{
+                position: 'absolute', bottom: 20, left: '50%',
+                transform: 'translateX(-50%)',
+                padding: '8px 20px', borderRadius: 8,
+                border: '1.5px dashed #FF7D00', background: '#FFFBE6',
+                color: '#875800', fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', fontFamily: T.fonts.family,
+                zIndex: 10,
+              }}
+            >
+              🔄 模拟货盘更新
+            </button>
+          </div>
+        )}
+
+        {panelOpen && panelState === 'updating' && wizardResult && (
+          <BanboUpdateFlow
+            wizardResult={wizardResult}
+            onComplete={(result) => {
+              setWizardResult(result)
+              setPanelState('configured')
+            }}
+            onCancel={() => setPanelState('configured')}
+          />
         )}
       </div>
     </div>
