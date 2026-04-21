@@ -14,11 +14,9 @@ type Props = {
 export default function Step2Face({ state, onUpdate, onNext, onPrev }: Props) {
   const { selectedFaceIds } = state
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all')
-  const [ageFilter, setAgeFilter] = useState<'all' | '3-6' | '7-12'>('all')
 
   const filtered = FACE_LIBRARY.filter(f => {
     if (genderFilter !== 'all' && f.gender !== genderFilter) return false
-    if (ageFilter !== 'all' && f.ageGroup !== ageFilter) return false
     return true
   })
 
@@ -52,34 +50,26 @@ export default function Step2Face({ state, onUpdate, onNext, onPrev }: Props) {
       <div style={{ padding: '20px 24px 12px', flexShrink: 0 }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>选择面容</div>
         <div style={{ fontSize: 13, color: C.textSec, marginBottom: 10 }}>
-          从公共面容库中选择 1-2 个面容，后续所有伴播形象均基于所选面容生成。
+          从面容库中最多选 2 个面容，后续所有伴播形象均基于所选面容生成。
         </div>
         <div style={{
           padding: '8px 12px', borderRadius: 8,
           background: '#EFF4FF', border: `1px solid ${C.blue}20`,
           fontSize: 12, color: '#1D4ED8', lineHeight: 1.6,
         }}>
-          💡 <strong>这步的作用：</strong>选好之后，AI 数字人将以这个外形出现在你的直播间——观众看到的就是她。
+          💡 <strong>建议各选一个男性和女性面容。</strong>主播讲男款商品时出男形象，讲女款时出女形象——一男一女覆盖所有品类受众，配置一次长期生效。
         </div>
       </div>
 
       {/* 筛选栏 */}
       <div style={{
         padding: '8px 24px 12px', flexShrink: 0,
-        display: 'flex', gap: 16, alignItems: 'center',
+        display: 'flex', gap: 8, alignItems: 'center',
         borderBottom: `1px solid ${C.border}`,
       }}>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <FilterBtn label="全部" active={genderFilter === 'all'} onClick={() => setGenderFilter('all')} />
-          <FilterBtn label="女" active={genderFilter === 'female'} onClick={() => setGenderFilter('female')} />
-          <FilterBtn label="男" active={genderFilter === 'male'} onClick={() => setGenderFilter('male')} />
-        </div>
-        <div style={{ width: 1, height: 20, background: C.border }} />
-        <div style={{ display: 'flex', gap: 6 }}>
-          <FilterBtn label="全部年龄" active={ageFilter === 'all'} onClick={() => setAgeFilter('all')} />
-          <FilterBtn label="3-6岁" active={ageFilter === '3-6'} onClick={() => setAgeFilter('3-6')} />
-          <FilterBtn label="7-12岁" active={ageFilter === '7-12'} onClick={() => setAgeFilter('7-12')} />
-        </div>
+        <FilterBtn label="全部" active={genderFilter === 'all'} onClick={() => setGenderFilter('all')} />
+        <FilterBtn label="女性" active={genderFilter === 'female'} onClick={() => setGenderFilter('female')} />
+        <FilterBtn label="男性" active={genderFilter === 'male'} onClick={() => setGenderFilter('male')} />
         <div style={{ marginLeft: 'auto', fontSize: 12, color: C.textSec }}>
           已选 {selectedFaceIds.length}/2
         </div>
@@ -90,6 +80,7 @@ export default function Step2Face({ state, onUpdate, onNext, onPrev }: Props) {
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12,
         }}>
+
           {filtered.map(face => {
             const selected = selectedFaceIds.includes(face.id)
             const idx = selectedFaceIds.indexOf(face.id)
@@ -135,6 +126,32 @@ export default function Step2Face({ state, onUpdate, onNext, onPrev }: Props) {
               </div>
             )
           })}
+        </div>
+
+        {/* 其他来源入口 */}
+        <div style={{
+          marginTop: 16, paddingTop: 14,
+          borderTop: `1px dashed ${C.border}`,
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <span style={{ fontSize: 11, color: C.textTert }}>没有合适的？</span>
+          <button
+            onClick={() => alert('功能开发中，敬请期待')}
+            style={{
+              background: 'none', border: 'none', padding: '2px 8px',
+              borderRadius: 6, fontSize: 11, color: C.blue,
+              cursor: 'pointer', fontFamily: C.font,
+            }}
+          >📁 上传参考图</button>
+          <span style={{ fontSize: 11, color: C.border }}>·</span>
+          <button
+            onClick={() => alert('功能开发中，敬请期待')}
+            style={{
+              background: 'none', border: 'none', padding: '2px 8px',
+              borderRadius: 6, fontSize: 11, color: C.textTert,
+              cursor: 'pointer', fontFamily: C.font,
+            }}
+          >✨ AI 定制（即将开放）</button>
         </div>
       </div>
 
