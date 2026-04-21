@@ -4,10 +4,25 @@ import { C } from './shared'
 
 type Props = { onStart: () => void }
 
-const DEMO_PRODUCTS = [
-  { id: 1, emoji: '👗', name: '碎花连衣裙', color: '#FFD0E8' },
-  { id: 2, emoji: '👔', name: '纯棉印花T恤', color: '#B3D4FF' },
-  { id: 3, emoji: '🧥', name: '防晒衣外套',  color: '#C8F0D0' },
+const CAPABILITIES = [
+  {
+    emoji: '👗',
+    title: '随商品自动换装',
+    desc: '主播讲哪件，形象穿哪件，无需手动切换',
+    color: '#FFD0E8',
+  },
+  {
+    emoji: '🎯',
+    title: '关键场景精准配合',
+    desc: '逼单、感谢下单、才艺演出，在正确时机出对应动作',
+    color: '#B3D4FF',
+  },
+  {
+    emoji: '🤖',
+    title: '与真人主播同台伴播',
+    desc: 'AI 数字人进驻直播间，全程陪跑助播',
+    color: '#C8F0D0',
+  },
 ]
 
 const STEPS = [
@@ -19,11 +34,11 @@ const STEPS = [
 ]
 
 export default function BanboEntryScreen({ onStart }: Props) {
-  const [activeIdx, setActiveIdx] = useState(0)
+  const [tick, setTick] = useState(0)
 
   useEffect(() => {
-    const timer = setInterval(() => setActiveIdx(i => (i + 1) % DEMO_PRODUCTS.length), 2200)
-    return () => clearInterval(timer)
+    const t = setInterval(() => setTick(i => i + 1), 2000)
+    return () => clearInterval(t)
   }, [])
 
   return (
@@ -36,27 +51,28 @@ export default function BanboEntryScreen({ onStart }: Props) {
       fontFamily: C.font, boxSizing: 'border-box',
     }}>
 
-      {/* 标题区 */}
+      {/* ① 标题区 */}
       <div style={{ textAlign: 'center', flexShrink: 0 }}>
         <div style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 6 }}>
-          🦐 伴播形象定制
+          🦐 为直播间引入一位 AI 伴播形象
         </div>
         <div style={{ fontSize: 12, color: C.textSec, lineHeight: 1.7 }}>
-          选好外形与搭配，AI 自动生成定装照和直播动作素材——走完 5 步，形象即可上线
+          走完 5 步完成形象创建，配置一次，直播全程自动运行
         </div>
       </div>
 
-      {/* 主演示区：灰色背景卡，内容垂直居中 */}
+      {/* ② 演示区：灰色背景卡 */}
       <div style={{
-        width: '100%',
+        width: '100%', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         borderRadius: 16,
         background: '#F6F7FA',
         padding: '28px 32px',
         boxSizing: 'border-box',
-        flexShrink: 0,
+        gap: 28,
       }}>
-        {/* 手机框 160px，屏高 ~284px */}
+
+        {/* 左：手机框 160px */}
         <div style={{
           width: 160, flexShrink: 0,
           borderRadius: 28,
@@ -69,10 +85,8 @@ export default function BanboEntryScreen({ onStart }: Props) {
             background: '#2e2e2e', margin: '0 auto 8px',
           }} />
           <div style={{
-            width: '100%',
-            aspectRatio: '9 / 16',
-            borderRadius: 18,
-            overflow: 'hidden',
+            width: '100%', aspectRatio: '9 / 16',
+            borderRadius: 18, overflow: 'hidden',
             background: 'linear-gradient(170deg, #1a1a2e 0%, #16213e 100%)',
             position: 'relative',
             display: 'flex', flexDirection: 'column',
@@ -83,12 +97,20 @@ export default function BanboEntryScreen({ onStart }: Props) {
               fontSize: 8, padding: '2px 5px', borderRadius: 3,
               background: '#F53F3F', color: '#fff', fontWeight: 700,
             }}>● LIVE</div>
-            <div style={{ fontSize: 30, marginBottom: 6, opacity: 0.6 }}>📱</div>
+            {/* 呼吸动画占位点 */}
             <div style={{
-              fontSize: 9, color: 'rgba(255,255,255,0.45)',
-              textAlign: 'center', lineHeight: 1.6, padding: '0 10px',
+              width: 48, height: 48, borderRadius: '50%',
+              background: `rgba(255,255,255,${0.04 + (tick % 2) * 0.04})`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 8, transition: 'background 1s ease',
             }}>
-              品牌录播视频<br />将展示于此
+              <div style={{ fontSize: 24, opacity: 0.5 }}>📺</div>
+            </div>
+            <div style={{
+              fontSize: 9, color: 'rgba(255,255,255,0.4)',
+              textAlign: 'center', lineHeight: 1.7, padding: '0 10px',
+            }}>
+              演示视频<br />将展示于此
             </div>
           </div>
           <div style={{
@@ -97,54 +119,49 @@ export default function BanboEntryScreen({ onStart }: Props) {
           }} />
         </div>
 
-        {/* 右：商品切换说明，stretch 撑满手机高度，内容 space-between */}
+        {/* 右：3条能力，撑满手机高度均匀分布 */}
         <div style={{
-          width: 220, marginLeft: 24,
           alignSelf: 'stretch',
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+          flex: 1,
         }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>
-            形象随商品自动切换
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {DEMO_PRODUCTS.map((p, i) => (
-              <div key={p.id} style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '11px 10px', borderRadius: 8,
-                border: `1.5px solid ${i === activeIdx ? C.blue : C.border}`,
-                background: i === activeIdx ? C.blueLight : '#fff',
-                transition: 'all 0.45s ease',
-              }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 6, flexShrink: 0,
-                  background: p.color,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 15,
-                }}>{p.emoji}</div>
-                <div style={{
-                  flex: 1, fontSize: 12,
-                  color: i === activeIdx ? C.blue : C.text,
-                  fontWeight: i === activeIdx ? 600 : 400,
-                  transition: 'color 0.45s ease',
-                }}>{p.name}</div>
-                {i === activeIdx && (
-                  <span style={{
-                    fontSize: 9, padding: '2px 6px', borderRadius: 5,
-                    background: C.blue, color: '#fff', fontWeight: 600, flexShrink: 0,
-                  }}>讲解中</span>
-                )}
+          {CAPABILITIES.map(cap => (
+            <div key={cap.title} style={{
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+            }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                background: cap.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 18,
+              }}>{cap.emoji}</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 3 }}>
+                  {cap.title}
+                </div>
+                <div style={{ fontSize: 11, color: C.textSec, lineHeight: 1.6 }}>
+                  {cap.desc}
+                </div>
               </div>
-            ))}
-          </div>
-
-          <div style={{ fontSize: 11, color: C.textTert, lineHeight: 1.7 }}>
-            主播讲哪件商品，AI 形象就穿对应搭配出场。配置完成后自动生效，无需手动操作。
-          </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* 5步流程 */}
+      {/* ③ 过渡文字 */}
+      <div style={{
+        flexShrink: 0, textAlign: 'center',
+        display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+        justifyContent: 'center',
+      }}>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+        <span style={{ fontSize: 12, color: C.textSec, whiteSpace: 'nowrap' }}>
+          现在，创建你的专属伴播形象
+        </span>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+      </div>
+
+      {/* ④ 5步流程 */}
       <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', flexShrink: 0 }}>
         {STEPS.map((step, i) => (
           <React.Fragment key={step.num}>
@@ -166,7 +183,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
         ))}
       </div>
 
-      {/* CTA */}
+      {/* ⑤ CTA */}
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
         <button onClick={onStart} style={{
           width: 480, maxWidth: '100%',
