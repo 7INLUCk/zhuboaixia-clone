@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import BanboHomePage from './BanboHomePage'
 import BanboCreatePage from './BanboCreatePage'
-import BanboPanelPage from './BanboPanelPage'
+import BanboEntryScreen from './BanboEntryScreen'
 import BuyinDashboardOverlay from './BuyinDashboardOverlay'
 
 export type Mode = 'zhu' | 'ban'
@@ -190,7 +190,7 @@ export default function App() {
   const [page, setPage] = useState<PageId>('home-empty')
   const [debug, setDebug] = useState(false)
   const [hover, setHover] = useState<string | null>(null)
-  const [showBuyinOverlay, setShowBuyinOverlay] = useState(true)
+  const [showBuyinOverlay, setShowBuyinOverlay] = useState(false)
 
   const switchMode = (m: Mode) => {
     setMode(m)
@@ -431,7 +431,7 @@ export default function App() {
           ) : (
             /* CSS 页（伴播专用） */
             <>
-              {page === 'banbo-home' && <BanboPanelPage onNavigate={navigate} />}
+              {page === 'banbo-home' && <BanboEntryScreen onStart={() => setShowBuyinOverlay(true)} />}
               {page === 'banbo-create' && (
                 <BanboCreatePage
                   onNavigate={navigate}
