@@ -26,7 +26,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
 
       {/* 描述 */}
       <div style={{ fontSize: 14, color: C.textSec, textAlign: 'center', lineHeight: 1.8, marginBottom: 40, maxWidth: 360 }}>
-        通过 6 步向导，完成货盘确认、形象选择、商品搭配、定装照生成和技能配置，即可开启 AI 虚拟形象伴播。
+        通过 5 步向导，完成面容选择、商品搭配、定装照生成和技能配置，即可开启 AI 虚拟形象伴播。
       </div>
 
       {/* 功能概览 */}
@@ -36,7 +36,6 @@ export default function BanboEntryScreen({ onStart }: Props) {
         marginBottom: 40,
       }}>
         {[
-          { icon: '📦', label: '货盘确认', desc: '选择本场直播商品' },
           { icon: '🎭', label: '面容选择', desc: '挑选形象脸型' },
           { icon: '👗', label: '商品搭配', desc: '形象绑定对应商品' },
           { icon: '📸', label: '定装照生成', desc: 'AI 生成形象效果图' },
@@ -73,7 +72,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
       </button>
 
       <div style={{ fontSize: 12, color: C.textTert, marginTop: 14 }}>
-        预计配置时间 3～5 分钟
+        预计配置时间约 30 分钟
       </div>
     </div>
   )

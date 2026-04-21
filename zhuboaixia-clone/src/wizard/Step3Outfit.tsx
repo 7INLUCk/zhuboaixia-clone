@@ -29,7 +29,7 @@ export default function Step3Outfit({ state, onUpdate, onNext, onPrev }: Props) 
   const { avatarConfigs, selectedProductIds, selectedFaceIds } = state
   const [selectedIdx, setSelectedIdx] = useState(0)
 
-  const availableProducts = CARGO_PRODUCTS.filter(p => selectedProductIds.includes(p.id))
+  const availableProducts = CARGO_PRODUCTS
   const faces = FACE_LIBRARY.filter(f => selectedFaceIds.includes(f.id))
 
   const configs = avatarConfigs.length > 0 ? avatarConfigs : [newAvatar(0)]
@@ -75,7 +75,7 @@ export default function Step3Outfit({ state, onUpdate, onNext, onPrev }: Props) 
       {/* 说明 */}
       <div style={{ padding: '20px 24px 12px', flexShrink: 0 }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>商品搭配</div>
-        <div style={{ fontSize: 13, color: C.textSec }}>为每个伴播形象选择面容和对应商品，支持多件商品组合成一套搭配。</div>
+        <div style={{ fontSize: 13, color: C.textSec }}>本场共 {CARGO_PRODUCTS.length} 件商品，为需要伴播形象的商品创建搭配。未配形象的商品直播时不展示伴播。</div>
       </div>
 
       {/* 主体：左列形象列表 + 右列配置 */}

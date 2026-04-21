@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import { C } from './shared'
 import type { WizardState, WizardResult } from './wizard/types'
 import { CARGO_PRODUCTS } from './wizard/mockData'
-import Step1Cargo from './wizard/Step1Cargo'
 import Step2Face from './wizard/Step2Face'
 import Step3Outfit from './wizard/Step3Outfit'
 import Step4Portrait from './wizard/Step4Portrait'
@@ -13,12 +12,11 @@ import Step6Submit from './wizard/Step6Submit'
 type Props = { onComplete: (result: WizardResult) => void }
 
 const STEPS = [
-  { num: 1, label: '货盘确认' },
-  { num: 2, label: '面容选择' },
-  { num: 3, label: '商品搭配' },
-  { num: 4, label: '定装照' },
-  { num: 5, label: '技能配置' },
-  { num: 6, label: '提交开播' },
+  { num: 1, label: '面容选择' },
+  { num: 2, label: '商品搭配' },
+  { num: 3, label: '定装照' },
+  { num: 4, label: '技能配置' },
+  { num: 5, label: '提交开播' },
 ]
 
 const initState: WizardState = {
@@ -34,7 +32,7 @@ export default function BanboSetupWizard({ onComplete }: Props) {
   const update = (patch: Partial<WizardState>) =>
     setState(prev => ({ ...prev, ...patch }))
 
-  const next = () => setStep(s => Math.min(s + 1, 6))
+  const next = () => setStep(s => Math.min(s + 1, 5))
   const prev = () => setStep(s => Math.max(s - 1, 1))
 
   return (
@@ -90,12 +88,11 @@ export default function BanboSetupWizard({ onComplete }: Props) {
 
       {/* 步骤内容 */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        {step === 1 && <Step1Cargo state={state} onUpdate={update} onNext={next} />}
-        {step === 2 && <Step2Face state={state} onUpdate={update} onNext={next} onPrev={prev} />}
-        {step === 3 && <Step3Outfit state={state} onUpdate={update} onNext={next} onPrev={prev} />}
-        {step === 4 && <Step4Portrait state={state} onUpdate={update} onNext={next} onPrev={prev} />}
-        {step === 5 && <Step5Skills state={state} onUpdate={update} onNext={next} onPrev={prev} />}
-        {step === 6 && <Step6Submit state={state} onComplete={onComplete} onPrev={prev} />}
+        {step === 1 && <Step2Face state={state} onUpdate={update} onNext={next} onPrev={prev} />}
+        {step === 2 && <Step3Outfit state={state} onUpdate={update} onNext={next} onPrev={prev} />}
+        {step === 3 && <Step4Portrait state={state} onUpdate={update} onNext={next} onPrev={prev} />}
+        {step === 4 && <Step5Skills state={state} onUpdate={update} onNext={next} onPrev={prev} />}
+        {step === 5 && <Step6Submit state={state} onComplete={onComplete} onPrev={prev} />}
       </div>
     </div>
   )
