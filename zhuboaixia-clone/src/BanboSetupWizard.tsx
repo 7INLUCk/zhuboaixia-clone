@@ -16,7 +16,7 @@ const STEPS = [
   { num: 1, label: '货盘确认' },
   { num: 2, label: '面容选择' },
   { num: 3, label: '商品搭配' },
-  { num: 4, label: '定妆照' },
+  { num: 4, label: '定装照' },
   { num: 5, label: '技能配置' },
   { num: 6, label: '提交开播' },
 ]

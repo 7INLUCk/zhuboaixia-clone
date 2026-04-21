@@ -57,8 +57,8 @@ export default function Step4Portrait({ state, onUpdate, onNext, onPrev }: Props
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <div style={{ padding: '20px 24px 12px', flexShrink: 0 }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>生成定妆照</div>
-        <div style={{ fontSize: 13, color: C.textSec }}>基于所选面容与商品参考图，AI 自动生成每套形象的定妆照。</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>生成定装照</div>
+        <div style={{ fontSize: 13, color: C.textSec }}>基于所选面容与商品参考图，AI 自动生成每套形象的定装照。</div>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
@@ -73,7 +73,7 @@ export default function Step4Portrait({ state, onUpdate, onNext, onPrev }: Props
                 borderRadius: 12, border: `1px solid ${C.border}`,
                 overflow: 'hidden', background: '#fff',
               }}>
-                {/* 定妆照区域 */}
+                {/* 定装照区域 */}
                 <div style={{
                   height: 200, background: isGenerating ? '#F2F3F5' : portraitColor,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -149,7 +149,7 @@ export default function Step4Portrait({ state, onUpdate, onNext, onPrev }: Props
             color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: allDone ? 'pointer' : 'not-allowed', fontFamily: C.font,
           }}
-        >{allDone ? '确认定妆照，下一步 →' : '生成中...'}</button>
+        >{allDone ? '确认定装照，下一步 →' : '生成中...'}</button>
       </div>
     </div>
   )

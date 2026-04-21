@@ -20,7 +20,7 @@ type UpdateStep = 1 | 3 | 4 | 5
 const STEPS: { step: UpdateStep; label: string }[] = [
   { step: 1, label: '货盘变更' },
   { step: 3, label: '搭配调整' },
-  { step: 4, label: '定妆照' },
+  { step: 4, label: '定装照' },
   { step: 5, label: '素材生成' },
 ]
 
