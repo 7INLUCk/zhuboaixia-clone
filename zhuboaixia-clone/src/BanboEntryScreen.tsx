@@ -139,15 +139,10 @@ export default function BanboEntryScreen({ onStart }: Props) {
       </div>
 
       {/* ③ 过渡文字 */}
-      <div style={{
-        flexShrink: 0, marginBottom: 0,
-        display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-      }}>
-        <div style={{ flex: 1, height: 1, background: C.border }} />
-        <span style={{ fontSize: 12, color: C.textSec, whiteSpace: 'nowrap' }}>
-          现在，创建你的专属伴播形象
-        </span>
-        <div style={{ flex: 1, height: 1, background: C.border }} />
+      <div style={{ flexShrink: 0, textAlign: 'center' }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>
+          ↓ 现在，创建你的专属伴播形象
+        </div>
       </div>
 
       {/* ④ 5步流程 */}
@@ -157,9 +152,10 @@ export default function BanboEntryScreen({ onStart }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: '50%',
-                background: C.blueLight, border: `1.5px solid ${C.blue}50`,
+                background: C.blue,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, fontWeight: 700, color: C.blue, marginBottom: 5,
+                fontSize: 12, fontWeight: 700, color: '#fff', marginBottom: 5,
+                boxShadow: '0 2px 8px rgba(51,112,255,0.3)',
               }}>{step.num}</div>
               <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', whiteSpace: 'nowrap' }}>
                 {step.label}
@@ -184,7 +180,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
           开始配置 →
         </button>
         <div style={{ fontSize: 12, color: C.textTert }}>
-          预计配置时间约 30 分钟
+          配置完成即可上线 · 约 30 分钟
         </div>
       </div>
 
