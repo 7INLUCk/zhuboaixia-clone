@@ -73,7 +73,14 @@ export default function Step5Skills({ state, onUpdate, onNext, onPrev }: Props) 
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <div style={{ padding: '20px 24px 12px', flexShrink: 0 }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>技能配置 & 素材生成</div>
-        <div style={{ fontSize: 13, color: C.textSec }}>为每个形象选择技能，并批量生成对应的动作素材。</div>
+        <div style={{ fontSize: 13, color: C.textSec, marginBottom: 10 }}>为每个形象选择技能，并批量生成对应的动作素材。</div>
+        <div style={{
+          padding: '8px 12px', borderRadius: 8,
+          background: '#EFF4FF', border: `1px solid ${C.blue}20`,
+          fontSize: 12, color: '#1D4ED8', lineHeight: 1.6,
+        }}>
+          💡 <strong>这步的作用：</strong>技能决定形象在直播中会做什么——进场亮相、跟随商品换装、展示商品细节。选的技能越多，形象越生动。
+        </div>
       </div>
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', borderTop: `1px solid ${C.border}` }}>

@@ -51,8 +51,15 @@ export default function Step2Face({ state, onUpdate, onNext, onPrev }: Props) {
       {/* 说明 */}
       <div style={{ padding: '20px 24px 12px', flexShrink: 0 }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>选择面容</div>
-        <div style={{ fontSize: 13, color: C.textSec }}>
+        <div style={{ fontSize: 13, color: C.textSec, marginBottom: 10 }}>
           从公共面容库中选择 1-2 个面容，后续所有伴播形象均基于所选面容生成。
+        </div>
+        <div style={{
+          padding: '8px 12px', borderRadius: 8,
+          background: '#EFF4FF', border: `1px solid ${C.blue}20`,
+          fontSize: 12, color: '#1D4ED8', lineHeight: 1.6,
+        }}>
+          💡 <strong>这步的作用：</strong>选好之后，AI 数字人将以这个外形出现在你的直播间——观众看到的就是她。
         </div>
       </div>
 

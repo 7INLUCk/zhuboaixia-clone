@@ -58,7 +58,14 @@ export default function Step4Portrait({ state, onUpdate, onNext, onPrev }: Props
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <div style={{ padding: '20px 24px 12px', flexShrink: 0 }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>生成定装照</div>
-        <div style={{ fontSize: 13, color: C.textSec }}>基于所选面容与商品参考图，AI 自动生成每套形象的定装照。</div>
+        <div style={{ fontSize: 13, color: C.textSec, marginBottom: 10 }}>基于所选面容与商品参考图，AI 自动生成每套形象的定装照。</div>
+        <div style={{
+          padding: '8px 12px', borderRadius: 8,
+          background: '#EFF4FF', border: `1px solid ${C.blue}20`,
+          fontSize: 12, color: '#1D4ED8', lineHeight: 1.6,
+        }}>
+          💡 <strong>这步的作用：</strong>定装照是 AI 形象的"身份证"，系统据此生成直播中的动态素材。不满意可以重新生成。
+        </div>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
