@@ -12,6 +12,14 @@ const DEMO_PRODUCTS = [
   { id: 3, emoji: '🧥', name: '防晒衣外套', color: '#C8F0D0', avatarEmoji: '🍀', avatarBg: '#95DE64' },
 ]
 
+const STEPS = [
+  { num: 1, label: '面容选择' },
+  { num: 2, label: '商品搭配' },
+  { num: 3, label: '定装照' },
+  { num: 4, label: '技能配置' },
+  { num: 5, label: '提交审核' },
+]
+
 function LiveDemo() {
   const [activeIdx, setActiveIdx] = useState(0)
 
@@ -26,11 +34,10 @@ function LiveDemo() {
 
   return (
     <div style={{
-      width: '100%', maxWidth: 440, marginBottom: 24,
-      borderRadius: 12, border: `1px solid ${C.border}`,
-      overflow: 'hidden', background: '#FAFBFC',
+      width: '100%', borderRadius: 14, overflow: 'hidden',
+      border: `1px solid ${C.border}`, marginBottom: 20,
     }}>
-      {/* 标题栏 */}
+      {/* 顶栏 */}
       <div style={{
         padding: '8px 14px', background: '#fff',
         borderBottom: `1px solid ${C.border}`,
@@ -43,83 +50,88 @@ function LiveDemo() {
         }}>● 演示</span>
       </div>
 
-      {/* 直播间主体 */}
-      <div style={{ display: 'flex' }}>
-        {/* 左：9:16 直播画面 */}
+      {/* 主体：深色沉浸式直播间 */}
+      <div style={{
+        background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 100%)',
+        padding: '28px 24px 20px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        position: 'relative',
+      }}>
+        {/* LIVE + 观看人数 */}
         <div style={{
-          width: 130, flexShrink: 0,
-          aspectRatio: '9 / 16',
-          background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 100%)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          position: 'relative',
+          position: 'absolute', top: 12, left: 14,
+          display: 'flex', alignItems: 'center', gap: 10,
         }}>
-          <div style={{
-            position: 'absolute', top: 8, left: 8,
-            fontSize: 9, padding: '2px 6px', borderRadius: 4,
-            background: '#F53F3F', color: '#fff', fontWeight: 700,
-          }}>● LIVE</div>
-
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: active.avatarBg,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 32, marginBottom: 8,
-            boxShadow: '0 0 0 3px rgba(255,255,255,0.15)',
-            transition: 'background 0.4s ease',
-          }}>{active.avatarEmoji}</div>
-
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginBottom: 6 }}>AI 数字人</div>
-
-          <div style={{
-            fontSize: 10, padding: '3px 10px', borderRadius: 10,
-            background: active.color, color: '#333', fontWeight: 500,
-            transition: 'background 0.4s ease',
-            maxWidth: '90%', textAlign: 'center',
-          }}>{active.emoji} {active.name}</div>
+          <span style={{
+            fontSize: 10, padding: '2px 7px', borderRadius: 4,
+            background: '#F53F3F', color: '#fff', fontWeight: 700, letterSpacing: 0.5,
+          }}>● LIVE</span>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>👁 1,283</span>
         </div>
 
-        {/* 右：商品列表（只读，自动高亮） */}
+        {/* Avatar */}
         <div style={{
-          flex: 1, padding: '12px', background: '#fff',
-          borderLeft: `1px solid ${C.border}`,
-          display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8,
+          width: 96, height: 96, borderRadius: '50%',
+          background: active.avatarBg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 48, marginBottom: 10,
+          boxShadow: '0 0 0 5px rgba(255,255,255,0.08)',
+          transition: 'background 0.45s ease',
+        }}>{active.avatarEmoji}</div>
+
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 10 }}>
+          AI 数字人
+        </div>
+
+        {/* 当前商品名 */}
+        <div style={{
+          fontSize: 13, padding: '5px 16px', borderRadius: 20,
+          background: active.color, color: '#333', fontWeight: 600,
+          transition: 'background 0.45s ease',
+          marginBottom: 24,
         }}>
-          <div style={{ fontSize: 11, color: C.textSec, marginBottom: 2 }}>
-            形象随商品自动切换 ↓
-          </div>
+          {active.emoji} {active.name}
+        </div>
+
+        {/* 商品横排 */}
+        <div style={{
+          width: '100%', borderTop: '1px solid rgba(255,255,255,0.07)',
+          paddingTop: 16,
+          display: 'flex', gap: 8,
+        }}>
           {DEMO_PRODUCTS.map((p, i) => (
             <div key={p.id} style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 10px', borderRadius: 8,
-              border: `1.5px solid ${i === activeIdx ? C.blue : C.border}`,
-              background: i === activeIdx ? C.blueLight : '#FAFBFC',
-              transition: 'all 0.4s ease',
+              flex: 1, display: 'flex', alignItems: 'center', gap: 7,
+              padding: '8px 10px', borderRadius: 10,
+              border: `1.5px solid ${i === activeIdx ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              background: i === activeIdx ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
+              transition: 'all 0.45s ease',
             }}>
               <div style={{
-                width: 30, height: 30, borderRadius: 6, flexShrink: 0,
+                width: 28, height: 28, borderRadius: 7, flexShrink: 0,
                 background: p.color,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 15,
+                fontSize: 14,
               }}>{p.emoji}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: 12, fontWeight: i === activeIdx ? 600 : 400,
-                  color: i === activeIdx ? C.blue : C.text,
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>{p.name}</div>
-              </div>
+              <div style={{
+                flex: 1, fontSize: 11,
+                color: i === activeIdx ? '#fff' : 'rgba(255,255,255,0.4)',
+                fontWeight: i === activeIdx ? 600 : 400,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                transition: 'color 0.45s ease',
+              }}>{p.name}</div>
               {i === activeIdx && (
                 <span style={{
-                  fontSize: 9, padding: '1px 6px', borderRadius: 6, flexShrink: 0,
-                  background: C.blue, color: '#fff', fontWeight: 600,
-                }}>讲解中</span>
+                  fontSize: 9, padding: '1px 5px', borderRadius: 4, flexShrink: 0,
+                  background: '#F53F3F', color: '#fff', fontWeight: 700,
+                }}>▶</span>
               )}
             </div>
           ))}
-          <div style={{ fontSize: 10, color: C.textTert, marginTop: 2, lineHeight: 1.5 }}>
-            主播讲哪件商品，形象就穿对应搭配出场
-          </div>
+        </div>
+
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', marginTop: 10 }}>
+          主播讲哪件商品，AI 形象就穿对应搭配出场
         </div>
       </div>
     </div>
@@ -133,7 +145,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
       background: '#fff',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center',
-      padding: '24px 40px 20px',
+      padding: '28px 40px 24px',
       fontFamily: C.font,
       overflowY: 'auto',
     }}>
@@ -141,37 +153,40 @@ export default function BanboEntryScreen({ onStart }: Props) {
       <div style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 4, textAlign: 'center' }}>
         🦐 伴播形象配置
       </div>
-      <div style={{ fontSize: 13, color: C.textSec, textAlign: 'center', marginBottom: 20 }}>
+      <div style={{ fontSize: 13, color: C.textSec, textAlign: 'center', marginBottom: 22 }}>
         配置完成后，AI 数字人将在直播间自动跟随商品切换搭配
       </div>
 
       {/* 效果预览 */}
       <LiveDemo />
 
-      {/* 5步概览 */}
+      {/* 5步流程 */}
       <div style={{
-        width: '100%', maxWidth: 440,
-        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
-        marginBottom: 20,
+        width: '100%', display: 'flex', alignItems: 'flex-start',
+        marginBottom: 24,
       }}>
-        {[
-          { icon: '🎭', label: '面容选择', desc: 'AI 形象的外貌基础' },
-          { icon: '👗', label: '商品搭配', desc: '每件商品配一套造型' },
-          { icon: '📸', label: '定装照生成', desc: '生成形象效果图' },
-          { icon: '🎬', label: '技能配置', desc: '形象会做哪些动作' },
-          { icon: '✅', label: '提交审核', desc: '审核通过即可开播' },
-        ].map((item, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '9px 12px', borderRadius: 8,
-            border: `1px solid ${C.border}`, background: '#FAFBFC',
-          }}>
-            <span style={{ fontSize: 18 }}>{item.icon}</span>
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{item.label}</div>
-              <div style={{ fontSize: 11, color: C.textSec }}>{item.desc}</div>
+        {STEPS.map((step, i) => (
+          <React.Fragment key={step.num}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, flex: 1 }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: '50%',
+                background: C.blueLight,
+                border: `1.5px solid ${C.blue}50`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, fontWeight: 700, color: C.blue,
+                marginBottom: 6,
+              }}>{step.num}</div>
+              <div style={{ fontSize: 11, color: C.textSec, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                {step.label}
+              </div>
             </div>
-          </div>
+            {i < STEPS.length - 1 && (
+              <div style={{
+                height: 1, background: C.border,
+                flex: 1, marginTop: 15, flexShrink: 1,
+              }} />
+            )}
+          </React.Fragment>
         ))}
       </div>
 
@@ -179,18 +194,18 @@ export default function BanboEntryScreen({ onStart }: Props) {
       <button
         onClick={onStart}
         style={{
-          width: '100%', maxWidth: 440,
-          padding: '13px 0', borderRadius: 10, border: 'none',
+          width: '100%', padding: '14px 0', borderRadius: 10, border: 'none',
           background: C.blue, color: '#fff',
           fontSize: 15, fontWeight: 700,
           cursor: 'pointer', fontFamily: C.font,
           boxShadow: '0 4px 16px rgba(51,112,255,0.3)',
+          marginBottom: 10,
         }}
       >
         开始配置 →
       </button>
 
-      <div style={{ fontSize: 12, color: C.textTert, marginTop: 10 }}>
+      <div style={{ fontSize: 12, color: C.textTert }}>
         预计配置时间约 30 分钟
       </div>
     </div>
