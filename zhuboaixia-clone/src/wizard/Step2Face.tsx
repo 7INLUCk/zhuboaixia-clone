@@ -21,13 +21,20 @@ export default function Step2Face({ state, onUpdate, onNext, onPrev }: Props) {
   })
 
   const toggle = (id: string) => {
+    const face = FACE_LIBRARY.find(f => f.id === id)!
     if (selectedFaceIds.includes(id)) {
+      // 取消选中
       onUpdate({ selectedFaceIds: selectedFaceIds.filter(x => x !== id) })
-    } else if (selectedFaceIds.length < 2) {
-      onUpdate({ selectedFaceIds: [...selectedFaceIds, id] })
     } else {
-      // 超过2个：替换最早选的
-      onUpdate({ selectedFaceIds: [selectedFaceIds[1], id] })
+      // 同性别已有选中：替换，不允许两个同性别
+      const sameGenderId = selectedFaceIds.find(sid =>
+        FACE_LIBRARY.find(f => f.id === sid)?.gender === face.gender
+      )
+      if (sameGenderId) {
+        onUpdate({ selectedFaceIds: selectedFaceIds.map(sid => sid === sameGenderId ? id : sid) })
+      } else {
+        onUpdate({ selectedFaceIds: [...selectedFaceIds, id] })
+      }
     }
   }
 
@@ -164,6 +171,8 @@ export default function Step2Face({ state, onUpdate, onNext, onPrev }: Props) {
           <span style={{ fontSize: 12, color: C.textSec }}>已选：</span>
           {selectedFaceIds.map(id => {
             const f = FACE_LIBRARY.find(x => x.id === id)!
+            const genderLabel = f.gender === 'female' ? '女性形象' : '男性形象'
+            const genderColor = f.gender === 'female' ? '#FF4D8D' : '#3370FF'
             return (
               <div key={id} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
@@ -172,6 +181,7 @@ export default function Step2Face({ state, onUpdate, onNext, onPrev }: Props) {
               }}>
                 <span style={{ fontSize: 16 }}>{f.emoji}</span>
                 <span style={{ fontSize: 12, fontWeight: 500, color: C.text }}>{f.name}</span>
+                <span style={{ fontSize: 10, color: genderColor, fontWeight: 600 }}>· {genderLabel}</span>
               </div>
             )
           })}
