@@ -46,6 +46,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
       {/* 主演示区：手机左 + 商品右 */}
       <div style={{
         width: '100%', display: 'flex', gap: 24, alignItems: 'center', marginBottom: 24,
+        justifyContent: 'center',
       }}>
 
         {/* 左：手机框 */}
@@ -98,7 +99,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
         </div>
 
         {/* 右：商品切换说明 */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ width: 220, flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 12 }}>
             形象随商品自动切换
           </div>
