@@ -39,6 +39,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
       width: '100%', height: '100%',
       background: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'space-between',
       padding: '24px 36px 20px',
       fontFamily: C.font, boxSizing: 'border-box',
     }}>
@@ -53,17 +54,19 @@ export default function BanboEntryScreen({ onStart }: Props) {
         </div>
       </div>
 
-      {/* ② 演示区：flex:1 吸收剩余空间，灰卡内容垂直居中 */}
+      {/* ② 演示区：固定 padding，内容整体居中 */}
       <div style={{
-        width: '100%', flex: 1,
+        width: '100%', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         borderRadius: 16,
         background: '#F6F7FA',
-        padding: '0 32px',
+        padding: '28px 32px',
         boxSizing: 'border-box',
-        marginBottom: 16,
-        gap: 28,
+        marginBottom: 0,
       }}>
+
+        {/* 手机 + 能力列：作为整体居中 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
 
         {/* 左：手机框 160px */}
         <div style={{
@@ -104,11 +107,11 @@ export default function BanboEntryScreen({ onStart }: Props) {
           }} />
         </div>
 
-        {/* 右：3条能力，自然堆叠，垂直居中对齐手机 */}
+        {/* 右：3条能力，固定宽度，自然堆叠 */}
         <div style={{
-          alignSelf: 'center',
+          width: 240,
           display: 'flex', flexDirection: 'column',
-          gap: 20, flex: 1,
+          gap: 20,
         }}>
           {CAPABILITIES.map(cap => (
             <div key={cap.title} style={{
@@ -131,11 +134,13 @@ export default function BanboEntryScreen({ onStart }: Props) {
             </div>
           ))}
         </div>
+
+        </div>{/* end 内层居中容器 */}
       </div>
 
       {/* ③ 过渡文字 */}
       <div style={{
-        flexShrink: 0, marginBottom: 16,
+        flexShrink: 0, marginBottom: 0,
         display: 'flex', alignItems: 'center', gap: 12, width: '100%',
       }}>
         <div style={{ flex: 1, height: 1, background: C.border }} />
