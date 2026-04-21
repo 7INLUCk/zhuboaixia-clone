@@ -1,5 +1,5 @@
 // src/BanboEntryScreen.tsx
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { C } from './shared'
 
 type Props = { onStart: () => void }
@@ -34,25 +34,17 @@ const STEPS = [
 ]
 
 export default function BanboEntryScreen({ onStart }: Props) {
-  const [tick, setTick] = useState(0)
-
-  useEffect(() => {
-    const t = setInterval(() => setTick(i => i + 1), 2000)
-    return () => clearInterval(t)
-  }, [])
-
   return (
     <div style={{
       width: '100%', height: '100%',
       background: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'space-between',
       padding: '24px 36px 20px',
       fontFamily: C.font, boxSizing: 'border-box',
     }}>
 
       {/* ① 标题区 */}
-      <div style={{ textAlign: 'center', flexShrink: 0 }}>
+      <div style={{ textAlign: 'center', flexShrink: 0, marginBottom: 16 }}>
         <div style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 6 }}>
           🦐 为直播间引入一位 AI 伴播形象
         </div>
@@ -61,14 +53,15 @@ export default function BanboEntryScreen({ onStart }: Props) {
         </div>
       </div>
 
-      {/* ② 演示区：灰色背景卡 */}
+      {/* ② 演示区：flex:1 吸收剩余空间，灰卡内容垂直居中 */}
       <div style={{
-        width: '100%', flexShrink: 0,
+        width: '100%', flex: 1,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         borderRadius: 16,
         background: '#F6F7FA',
-        padding: '28px 32px',
+        padding: '0 32px',
         boxSizing: 'border-box',
+        marginBottom: 16,
         gap: 28,
       }}>
 
@@ -97,15 +90,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
               fontSize: 8, padding: '2px 5px', borderRadius: 3,
               background: '#F53F3F', color: '#fff', fontWeight: 700,
             }}>● LIVE</div>
-            {/* 呼吸动画占位点 */}
-            <div style={{
-              width: 48, height: 48, borderRadius: '50%',
-              background: `rgba(255,255,255,${0.04 + (tick % 2) * 0.04})`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 8, transition: 'background 1s ease',
-            }}>
-              <div style={{ fontSize: 24, opacity: 0.5 }}>📺</div>
-            </div>
+            <div style={{ fontSize: 28, marginBottom: 6, opacity: 0.45 }}>📺</div>
             <div style={{
               fontSize: 9, color: 'rgba(255,255,255,0.4)',
               textAlign: 'center', lineHeight: 1.7, padding: '0 10px',
@@ -119,11 +104,11 @@ export default function BanboEntryScreen({ onStart }: Props) {
           }} />
         </div>
 
-        {/* 右：3条能力，撑满手机高度均匀分布 */}
+        {/* 右：3条能力，自然堆叠，垂直居中对齐手机 */}
         <div style={{
-          alignSelf: 'stretch',
-          display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-          flex: 1,
+          alignSelf: 'center',
+          display: 'flex', flexDirection: 'column',
+          gap: 20, flex: 1,
         }}>
           {CAPABILITIES.map(cap => (
             <div key={cap.title} style={{
@@ -150,9 +135,8 @@ export default function BanboEntryScreen({ onStart }: Props) {
 
       {/* ③ 过渡文字 */}
       <div style={{
-        flexShrink: 0, textAlign: 'center',
+        flexShrink: 0, marginBottom: 16,
         display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-        justifyContent: 'center',
       }}>
         <div style={{ flex: 1, height: 1, background: C.border }} />
         <span style={{ fontSize: 12, color: C.textSec, whiteSpace: 'nowrap' }}>
@@ -162,7 +146,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
       </div>
 
       {/* ④ 5步流程 */}
-      <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', flexShrink: 0 }}>
+      <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', flexShrink: 0, marginBottom: 16 }}>
         {STEPS.map((step, i) => (
           <React.Fragment key={step.num}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
