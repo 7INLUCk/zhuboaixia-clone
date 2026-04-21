@@ -31,43 +31,42 @@ export default function BanboEntryScreen({ onStart }: Props) {
       width: '100%', height: '100%',
       background: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      padding: '24px 36px 20px',
+      padding: '20px 36px 16px',
       fontFamily: C.font, overflowY: 'auto',
     }}>
 
       {/* 标题 */}
       <div style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 4, textAlign: 'center' }}>
-        🦐 伴播形象配置
+        🦐 伴播形象定制
       </div>
-      <div style={{ fontSize: 13, color: C.textSec, textAlign: 'center', marginBottom: 20 }}>
-        配置完成后，AI 数字人将在直播间自动跟随商品切换搭配
+      <div style={{ fontSize: 12, color: C.textSec, textAlign: 'center', marginBottom: 20, lineHeight: 1.6 }}>
+        选好外形与搭配，AI 自动生成定装照和直播动作素材——走完 5 步，形象即可上线
       </div>
 
-      {/* 主演示区：手机左 + 商品右 */}
+      {/* 主演示区：手机左 + 商品右，整体居中 */}
       <div style={{
-        width: '100%', display: 'flex', gap: 24, alignItems: 'center', marginBottom: 24,
-        justifyContent: 'center',
+        display: 'flex', gap: 24, alignItems: 'center', marginBottom: 20,
       }}>
 
-        {/* 左：手机框 */}
+        {/* 左：手机框，缩窄至 160px */}
         <div style={{
-          width: 180, flexShrink: 0,
-          borderRadius: 32,
+          width: 160, flexShrink: 0,
+          borderRadius: 28,
           background: '#181818',
-          padding: '12px 8px 14px',
+          padding: '10px 7px 12px',
           boxShadow: '0 20px 50px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.07)',
         }}>
           {/* 刘海 */}
           <div style={{
-            width: 52, height: 5, borderRadius: 3,
-            background: '#2e2e2e', margin: '0 auto 10px',
+            width: 44, height: 4, borderRadius: 3,
+            background: '#2e2e2e', margin: '0 auto 8px',
           }} />
 
           {/* 屏幕 9:16 */}
           <div style={{
             width: '100%',
             aspectRatio: '9 / 16',
-            borderRadius: 20,
+            borderRadius: 18,
             overflow: 'hidden',
             background: 'linear-gradient(170deg, #1a1a2e 0%, #16213e 100%)',
             position: 'relative',
@@ -76,16 +75,16 @@ export default function BanboEntryScreen({ onStart }: Props) {
           }}>
             {/* LIVE 角标 */}
             <div style={{
-              position: 'absolute', top: 8, left: 8,
-              fontSize: 8, padding: '2px 5px', borderRadius: 3,
+              position: 'absolute', top: 7, left: 7,
+              fontSize: 7, padding: '2px 4px', borderRadius: 3,
               background: '#F53F3F', color: '#fff', fontWeight: 700,
             }}>● LIVE</div>
 
             {/* 占位内容 */}
-            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.6 }}>📱</div>
+            <div style={{ fontSize: 28, marginBottom: 6, opacity: 0.6 }}>📱</div>
             <div style={{
-              fontSize: 9, color: 'rgba(255,255,255,0.45)',
-              textAlign: 'center', lineHeight: 1.6, padding: '0 10px',
+              fontSize: 8, color: 'rgba(255,255,255,0.45)',
+              textAlign: 'center', lineHeight: 1.6, padding: '0 8px',
             }}>
               品牌录播视频<br />将展示于此
             </div>
@@ -93,41 +92,41 @@ export default function BanboEntryScreen({ onStart }: Props) {
 
           {/* Home bar */}
           <div style={{
-            width: 44, height: 4, borderRadius: 2,
-            background: '#2e2e2e', margin: '10px auto 0',
+            width: 38, height: 3, borderRadius: 2,
+            background: '#2e2e2e', margin: '8px auto 0',
           }} />
         </div>
 
-        {/* 右：商品切换说明 */}
+        {/* 右：商品切换说明，固定宽度 220px */}
         <div style={{ width: 220, flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 8 }}>
             形象随商品自动切换
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
             {DEMO_PRODUCTS.map((p, i) => (
               <div key={p.id} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 12px', borderRadius: 10,
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '7px 10px', borderRadius: 8,
                 border: `1.5px solid ${i === activeIdx ? C.blue : C.border}`,
                 background: i === activeIdx ? C.blueLight : '#FAFBFC',
                 transition: 'all 0.45s ease',
               }}>
                 <div style={{
-                  width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                  width: 26, height: 26, borderRadius: 6, flexShrink: 0,
                   background: p.color,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16,
+                  fontSize: 14,
                 }}>{p.emoji}</div>
                 <div style={{
-                  flex: 1, fontSize: 13,
+                  flex: 1, fontSize: 12,
                   color: i === activeIdx ? C.blue : C.text,
                   fontWeight: i === activeIdx ? 600 : 400,
                   transition: 'color 0.45s ease',
                 }}>{p.name}</div>
                 {i === activeIdx && (
                   <span style={{
-                    fontSize: 10, padding: '2px 7px', borderRadius: 6,
+                    fontSize: 9, padding: '2px 6px', borderRadius: 5,
                     background: C.blue, color: '#fff', fontWeight: 600, flexShrink: 0,
                   }}>讲解中</span>
                 )}
@@ -135,29 +134,29 @@ export default function BanboEntryScreen({ onStart }: Props) {
             ))}
           </div>
 
-          <div style={{ fontSize: 12, color: C.textTert, lineHeight: 1.6 }}>
+          <div style={{ fontSize: 11, color: C.textTert, lineHeight: 1.6 }}>
             主播讲哪件商品，AI 形象就穿对应搭配出场。配置完成后自动生效，无需手动操作。
           </div>
         </div>
       </div>
 
       {/* 5步流程 */}
-      <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginBottom: 22 }}>
+      <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginBottom: 20 }}>
         {STEPS.map((step, i) => (
           <React.Fragment key={step.num}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
               <div style={{
-                width: 28, height: 28, borderRadius: '50%',
+                width: 26, height: 26, borderRadius: '50%',
                 background: C.blueLight, border: `1.5px solid ${C.blue}50`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, fontWeight: 700, color: C.blue, marginBottom: 5,
+                fontSize: 11, fontWeight: 700, color: C.blue, marginBottom: 4,
               }}>{step.num}</div>
               <div style={{ fontSize: 10, color: C.textSec, textAlign: 'center', whiteSpace: 'nowrap' }}>
                 {step.label}
               </div>
             </div>
             {i < STEPS.length - 1 && (
-              <div style={{ height: 1, background: C.border, flex: 1, marginTop: 14 }} />
+              <div style={{ height: 1, background: C.border, flex: 1, marginTop: 13 }} />
             )}
           </React.Fragment>
         ))}
