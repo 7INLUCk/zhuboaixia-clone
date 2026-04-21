@@ -81,16 +81,12 @@ const LABELS: Record<PageId, string> = {
   'banbo-home': '我的伴播', 'banbo-create': '创建直播间',
 }
 
-// 助播模式侧边栏菜单
-const ZHU_NAV = [
+// 侧边栏菜单
+const NAV_ITEMS = [
   { key: 'home-empty', icon: '📺', label: '我的直播' },
+  { key: 'banbo-customize', icon: '🐟', label: '定制伴播' },
   { key: 'tutorial', icon: '📖', label: '使用教程' },
   { key: 'buy-membership', icon: '💎', label: '购买会员' },
-]
-
-// 伴播模式侧边栏菜单
-const BAN_NAV = [
-  { key: 'banbo-home', icon: '📺', label: '我的伴播' },
 ]
 
 // 色彩 token（与截图侧边栏颜色匹配）
@@ -186,26 +182,14 @@ function ScreenshotContent({
 }
 
 export default function App() {
-  const [mode, setMode] = useState<Mode>('zhu')
   const [page, setPage] = useState<PageId>('home-empty')
   const [debug, setDebug] = useState(false)
   const [hover, setHover] = useState<string | null>(null)
   const [showBuyinOverlay, setShowBuyinOverlay] = useState(true)
 
-  const switchMode = (m: Mode) => {
-    setMode(m)
-    setPage(m === 'zhu' ? 'home-empty' : 'banbo-home')
-  }
-
   const config = PAGES[page]
-  const navItems = mode === 'zhu' ? ZHU_NAV : BAN_NAV
-
   const navigate = (p: PageId) => setPage(p)
-
-  // 截图页当前活跃的侧边栏项
-  const activeSideKey = mode === 'zhu'
-    ? (page.startsWith('dashboard') ? 'home-empty' : page)
-    : page
+  const activeSideKey = page.startsWith('dashboard') ? 'home-empty' : page
 
   return (
     <div style={{
@@ -270,59 +254,15 @@ export default function App() {
           <span style={{ fontWeight: 700, fontSize: 17, color: C.textPrimary }}>助播虾</span>
         </div>
 
-        {/* 模式切换 */}
-        <div style={{ padding: '12px 12px 8px' }}>
-          <div style={{
-            display: 'flex',
-            borderRadius: 8,
-            overflow: 'hidden',
-            border: `1px solid ${C.sidebarBorder}`,
-            background: '#fff',
-          }}>
-            <button
-              onClick={() => switchMode('zhu')}
-              style={{
-                flex: 1,
-                padding: '7px 0',
-                fontSize: 13,
-                fontWeight: mode === 'zhu' ? 600 : 400,
-                border: 'none',
-                background: mode === 'zhu' ? C.primary : 'transparent',
-                color: mode === 'zhu' ? '#fff' : C.textSecondary,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              🎤 助播
-            </button>
-            <button
-              onClick={() => switchMode('ban')}
-              style={{
-                flex: 1,
-                padding: '7px 0',
-                fontSize: 13,
-                fontWeight: mode === 'ban' ? 600 : 400,
-                border: 'none',
-                background: mode === 'ban' ? '#FF6B9D' : 'transparent',
-                color: mode === 'ban' ? '#fff' : C.textSecondary,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              🐟 伴播
-            </button>
-          </div>
-        </div>
-
         {/* 导航菜单 */}
         <div style={{ flex: 1, padding: '8px 0', overflow: 'auto' }}>
-          {navItems.map(item => {
+          {NAV_ITEMS.map(item => {
             const isActive = item.key === activeSideKey ||
-              (mode === 'zhu' && item.key === 'home-empty' && (page === 'home-empty' || page === 'home-with-room'))
+              (item.key === 'home-empty' && (page === 'home-empty' || page === 'home-with-room'))
             return (
               <div
                 key={item.key}
-                onClick={() => navigate(item.key as PageId)}
+                onClick={() => item.key === 'banbo-customize' ? setShowBuyinOverlay(true) : navigate(item.key as PageId)}
                 style={{
                   height: 44,
                   display: 'flex',
