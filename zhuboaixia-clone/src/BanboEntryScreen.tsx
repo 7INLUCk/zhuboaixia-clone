@@ -1,5 +1,5 @@
 // src/BanboEntryScreen.tsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { C } from './shared'
 
 type Props = {
@@ -14,11 +14,19 @@ const DEMO_PRODUCTS = [
 
 function LiveDemo() {
   const [activeIdx, setActiveIdx] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIdx(i => (i + 1) % DEMO_PRODUCTS.length)
+    }, 2200)
+    return () => clearInterval(timer)
+  }, [])
+
   const active = DEMO_PRODUCTS[activeIdx]
 
   return (
     <div style={{
-      width: '100%', maxWidth: 440, marginBottom: 28,
+      width: '100%', maxWidth: 440, marginBottom: 24,
       borderRadius: 12, border: `1px solid ${C.border}`,
       overflow: 'hidden', background: '#FAFBFC',
     }}>
@@ -36,75 +44,81 @@ function LiveDemo() {
       </div>
 
       {/* 直播间主体 */}
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* 左：直播画面 */}
+      <div style={{ display: 'flex' }}>
+        {/* 左：9:16 直播画面 */}
         <div style={{
-          flex: 1, padding: '16px 12px',
+          width: 130, flexShrink: 0,
+          aspectRatio: '9 / 16',
           background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 100%)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          minHeight: 160, position: 'relative',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          position: 'relative',
         }}>
-          {/* 直播状态 */}
           <div style={{
             position: 'absolute', top: 8, left: 8,
             fontSize: 9, padding: '2px 6px', borderRadius: 4,
             background: '#F53F3F', color: '#fff', fontWeight: 700,
           }}>● LIVE</div>
 
-          {/* AI 形象 */}
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
             background: active.avatarBg,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 32, marginBottom: 6,
-            boxShadow: `0 0 0 3px rgba(255,255,255,0.15)`,
-            transition: 'background 0.35s ease',
+            fontSize: 32, marginBottom: 8,
+            boxShadow: '0 0 0 3px rgba(255,255,255,0.15)',
+            transition: 'background 0.4s ease',
           }}>{active.avatarEmoji}</div>
 
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 2 }}>AI 数字人</div>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginBottom: 6 }}>AI 数字人</div>
 
-          {/* 当前商品标签 */}
           <div style={{
-            fontSize: 10, padding: '3px 8px', borderRadius: 10,
+            fontSize: 10, padding: '3px 10px', borderRadius: 10,
             background: active.color, color: '#333', fontWeight: 500,
-            transition: 'background 0.35s ease',
+            transition: 'background 0.4s ease',
+            maxWidth: '90%', textAlign: 'center',
           }}>{active.emoji} {active.name}</div>
         </div>
 
-        {/* 右：操作说明 + 商品切换 */}
+        {/* 右：商品列表（只读，自动高亮） */}
         <div style={{
-          width: 160, padding: '12px', background: '#fff',
+          flex: 1, padding: '12px', background: '#fff',
           borderLeft: `1px solid ${C.border}`,
-          display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6,
+          display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8,
         }}>
-          <div style={{ fontSize: 11, color: C.textSec, marginBottom: 4 }}>
-            👇 点商品，看形象切换
+          <div style={{ fontSize: 11, color: C.textSec, marginBottom: 2 }}>
+            形象随商品自动切换 ↓
           </div>
           {DEMO_PRODUCTS.map((p, i) => (
-            <div
-              key={p.id}
-              onClick={() => setActiveIdx(i)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '7px 10px', borderRadius: 8, cursor: 'pointer',
-                border: `1.5px solid ${i === activeIdx ? C.blue : C.border}`,
-                background: i === activeIdx ? C.blueLight : '#FAFBFC',
-                transition: 'all 0.2s',
-              }}
-            >
+            <div key={p.id} style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 10px', borderRadius: 8,
+              border: `1.5px solid ${i === activeIdx ? C.blue : C.border}`,
+              background: i === activeIdx ? C.blueLight : '#FAFBFC',
+              transition: 'all 0.4s ease',
+            }}>
               <div style={{
-                width: 28, height: 28, borderRadius: 6,
+                width: 30, height: 30, borderRadius: 6, flexShrink: 0,
                 background: p.color,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, flexShrink: 0,
+                fontSize: 15,
               }}>{p.emoji}</div>
-              <div style={{ fontSize: 11, color: i === activeIdx ? C.blue : C.text, fontWeight: i === activeIdx ? 600 : 400 }}>
-                {p.name}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: 12, fontWeight: i === activeIdx ? 600 : 400,
+                  color: i === activeIdx ? C.blue : C.text,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>{p.name}</div>
               </div>
+              {i === activeIdx && (
+                <span style={{
+                  fontSize: 9, padding: '1px 6px', borderRadius: 6, flexShrink: 0,
+                  background: C.blue, color: '#fff', fontWeight: 600,
+                }}>讲解中</span>
+              )}
             </div>
           ))}
-          <div style={{ fontSize: 10, color: C.textTert, marginTop: 4, lineHeight: 1.5 }}>
-            主播讲哪件商品，形象自动切换搭配
+          <div style={{ fontSize: 10, color: C.textTert, marginTop: 2, lineHeight: 1.5 }}>
+            主播讲哪件商品，形象就穿对应搭配出场
           </div>
         </div>
       </div>
