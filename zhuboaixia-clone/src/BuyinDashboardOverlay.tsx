@@ -24,7 +24,7 @@ type BanboState = 'unconfigured' | 'wizard' | 'configured'
 
 export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void }) {
   const [activePanel, setActivePanel] = useState<ActivePanel>('main')
-  const [banboState, setBanboState] = useState<BanboState>('unconfigured')
+  const [banboState, setBanboState] = useState<BanboState>('configured')
   const [wizardResult, setWizardResult] = useState<WizardResult | null>(null)
   const [reviewExpanded, setReviewExpanded] = useState(false)
   const [showSyncBanner, setShowSyncBanner] = useState(false)
