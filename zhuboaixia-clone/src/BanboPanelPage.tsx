@@ -504,15 +504,6 @@ export default function BanboPanelPage({ onNavigate }: Props) {
     setWizardDone(true)
   }
 
-  // 向导未完成时：全屏显示向导，不套在控台后面
-  if (!wizardDone) {
-    return (
-      <div style={{ height: '100%', fontFamily: T.fonts.family, overflow: 'hidden' }}>
-        <BanboSetupWizard onComplete={handleWizardComplete} />
-      </div>
-    )
-  }
-
   return (
     <div style={{ position: 'relative', height: '100%', fontFamily: T.fonts.family, overflow: 'hidden' }}>
       {/* 抖音中控台（全宽） */}
@@ -544,7 +535,11 @@ export default function BanboPanelPage({ onNavigate }: Props) {
         boxShadow: panelOpen ? '-4px 0 20px rgba(0,0,0,0.2)' : 'none',
         zIndex: 15,
       }}>
-        {panelOpen && <CanvasPanel onClose={() => setPanelOpen(false)} />}
+        {panelOpen && (
+          wizardDone
+            ? <CanvasPanel onClose={() => setPanelOpen(false)} />
+            : <BanboSetupWizard onComplete={handleWizardComplete} />
+        )}
       </div>
     </div>
   )
