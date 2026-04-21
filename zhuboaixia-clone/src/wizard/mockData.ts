@@ -26,29 +26,96 @@ export const FACE_LIBRARY: FaceItem[] = [
 
 export const CARGO_PRODUCTS: CargoProduct[] = [
   { id: 'p1', linkNum: 1, name: '女童春款碎花连衣裙', price: '¥129',
-    images: ['平铺正面图（推荐）', '模特上身图', '细节图', '颜色展示'], emoji: '👗', color: '#FFD0E8' },
+    images: ['img1', 'img2', 'img3', 'img4'], emoji: '👗', color: '#FFD0E8', genderTag: 'female', bodySlot: 'dress' },
   { id: 'p2', linkNum: 2, name: '男童纯棉印花T恤',   price: '¥89',
-    images: ['平铺正面图（推荐）', '颜色展示', '细节图'], emoji: '👕', color: '#B3D4FF' },
+    images: ['img1', 'img2', 'img3'], emoji: '👕', color: '#B3D4FF', genderTag: 'male', bodySlot: 'top' },
   { id: 'p3', linkNum: 3, name: '儿童防晒衣外套',    price: '¥159',
-    images: ['平铺正面图（推荐）', '背面图', '细节图'], emoji: '🧥', color: '#C8F0D0' },
+    images: ['img1', 'img2', 'img3'], emoji: '🧥', color: '#C8F0D0', genderTag: 'neutral', bodySlot: 'outer' },
   { id: 'p4', linkNum: 4, name: '女童百褶半身裙',    price: '¥99',
-    images: ['平铺正面图（推荐）', '模特上身图', '颜色展示', '细节图'], emoji: '👗', color: '#FFE0B0' },
+    images: ['img1', 'img2', 'img3', 'img4'], emoji: '🩳', color: '#FFE0B0', genderTag: 'female', bodySlot: 'bottom' },
   { id: 'p5', linkNum: 5, name: '男童运动裤',        price: '¥79',
-    images: ['平铺正面图（推荐）', '背面图', '颜色展示'], emoji: '👖', color: '#D0E0FF' },
+    images: ['img1', 'img2', 'img3'], emoji: '👖', color: '#D0E0FF', genderTag: 'male', bodySlot: 'bottom' },
   { id: 'p6', linkNum: 6, name: '女童蕾丝上衣',      price: '¥109',
-    images: ['平铺正面图（推荐）', '细节图', '模特上身图'], emoji: '👚', color: '#FFD4F0' },
+    images: ['img1', 'img2', 'img3'], emoji: '👚', color: '#FFD4F0', genderTag: 'female', bodySlot: 'top' },
+  { id: 'p7', linkNum: 7, name: '女童蝴蝶结公主鞋',  price: '¥129',
+    images: ['img1', 'img2', 'img3'], emoji: '👟', color: '#FFDDE8', genderTag: 'female', bodySlot: 'shoes' },
+  { id: 'p8', linkNum: 8, name: '男童网面运动鞋',    price: '¥139',
+    images: ['img1', 'img2', 'img3'], emoji: '👟', color: '#D4E8FF', genderTag: 'male', bodySlot: 'shoes' },
 ]
 
 export const SKILL_DEFS: SkillDef[] = [
-  { id: 'sp-enter',      name: '进场',     required: true,  description: '形象入场动画，口令触发' },
-  { id: 'sp-exit',       name: '出场',     required: true,  description: '形象退场动画，口令触发' },
-  { id: 'sp-auto-outfit',name: '自动换装', required: true,  description: '讲解商品时自动切换形象' },
-  { id: 'sp-showcase',   name: '穿版展示', required: true,  description: '展示服装上身效果' },
-  { id: 'sp-urge',       name: '逼单助攻', required: false, description: '主播逼单时触发动作' },
-  { id: 'sp-affirm',     name: '效果肯定', required: false, description: '主播塑品时自动搭话' },
-  { id: 'sp-thanks',     name: '感谢下单', required: false, description: '感谢话术时触发动作' },
-  { id: 'sp-demo',       name: '产品演示', required: false, description: '演示细节时触发动作' },
-  { id: 'sp-perform',    name: '整活表演', required: false, description: '口令触发才艺表演' },
+  {
+    id: 'sp-daily',
+    name: '日常动作',
+    required: true,
+    description: '没有口令时的默认待机循环，形象持续做这些动作保持活跃感',
+    clipCount: 8,
+  },
+  {
+    id: 'sp-enter',
+    name: '进场动作',
+    required: true,
+    description: '形象登场时的入场动画，口令触发',
+    clipCount: 1,
+    fixedClips: true,
+  },
+  {
+    id: 'sp-exit',
+    name: '出场动作',
+    required: true,
+    description: '形象退场时的离开动画，口令触发',
+    clipCount: 1,
+    fixedClips: true,
+  },
+  {
+    id: 'sp-auto-outfit',
+    name: '自动换装',
+    required: true,
+    description: '讲解商品时自动切换穿搭，复用进/出场动作，无需额外素材',
+    clipCount: 'none',
+  },
+  {
+    id: 'sp-showcase',
+    name: '穿版展示',
+    required: true,
+    description: '主播讲解时同步展示上身效果，复用进/出场动作，无需额外素材',
+    clipCount: 'none',
+  },
+  {
+    id: 'sp-urge',
+    name: '逼单助攻',
+    required: false,
+    description: '主播逼单时触发特定动作，强化购买冲动',
+    clipCount: 3,
+  },
+  {
+    id: 'sp-affirm',
+    name: '效果肯定',
+    required: false,
+    description: '主播塑品时同步配合动作，增强信任感',
+    clipCount: 3,
+  },
+  {
+    id: 'sp-thanks',
+    name: '感谢下单',
+    required: false,
+    description: '感谢话术时触发庆祝动作，活跃直播间气氛',
+    clipCount: 3,
+  },
+  {
+    id: 'sp-demo',
+    name: '产品演示',
+    required: false,
+    description: '演示商品细节时配合展示动作',
+    clipCount: 3,
+  },
+  {
+    id: 'sp-perform',
+    name: '整活表演',
+    required: false,
+    description: '口令触发才艺表演，活跃直播间氛围',
+    clipCount: 3,
+  },
 ]
 
 export const ACTION_LIBRARY: ActionDef[] = [
@@ -74,23 +141,38 @@ export const ACTION_LIBRARY: ActionDef[] = [
   { id: 'a20', name: '大舌头',     duration: 8  },
 ]
 
-// 每个技能默认从动作库里取的8个动作 id
-export const SKILL_DEFAULT_ACTIONS: Record<string, string[]> = {
-  'sp-enter':       ['a1', 'a2', 'a3', 'a14', 'a15', 'a6', 'a7', 'a17'],
-  'sp-exit':        ['a9', 'a8', 'a16', 'a3', 'a7', 'a6', 'a5', 'a17'],
-  'sp-auto-outfit': ['a2', 'a14', 'a3', 'a16', 'a13', 'a4', 'a7', 'a5'],
-  'sp-showcase':    ['a13', 'a3', 'a14', 'a2', 'a4', 'a16', 'a7', 'a5'],
-  'sp-urge':        ['a10', 'a11', 'a4', 'a5', 'a6', 'a12', 'a7', 'a17'],
-  'sp-affirm':      ['a5', 'a7', 'a6', 'a4', 'a17', 'a13', 'a3', 'a16'],
-  'sp-thanks':      ['a8', 'a7', 'a6', 'a5', 'a17', 'a9', 'a15', 'a1'],
-  'sp-demo':        ['a13', 'a4', 'a3', 'a14', 'a16', 'a12', 'a5', 'a7'],
-  'sp-perform':     ['a18', 'a19', 'a20', 'a15', 'a14', 'a6', 'a17', 'a7'],
+export const CLIP_COLORS = ['#FFB3D9','#B3D4FF','#C8F0D0','#FFE0B0','#D0E0FF','#FFD4F0','#FFCCE0','#A0C8FF']
+
+// 20个动作在弹窗里的演示预览色（每个动作固定一种颜色）
+export const ACTION_PREVIEW_COLORS = [
+  '#FFB3D9','#B3D4FF','#C8F0D0','#FFE0B0','#D0E0FF',
+  '#FFD4F0','#FFCCE0','#A0C8FF','#F0E8D0','#D8F0E8',
+  '#E8D8FF','#FFE8C8','#D0F4FF','#FFD4C0','#C0E8D8',
+  '#F4FFD0','#FFE0D8','#D4C8FF','#FFD0C0','#C8F4D8',
+]
+
+const SKILL_ACTIONS: Record<string, string[]> = {
+  'sp-daily':   ['a2', 'a3', 'a5', 'a6', 'a7', 'a14', 'a15', 'a17'],
+  'sp-urge':    ['a10', 'a11', 'a4'],
+  'sp-affirm':  ['a5', 'a7', 'a6'],
+  'sp-thanks':  ['a8', 'a7', 'a15'],
+  'sp-demo':    ['a13', 'a4', 'a3'],
+  'sp-perform': ['a18', 'a19', 'a20'],
 }
 
-const CLIP_COLORS = ['#FFB3D9','#B3D4FF','#C8F0D0','#FFE0B0','#D0E0FF','#FFD4F0','#FFCCE0','#A0C8FF']
-
 export function generateMaterials(skillId: string): import('./types').MaterialClip[] {
-  const actionIds = SKILL_DEFAULT_ACTIONS[skillId] || ACTION_LIBRARY.slice(0, 8).map(a => a.id)
+  if (skillId === 'sp-enter') {
+    const action = ACTION_LIBRARY.find(a => a.id === 'a1')!
+    return [{ id: `${skillId}-clip-0`, actionId: action.id, actionName: action.name, duration: action.duration, color: CLIP_COLORS[0], confirmed: true }]
+  }
+  if (skillId === 'sp-exit') {
+    const action = ACTION_LIBRARY.find(a => a.id === 'a9')!
+    return [{ id: `${skillId}-clip-0`, actionId: action.id, actionName: action.name, duration: action.duration, color: CLIP_COLORS[1], confirmed: true }]
+  }
+  if (skillId === 'sp-auto-outfit' || skillId === 'sp-showcase') {
+    return []
+  }
+  const actionIds = SKILL_ACTIONS[skillId] ?? ACTION_LIBRARY.slice(0, 3).map(a => a.id)
   return actionIds.map((actionId, i) => {
     const action = ACTION_LIBRARY.find(a => a.id === actionId)!
     return {

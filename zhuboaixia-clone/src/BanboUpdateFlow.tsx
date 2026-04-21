@@ -1,11 +1,10 @@
 // src/BanboUpdateFlow.tsx
-// 货盘更新轻量向导：Step1（仅新增/变更商品）→ Step3 → Step4 → Step5 → 完成
+// 货盘更新轻量向导：Step1（仅新增/变更商品）→ Step2（形象生成）→ Step3（素材生成）→ 完成
 import React, { useState } from 'react'
 import { C } from './shared'
 import { CARGO_PRODUCTS } from './wizard/mockData'
 import Step1Cargo from './wizard/Step1Cargo'
-import Step3Outfit from './wizard/Step3Outfit'
-import Step4Portrait from './wizard/Step4Portrait'
+import Step3AvatarGen from './wizard/Step3AvatarGen'
 import Step5Skills from './wizard/Step5Skills'
 import type { WizardState, WizardResult } from './wizard/types'
 
@@ -15,13 +14,12 @@ type Props = {
   onCancel: () => void
 }
 
-type UpdateStep = 1 | 3 | 4 | 5
+type UpdateStep = 1 | 2 | 3
 
 const STEPS: { step: UpdateStep; label: string }[] = [
   { step: 1, label: '货盘变更' },
-  { step: 3, label: '搭配调整' },
-  { step: 4, label: '定装照' },
-  { step: 5, label: '素材生成' },
+  { step: 2, label: '形象生成' },
+  { step: 3, label: '素材生成' },
 ]
 
 // mock：模拟新增了2个商品（p5, p6 是"新品"）
@@ -29,6 +27,7 @@ const MOCK_NEW_PRODUCT_IDS = ['p5', 'p6']
 
 export default function BanboUpdateFlow({ wizardResult, onComplete, onCancel }: Props) {
   const [currentStep, setCurrentStep] = useState<UpdateStep>(1)
+  const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
   const [state, setState] = useState<WizardState>({
     ...wizardResult,
     // 预选已有商品 + 新品
@@ -40,6 +39,7 @@ export default function BanboUpdateFlow({ wizardResult, onComplete, onCancel }: 
   }
 
   const goTo = (step: UpdateStep) => setCurrentStep(step)
+
 
   const stepIndex = STEPS.findIndex(s => s.step === currentStep)
 
@@ -108,33 +108,27 @@ export default function BanboUpdateFlow({ wizardResult, onComplete, onCancel }: 
           <Step1CargoUpdate
             state={state}
             onUpdate={updateState}
-            onNext={() => goTo(3)}
+            onNext={() => goTo(2)}
             onCancel={onCancel}
             newProductIds={MOCK_NEW_PRODUCT_IDS}
           />
         )}
-        {currentStep === 3 && (
-          <Step3Outfit
+        {currentStep === 2 && (
+          <Step3AvatarGen
             state={state}
             onUpdate={updateState}
-            onNext={() => goTo(4)}
+            onNext={() => goTo(3)}
             onPrev={() => goTo(1)}
           />
         )}
-        {currentStep === 4 && (
-          <Step4Portrait
-            state={state}
-            onUpdate={updateState}
-            onNext={() => goTo(5)}
-            onPrev={() => goTo(3)}
-          />
-        )}
-        {currentStep === 5 && (
+        {currentStep === 3 && (
           <Step5Skills
             state={state}
             onUpdate={updateState}
             onNext={() => onComplete(state)}
-            onPrev={() => goTo(4)}
+            onPrev={() => goTo(2)}
+            generatingIds={generatingIds}
+            setGeneratingIds={setGeneratingIds}
           />
         )}
       </div>

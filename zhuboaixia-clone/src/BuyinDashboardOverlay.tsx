@@ -16,17 +16,19 @@ import ConfigPanel from './ConfigPanel'
 import CanvasPanel from './CanvasPanel'
 import BanboEntryScreen from './BanboEntryScreen'
 import BanboSetupWizard from './BanboSetupWizard'
-import BanboUpdateFlow from './BanboUpdateFlow'
-import { PanelKey } from './shared'
+import { PanelKey, C } from './shared'
 import type { WizardResult } from './wizard/types'
 
 type ActivePanel = 'none' | 'main' | 'livePreview' | 'config' | PanelKey
-type BanboState = 'unconfigured' | 'wizard' | 'configured' | 'updating'
+type BanboState = 'unconfigured' | 'wizard' | 'configured'
 
 export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void }) {
   const [activePanel, setActivePanel] = useState<ActivePanel>('main')
   const [banboState, setBanboState] = useState<BanboState>('unconfigured')
   const [wizardResult, setWizardResult] = useState<WizardResult | null>(null)
+  const [reviewExpanded, setReviewExpanded] = useState(false)
+  const [showSyncBanner, setShowSyncBanner] = useState(false)
+  const editMode = wizardResult !== null
   const panelOpen = activePanel !== 'none'
   const switchPanel = (p: PanelKey) => setActivePanel(p)
 
@@ -57,36 +59,92 @@ export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void
             <BanboEntryScreen onStart={() => setBanboState('wizard')} />
           )}
           {banboState === 'wizard' && (
-            <BanboSetupWizard onComplete={(result) => {
-              setWizardResult(result)
-              setBanboState('configured')
-            }} />
-          )}
-          {banboState === 'configured' && (
-            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-              <CanvasPanel onClose={() => setActivePanel('none')} />
-              <button
-                onClick={() => setBanboState('updating')}
-                style={{
-                  position: 'absolute', bottom: 20, left: '50%',
-                  transform: 'translateX(-50%)',
-                  padding: '8px 20px', borderRadius: 8,
-                  border: '1.5px dashed #FF7D00', background: '#FFFBE6',
-                  color: '#875800', fontSize: 12, fontWeight: 600,
-                  cursor: 'pointer', zIndex: 10,
-                }}
-              >🔄 模拟货盘更新</button>
-            </div>
-          )}
-          {banboState === 'updating' && wizardResult && (
-            <BanboUpdateFlow
-              wizardResult={wizardResult}
+            <BanboSetupWizard
+              initialState={wizardResult ?? undefined}
+              editMode={editMode}
               onComplete={(result) => {
                 setWizardResult(result)
                 setBanboState('configured')
+                setShowSyncBanner(true)
+                setTimeout(() => setShowSyncBanner(false), 4000)
               }}
-              onCancel={() => setBanboState('configured')}
             />
+          )}
+          {banboState === 'configured' && (
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+              <CanvasPanel onClose={() => setActivePanel('none')} wizardResult={wizardResult ?? undefined} />
+
+              {/* 同步成功横幅（4秒后自动消失） */}
+              {showSyncBanner && (
+                <div style={{
+                  position: 'absolute', top: 44, left: 0, right: 0, zIndex: 30,
+                  background: '#E6F9EF', borderBottom: `1px solid ${C.green}40`,
+                  padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8,
+                  fontSize: 12, color: C.green, fontFamily: C.font,
+                }}>
+                  <span style={{ fontWeight: 600 }}>✓ 向导配置已同步</span>
+                  <span style={{ color: C.textSec }}>· 商品绑定、技能与口令已按照您的设置自动应用</span>
+                </div>
+              )}
+
+              {/* 审核状态 + 编辑入口 合并浮层 */}
+              {wizardResult && (() => {
+                const avatars = wizardResult.avatarConfigs
+                const reviewing = avatars.filter(c => c.reviewStatus === 'reviewing').length
+                const approved = avatars.filter(c => c.reviewStatus === 'approved').length
+                const pending = avatars.filter(c => c.reviewStatus === 'unsubmitted').length
+                return (
+                  <div style={{
+                    position: 'absolute', top: 56, right: 12, zIndex: 20,
+                    background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)',
+                    border: `1px solid ${C.border}`, borderRadius: 12,
+                    width: 218, boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                    overflow: 'hidden', fontFamily: C.font,
+                  }}>
+                    {/* 主操作按钮（常驻，最显眼） */}
+                    <div style={{ padding: '10px 12px 8px' }}>
+                      <button
+                        onClick={() => setBanboState('wizard')}
+                        style={{
+                          width: '100%', padding: '8px 0', borderRadius: 7, border: 'none',
+                          background: C.blue, color: '#fff', fontSize: 12, fontWeight: 600,
+                          cursor: 'pointer', fontFamily: C.font,
+                        }}
+                      >✏️ 调整形象 / 技能配置</button>
+                    </div>
+
+                    {/* 审核状态折叠区 */}
+                    <div style={{ borderTop: `1px solid ${C.border}` }}>
+                      <div
+                        onClick={() => setReviewExpanded(v => !v)}
+                        style={{ padding: '7px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                      >
+                        <span style={{ fontSize: 11, fontWeight: 600, color: C.text }}>素材审核状态</span>
+                        <span style={{ fontSize: 10, color: C.textSec }}>
+                          {reviewing > 0 && `${reviewing}个审核中`}
+                          {reviewing > 0 && approved > 0 && ' · '}
+                          {approved > 0 && `${approved}个已通过`}
+                          {reviewing === 0 && approved === 0 && pending > 0 && `${pending}个待提交`}
+                          {'  '}{reviewExpanded ? '▲' : '▼'}
+                        </span>
+                      </div>
+                      {reviewExpanded && (
+                        <div style={{ padding: '0 12px 8px' }}>
+                          {avatars.map(c => (
+                            <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+                              <span style={{ fontSize: 11, color: C.text, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 6 }}>{c.name}</span>
+                              {c.reviewStatus === 'approved' && <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: '#E6F9EF', color: C.green, fontWeight: 500, flexShrink: 0 }}>✓ 已通过</span>}
+                              {c.reviewStatus === 'reviewing' && <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: C.blueLight, color: C.blue, fontWeight: 500, flexShrink: 0 }}>⏳ 审核中</span>}
+                              {c.reviewStatus === 'unsubmitted' && <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: '#F3F4F6', color: C.textTert, fontWeight: 500, flexShrink: 0 }}>待提交</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
           )}
         </div>
       )}

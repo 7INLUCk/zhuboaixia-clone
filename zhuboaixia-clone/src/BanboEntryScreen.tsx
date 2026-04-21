@@ -27,10 +27,9 @@ const CAPABILITIES = [
 
 const STEPS = [
   { num: 1, label: '面容选择' },
-  { num: 2, label: '商品搭配' },
-  { num: 3, label: '定装照'   },
-  { num: 4, label: '技能配置' },
-  { num: 5, label: '提交审核' },
+  { num: 2, label: '形象生成' },
+  { num: 3, label: '技能配置' },
+  { num: 4, label: '提交审核' },
 ]
 
 export default function BanboEntryScreen({ onStart }: Props) {
@@ -50,7 +49,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
           🦐 为直播间引入一位 AI 伴播形象
         </div>
         <div style={{ fontSize: 12, color: C.textSec, lineHeight: 1.7 }}>
-          走完 5 步完成形象创建，配置一次，直播全程自动运行
+          走完 4 步完成形象创建，配置一次，直播全程自动运行
         </div>
       </div>
 
