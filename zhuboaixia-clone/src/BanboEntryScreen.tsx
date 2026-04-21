@@ -31,6 +31,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
       width: '100%', height: '100%',
       background: '#fff',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'space-between',
       padding: '24px 36px 20px',
       fontFamily: C.font, boxSizing: 'border-box',
     }}>
@@ -45,32 +46,32 @@ export default function BanboEntryScreen({ onStart }: Props) {
         </div>
       </div>
 
-      {/* 主演示区：flex:1 吸收剩余高度，内容垂直居中 */}
+      {/* 主演示区：灰色背景卡，内容垂直居中 */}
       <div style={{
-        flex: 1,
         width: '100%',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         borderRadius: 16,
         background: '#F6F7FA',
-        margin: '16px 0',
-        padding: '0 32px',
+        padding: '28px 32px',
+        boxSizing: 'border-box',
+        flexShrink: 0,
       }}>
-        {/* 手机框 140px */}
+        {/* 手机框 160px，屏高 ~284px */}
         <div style={{
-          width: 140, flexShrink: 0,
-          borderRadius: 26,
+          width: 160, flexShrink: 0,
+          borderRadius: 28,
           background: '#181818',
-          padding: '9px 6px 11px',
+          padding: '10px 7px 12px',
           boxShadow: '0 16px 40px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.07)',
         }}>
           <div style={{
-            width: 38, height: 4, borderRadius: 3,
-            background: '#2e2e2e', margin: '0 auto 7px',
+            width: 42, height: 4, borderRadius: 3,
+            background: '#2e2e2e', margin: '0 auto 8px',
           }} />
           <div style={{
             width: '100%',
             aspectRatio: '9 / 16',
-            borderRadius: 16,
+            borderRadius: 18,
             overflow: 'hidden',
             background: 'linear-gradient(170deg, #1a1a2e 0%, #16213e 100%)',
             position: 'relative',
@@ -78,43 +79,48 @@ export default function BanboEntryScreen({ onStart }: Props) {
             alignItems: 'center', justifyContent: 'center',
           }}>
             <div style={{
-              position: 'absolute', top: 7, left: 7,
-              fontSize: 7, padding: '2px 4px', borderRadius: 3,
+              position: 'absolute', top: 8, left: 8,
+              fontSize: 8, padding: '2px 5px', borderRadius: 3,
               background: '#F53F3F', color: '#fff', fontWeight: 700,
             }}>● LIVE</div>
-            <div style={{ fontSize: 26, marginBottom: 5, opacity: 0.6 }}>📱</div>
+            <div style={{ fontSize: 30, marginBottom: 6, opacity: 0.6 }}>📱</div>
             <div style={{
-              fontSize: 8, color: 'rgba(255,255,255,0.45)',
-              textAlign: 'center', lineHeight: 1.6, padding: '0 8px',
+              fontSize: 9, color: 'rgba(255,255,255,0.45)',
+              textAlign: 'center', lineHeight: 1.6, padding: '0 10px',
             }}>
               品牌录播视频<br />将展示于此
             </div>
           </div>
           <div style={{
-            width: 34, height: 3, borderRadius: 2,
-            background: '#2e2e2e', margin: '7px auto 0',
+            width: 38, height: 3, borderRadius: 2,
+            background: '#2e2e2e', margin: '8px auto 0',
           }} />
         </div>
 
-        {/* 右：商品切换说明 */}
-        <div style={{ width: 220, marginLeft: 24, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 10 }}>
+        {/* 右：商品切换说明，stretch 撑满手机高度，内容 space-between */}
+        <div style={{
+          width: 220, marginLeft: 24,
+          alignSelf: 'stretch',
+          display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>
             形象随商品自动切换
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {DEMO_PRODUCTS.map((p, i) => (
               <div key={p.id} style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                padding: '8px 10px', borderRadius: 8,
+                padding: '11px 10px', borderRadius: 8,
                 border: `1.5px solid ${i === activeIdx ? C.blue : C.border}`,
                 background: i === activeIdx ? C.blueLight : '#fff',
                 transition: 'all 0.45s ease',
               }}>
                 <div style={{
-                  width: 26, height: 26, borderRadius: 6, flexShrink: 0,
+                  width: 28, height: 28, borderRadius: 6, flexShrink: 0,
                   background: p.color,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14,
+                  fontSize: 15,
                 }}>{p.emoji}</div>
                 <div style={{
                   flex: 1, fontSize: 12,
@@ -131,6 +137,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
               </div>
             ))}
           </div>
+
           <div style={{ fontSize: 11, color: C.textTert, lineHeight: 1.7 }}>
             主播讲哪件商品，AI 形象就穿对应搭配出场。配置完成后自动生效，无需手动操作。
           </div>
@@ -138,7 +145,7 @@ export default function BanboEntryScreen({ onStart }: Props) {
       </div>
 
       {/* 5步流程 */}
-      <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', marginBottom: 18, flexShrink: 0 }}>
+      <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', flexShrink: 0 }}>
         {STEPS.map((step, i) => (
           <React.Fragment key={step.num}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
