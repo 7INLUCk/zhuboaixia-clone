@@ -22,6 +22,7 @@ body {
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 3px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
