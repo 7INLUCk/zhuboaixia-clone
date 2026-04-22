@@ -352,20 +352,6 @@ export default function BanboCustomizePage() {
       height: '100%', display: 'flex', flexDirection: 'column',
       background: '#F7F8FA', fontFamily: T.fonts.family,
     }}>
-      {/* 顶栏 */}
-      <div style={{
-        padding: '16px 24px', background: '#fff',
-        borderBottom: `1px solid ${C.border}`, flexShrink: 0,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: C.textPrimary }}>新建伴播形象</div>
-          <div style={{ fontSize: 12, color: C.textTertiary, marginTop: 2 }}>
-            完成以下配置后提交制作，约 30–60 分钟可用于直播
-          </div>
-        </div>
-      </div>
-
       {/* 滚动内容区 */}
       <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px' }}>
 
@@ -401,62 +387,50 @@ export default function BanboCustomizePage() {
             </div>
           </div>
 
-          {/* 形象网格 */}
+          {/* 形象横向滚动条 */}
           {(() => {
             const filtered = PUBLIC_FACES.filter(f =>
               (genderFilter === '全部' || f.gender === genderFilter) &&
               (ageFilter === '全部' || f.ageGroup === ageFilter)
             )
             return (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6 }}>
                 {filtered.map(f => {
                   const selected = selectedFace === f.id
                   return (
                     <div key={f.id} onClick={() => setSelectedFace(f.id)} style={{
+                      flexShrink: 0, width: 84,
                       borderRadius: 10, border: `2px solid ${selected ? C.primary : C.border}`,
                       background: selected ? '#F5F4FF' : '#fff',
-                      cursor: 'pointer', overflow: 'hidden', transition: 'all 0.15s',
+                      cursor: 'pointer', overflow: 'hidden', transition: 'border-color 0.15s',
                     }}>
-                      {/* 图片区（4:5 比例） */}
-                      <div style={{ width: '100%', paddingTop: '125%', position: 'relative', background: '#F5F5F5' }}>
-                        {f.imageUrl ? (
-                          <img src={f.imageUrl} alt={f.name} style={{
-                            position: 'absolute', inset: 0, width: '100%', height: '100%',
-                            objectFit: 'cover', objectPosition: 'top',
-                          }} />
-                        ) : (
-                          <div style={{
-                            position: 'absolute', inset: 0,
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center',
-                            background: f.gender === '女' ? '#FFF0F6' : '#EEF0FF',
-                            gap: 4,
-                          }}>
-                            <span style={{ fontSize: 26 }}>{f.gender === '男' ? '👦' : '👧'}</span>
-                            <span style={{ fontSize: 10, color: C.textTertiary }}>待上线</span>
-                          </div>
-                        )}
+                      {/* 图片区（固定高度） */}
+                      <div style={{ width: '100%', height: 106, position: 'relative', background: '#F5F5F5' }}>
+                        <img src={f.imageUrl} alt={f.name} style={{
+                          width: '100%', height: '100%',
+                          objectFit: 'cover', objectPosition: 'top',
+                        }} />
                         {selected && (
                           <div style={{
-                            position: 'absolute', top: 6, right: 6,
-                            width: 18, height: 18, borderRadius: '50%',
+                            position: 'absolute', top: 4, right: 4,
+                            width: 16, height: 16, borderRadius: '50%',
                             background: C.primary, color: '#fff',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, fontWeight: 700,
+                            fontSize: 9, fontWeight: 700,
                           }}>✓</div>
                         )}
                       </div>
                       {/* 文字区 */}
-                      <div style={{ padding: '7px 8px 8px' }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary, marginBottom: 4 }}>{f.name}</div>
-                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                      <div style={{ padding: '5px 6px 6px' }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: C.textPrimary, marginBottom: 3 }}>{f.name}</div>
+                        <div style={{ display: 'flex', gap: 3 }}>
                           <span style={{
-                            fontSize: 10, padding: '1px 5px', borderRadius: 6,
+                            fontSize: 9, padding: '1px 4px', borderRadius: 4,
                             background: f.gender === '女' ? '#FFF0F6' : '#EEF0FF',
                             color: f.gender === '女' ? '#C91C7A' : C.primary,
                           }}>{f.gender}</span>
                           <span style={{
-                            fontSize: 10, padding: '1px 5px', borderRadius: 6,
+                            fontSize: 9, padding: '1px 4px', borderRadius: 4,
                             background: '#F3F4F6', color: C.textSecondary,
                           }}>{f.ageGroup}岁</span>
                         </div>
