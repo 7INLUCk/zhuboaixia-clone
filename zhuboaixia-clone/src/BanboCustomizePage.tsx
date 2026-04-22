@@ -28,29 +28,29 @@ const AGE_LABELS: Record<AgeGroup, string> = {
 
 const PUBLIC_FACES: AvatarFace[] = [
   // 婴幼儿 0-3
-  { id: 'f01', name: '小豆豆', gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
-  { id: 'f02', name: '小米米', gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
-  { id: 'f03', name: '壮壮',   gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
-  { id: 'f04', name: '小兔兔', gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
-  { id: 'f05', name: '软软',   gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
-  { id: 'f06', name: '糯糯',   gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
+  { id: 'f01', name: '小豆豆', gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '/avatars/avatar-0-3-male.jpg' },
+  { id: 'f02', name: '小米米', gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '/avatars/avatar-0-3-male.jpg' },
+  { id: 'f03', name: '壮壮',   gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '/avatars/avatar-0-3-male.jpg' },
+  { id: 'f04', name: '小兔兔', gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '/avatars/avatar-0-3-female.jpg' },
+  { id: 'f05', name: '软软',   gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '/avatars/avatar-0-3-female.jpg' },
+  { id: 'f06', name: '糯糯',   gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '/avatars/avatar-0-3-female.jpg' },
   // 幼儿 4-6
   { id: 'f07', name: '乐乐', gender: '男', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-male.jpg' },
   { id: 'f08', name: '嘟嘟', gender: '男', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-male.jpg' },
   { id: 'f09', name: '多多', gender: '男', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-male.jpg' },
-  { id: 'f10', name: '甜甜', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '' },
-  { id: 'f11', name: '欢欢', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '' },
-  { id: 'f12', name: '萌萌', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '' },
+  { id: 'f10', name: '甜甜', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-female.jpg' },
+  { id: 'f11', name: '欢欢', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-female.jpg' },
+  { id: 'f12', name: '萌萌', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-female.jpg' },
   // 儿童 7-12
-  { id: 'f13', name: '阳阳', gender: '男', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '' },
-  { id: 'f14', name: '浩浩', gender: '男', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '' },
-  { id: 'f15', name: '晴晴', gender: '女', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '' },
-  { id: 'f16', name: '悦悦', gender: '女', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '' },
+  { id: 'f13', name: '阳阳', gender: '男', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '/avatars/avatar-7-12-male.jpg' },
+  { id: 'f14', name: '浩浩', gender: '男', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '/avatars/avatar-7-12-male.jpg' },
+  { id: 'f15', name: '晴晴', gender: '女', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '/avatars/avatar-7-12-female.jpg' },
+  { id: 'f16', name: '悦悦', gender: '女', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '/avatars/avatar-7-12-female.jpg' },
   // 青少年 13-17
-  { id: 'f17', name: '子豪', gender: '男', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '' },
-  { id: 'f18', name: '浩宇', gender: '男', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '' },
-  { id: 'f19', name: '子涵', gender: '女', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '' },
-  { id: 'f20', name: '晓雨', gender: '女', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '' },
+  { id: 'f17', name: '子豪', gender: '男', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '/avatars/avatar-13-17-male.jpg' },
+  { id: 'f18', name: '浩宇', gender: '男', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '/avatars/avatar-13-17-male.jpg' },
+  { id: 'f19', name: '子涵', gender: '女', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '/avatars/avatar-13-17-female.jpg' },
+  { id: 'f20', name: '晓雨', gender: '女', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '/avatars/avatar-13-17-female.jpg' },
 ]
 
 const CARD_COLORS = ['#FFB3D9','#B3D4FF','#C8F0D0','#FFE0B0','#D0E0FF','#FFD4F0','#FFCCE0','#A0C8FF']
