@@ -185,11 +185,6 @@ function ActionVideoCard({ card, onRegenerate }: {
       >
         {card.generating ? (
           <div style={{ textAlign: 'center' }}>
-            <div style={{
-              width: 24, height: 24, borderRadius: '50%',
-              border: '3px solid rgba(0,0,0,0.15)', borderTopColor: '#5850EC',
-              animation: 'spin 0.8s linear infinite', margin: '0 auto 6px',
-            }} />
             <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)' }}>生成中…</span>
           </div>
         ) : (
@@ -539,9 +534,6 @@ export default function BanboCustomizePage() {
         <div style={{ height: 40 }} />
       </div>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   )
 }
