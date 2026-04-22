@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import BanboHomePage from './BanboHomePage'
 import BanboCreatePage from './BanboCreatePage'
 import BanboEntryScreen from './BanboEntryScreen'
+import BanboCustomizePage from './BanboCustomizePage'
 import BuyinDashboardOverlay from './BuyinDashboardOverlay'
 
 export type Mode = 'zhu' | 'ban'
@@ -371,7 +372,7 @@ export default function App() {
           ) : (
             /* CSS 页（伴播专用） */
             <>
-              {page === 'banbo-customize' && <div style={{ flex: 1, background: '#fff' }} />}
+              {page === 'banbo-customize' && <BanboCustomizePage />}
               {page === 'banbo-home' && <BanboEntryScreen onStart={() => setShowBuyinOverlay(true)} />}
               {page === 'banbo-create' && (
                 <BanboCreatePage
