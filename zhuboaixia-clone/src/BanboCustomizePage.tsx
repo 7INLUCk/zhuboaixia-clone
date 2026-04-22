@@ -446,16 +446,43 @@ export default function BanboCustomizePage() {
         {/* ── 区块2：配置穿搭 ── */}
         <div ref={sec2Ref}>
           <Section num={2} title="配置穿搭" locked={!step1Done} done={step2Done && actionsGenerated}>
-            <div style={{ fontSize: 13, color: C.textSecondary, marginBottom: 4 }}>
-              为每个部位上传商品图并填写商品链接或 ID
-            </div>
-            <div style={{ fontSize: 12, color: C.textTertiary, marginBottom: 16 }}>
-              伴播将根据商品自动匹配穿搭，讲哪件穿哪件
-            </div>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+              {/* 左栏：已选形象 */}
+              {face && (
+                <div style={{ flexShrink: 0, width: 156, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ borderRadius: 10, overflow: 'hidden', border: `1px solid ${C.border}` }}>
+                    <img src={face.imageUrl} alt={face.name} style={{
+                      width: '100%', height: 200,
+                      objectFit: 'cover', objectPosition: 'top', display: 'block',
+                    }} />
+                  </div>
+                  <div style={{ marginTop: 8, textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 4 }}>{face.name}</div>
+                    <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+                      <span style={{
+                        fontSize: 10, padding: '1px 6px', borderRadius: 6,
+                        background: face.gender === '女' ? '#FFF0F6' : '#EEF0FF',
+                        color: face.gender === '女' ? '#C91C7A' : C.primary,
+                      }}>{face.gender}</span>
+                      <span style={{
+                        fontSize: 10, padding: '1px 6px', borderRadius: 6,
+                        background: '#F3F4F6', color: C.textSecondary,
+                      }}>{face.ageGroup}岁</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-            <ImageSlot label="上身" required value={top} onChange={setTop} />
-            <ImageSlot label="下身" value={bottom} onChange={setBottom} />
-            <ImageSlot label="鞋子" value={shoes} onChange={setShoes} />
+              {/* 右栏：穿搭槽位 */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, color: C.textTertiary, marginBottom: 12 }}>
+                  上传商品图并填写链接或 ID，伴播将自动匹配穿搭
+                </div>
+                <ImageSlot label="上身" required value={top} onChange={setTop} />
+                <ImageSlot label="下身" value={bottom} onChange={setBottom} />
+                <ImageSlot label="鞋子" value={shoes} onChange={setShoes} />
+              </div>
+            </div>
 
             {step2Done && !actionsGenerated && (
               <button
