@@ -261,9 +261,48 @@ export default function BanboCustomizePage() {
   const [ageFilter, setAgeFilter] = useState<'全部' | AgeGroup>('全部')
 
   const [productLinks, setProductLinks] = useState<string[]>([''])
+  type LinkStatus = 'idle' | 'loading' | 'success' | 'fail'
+  const [linkStatuses, setLinkStatuses] = useState<LinkStatus[]>(['idle'])
+  const linkTimers = useRef<(ReturnType<typeof setTimeout> | null)[]>([null])
+
   const [refImages, setRefImages]       = useState<(string | null)[]>([null, null, null])
   const refFileRef = useRef<HTMLInputElement>(null)
   const [activeRefSlot, setActiveRefSlot] = useState<number | null>(null)
+
+  function handleLinkChange(i: number, value: string) {
+    const nextLinks = [...productLinks]
+    nextLinks[i] = value
+    setProductLinks(nextLinks)
+
+    const nextStatuses = [...linkStatuses]
+    if (!value.trim()) {
+      nextStatuses[i] = 'idle'
+      setLinkStatuses(nextStatuses)
+      return
+    }
+    nextStatuses[i] = 'loading'
+    setLinkStatuses(nextStatuses)
+
+    if (linkTimers.current[i]) clearTimeout(linkTimers.current[i]!)
+    linkTimers.current[i] = setTimeout(() => {
+      const success = /\d{6,}/.test(value) || value.includes('http') || value.includes('www')
+      setLinkStatuses(prev => {
+        const s = [...prev]; s[i] = success ? 'success' : 'fail'; return s
+      })
+    }, 800)
+  }
+
+  function handleAddLink() {
+    setProductLinks([...productLinks, ''])
+    setLinkStatuses([...linkStatuses, 'idle'])
+    linkTimers.current = [...linkTimers.current, null]
+  }
+
+  function handleRemoveLink(i: number) {
+    setProductLinks(productLinks.filter((_, j) => j !== i))
+    setLinkStatuses(linkStatuses.filter((_, j) => j !== i))
+    linkTimers.current = linkTimers.current.filter((_, j) => j !== i)
+  }
 
   const [generatingActions, setGeneratingActions] = useState(false)
   const [actionCards, setActionCards] = useState<ActionCard[]>([])
@@ -334,7 +373,7 @@ export default function BanboCustomizePage() {
           预计 30–60 分钟完成<br />完成后状态将自动更新为「可使用」
         </div>
         <button
-          onClick={() => { setSubmitted(false); setSelectedFace(''); setProductLinks(['']); setRefImages([null, null, null]); setActionCards([]); setActionConfirmed(false) }}
+          onClick={() => { setSubmitted(false); setSelectedFace(''); setProductLinks(['']); setLinkStatuses(['idle']); setRefImages([null, null, null]); setActionCards([]); setActionConfirmed(false) }}
           style={{
             marginTop: 8, padding: '9px 24px', borderRadius: 6,
             fontSize: 13, fontWeight: 500, border: 'none',
@@ -482,40 +521,48 @@ export default function BanboCustomizePage() {
                   <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 10 }}>
                     绑定后可在直播配置中快速关联此形象
                   </div>
-                  {productLinks.map((link, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 7, alignItems: 'center' }}>
-                      <input
-                        value={link}
-                        onChange={e => {
-                          const next = [...productLinks]
-                          next[i] = e.target.value
-                          setProductLinks(next)
-                        }}
-                        placeholder="粘贴抖店商品链接或商品 ID"
-                        style={{
-                          flex: 1, padding: '7px 10px', borderRadius: 6,
-                          border: `1px solid ${C.border}`, fontSize: 12,
-                          color: C.textPrimary, fontFamily: T.fonts.family,
-                          outline: 'none', boxSizing: 'border-box' as const,
-                        }}
-                        onFocus={e => (e.target.style.borderColor = C.primary)}
-                        onBlur={e => (e.target.style.borderColor = C.border)}
-                      />
-                      {productLinks.length > 1 && (
-                        <button
-                          onClick={() => setProductLinks(productLinks.filter((_, j) => j !== i))}
-                          style={{
-                            width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                            border: `1px solid ${C.border}`, background: '#fff',
-                            color: C.textTertiary, cursor: 'pointer', fontSize: 13,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          }}
-                        >×</button>
-                      )}
-                    </div>
-                  ))}
+                  {productLinks.map((link, i) => {
+                    const st = linkStatuses[i] ?? 'idle'
+                    return (
+                      <div key={i} style={{ marginBottom: 7 }}>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <input
+                            value={link}
+                            onChange={e => handleLinkChange(i, e.target.value)}
+                            placeholder="粘贴抖店商品链接或商品 ID"
+                            style={{
+                              flex: 1, padding: '7px 10px', borderRadius: 6,
+                              border: `1px solid ${st === 'success' ? '#22C55E' : st === 'fail' ? '#F87171' : C.border}`,
+                              fontSize: 12, color: C.textPrimary, fontFamily: T.fonts.family,
+                              outline: 'none', boxSizing: 'border-box' as const,
+                            }}
+                          />
+                          {productLinks.length > 1 && (
+                            <button
+                              onClick={() => handleRemoveLink(i)}
+                              style={{
+                                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                                border: `1px solid ${C.border}`, background: '#fff',
+                                color: C.textTertiary, cursor: 'pointer', fontSize: 13,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}
+                            >×</button>
+                          )}
+                        </div>
+                        {st === 'loading' && (
+                          <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 3 }}>识别中…</div>
+                        )}
+                        {st === 'success' && (
+                          <div style={{ fontSize: 11, color: '#16A34A', marginTop: 3 }}>✓ 识别成功</div>
+                        )}
+                        {st === 'fail' && (
+                          <div style={{ fontSize: 11, color: '#DC2626', marginTop: 3 }}>✗ 识别失败，请检查链接或 ID 是否正确</div>
+                        )}
+                      </div>
+                    )
+                  })}
                   <button
-                    onClick={() => setProductLinks([...productLinks, ''])}
+                    onClick={handleAddLink}
                     style={{
                       fontSize: 12, color: C.primary, background: 'none',
                       border: 'none', cursor: 'pointer', padding: 0,
