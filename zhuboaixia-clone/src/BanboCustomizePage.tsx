@@ -39,10 +39,10 @@ const REQUIRED_SKILLS = [
 ]
 
 const STATUS_CONFIG: Record<AvatarStatus, { label: string; bg: string; color: string }> = {
-  pending: { label: '待配置', bg: '#F2F3F5', color: '#86909C' },
-  ready:   { label: '待训练', bg: '#FFF7E8', color: '#FF7D00' },
-  training:{ label: '训练中', bg: '#E8F3FF', color: '#165DFF' },
-  done:    { label: '训练成功', bg: '#E8FFEA', color: '#00B42A' },
+  pending: { label: '未完成', bg: '#F2F3F5', color: '#86909C' },
+  ready:   { label: '待制作', bg: '#FFF7E8', color: '#FF7D00' },
+  training:{ label: '制作中', bg: '#E8F3FF', color: '#165DFF' },
+  done:    { label: '可使用', bg: '#E8FFEA', color: '#00B42A' },
 }
 
 // ─── Wizard ───────────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ function Wizard({ onDone, onCancel }: { onDone: (card: Omit<AvatarCard, 'id'>) =
     }, 1200)
   }
 
-  const STEPS = ['选择面容', '关联商品', '技能预览', '提交训练']
+  const STEPS = ['选择形象', '配置穿搭', '动作预览', '提交制作']
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#fff' }}>
@@ -152,7 +152,7 @@ function Wizard({ onDone, onCancel }: { onDone: (card: Omit<AvatarCard, 'id'>) =
         {step === 1 && (
           <div>
             <div style={{ fontSize: 14, color: C.textSecondary, marginBottom: 16 }}>
-              从公共库中选择一位面容，后续可定制穿搭与技能
+              从公共库中选择一位伴播形象，后续可配置穿搭与动作
             </div>
             <div style={{
               display: 'grid',
@@ -201,7 +201,7 @@ function Wizard({ onDone, onCancel }: { onDone: (card: Omit<AvatarCard, 'id'>) =
               粘贴商品链接或商品 ID，多个商品换行分隔
             </div>
             <div style={{ fontSize: 12, color: C.textTertiary, marginBottom: 16 }}>
-              关联后，形象将根据当前讲解商品自动换装展示
+              伴播将根据商品自动生成对应穿搭，讲哪件穿哪件
             </div>
             <textarea
               value={productInput}
@@ -251,10 +251,10 @@ function Wizard({ onDone, onCancel }: { onDone: (card: Omit<AvatarCard, 'id'>) =
         {step === 3 && (
           <div>
             <div style={{ fontSize: 14, color: C.textSecondary, marginBottom: 4 }}>
-              系统已为你选定以下 5 个必备技能，将在训练时自动生成素材
+              系统已为你配置以下 5 个必备动作，制作时自动生成
             </div>
             <div style={{ fontSize: 12, color: C.textTertiary, marginBottom: 20 }}>
-              更多可选技能将在后续版本开放
+              更多可选动作将在后续版本开放
             </div>
             {REQUIRED_SKILLS.map((skill, i) => (
               <div key={skill.id} style={{
@@ -297,7 +297,7 @@ function Wizard({ onDone, onCancel }: { onDone: (card: Omit<AvatarCard, 'id'>) =
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Row label="面容" value={face ? `${face.emoji} ${face.name}（${face.gender} · ${face.tag}）` : '—'} />
                 <Row label="商品数量" value={parsedProducts.length > 0 ? `${parsedProducts.length} 件` : '未关联（可跳过）'} />
-                <Row label="技能" value="5 个必选技能" />
+                <Row label="动作" value="5 个必备动作" />
               </div>
             </div>
             <div style={{
@@ -305,7 +305,7 @@ function Wizard({ onDone, onCancel }: { onDone: (card: Omit<AvatarCard, 'id'>) =
               background: '#E8F3FF', border: '1px solid #BEDAFF',
               fontSize: 12, color: '#165DFF', lineHeight: 1.6,
             }}>
-              提交后进入训练队列，预计 30–60 分钟完成。训练期间你可以继续使用其他功能，完成后状态自动更新。
+              提交后进入制作队列，预计 30–60 分钟完成。制作期间你可以继续使用其他功能，完成后状态自动更新为「可使用」。
             </div>
           </div>
         )}
@@ -354,7 +354,7 @@ function Wizard({ onDone, onCancel }: { onDone: (card: Omit<AvatarCard, 'id'>) =
               cursor: generating ? 'not-allowed' : 'pointer', opacity: generating ? 0.7 : 1,
             }}
           >
-            {generating ? '生成中…' : '确认并生成素材'}
+            {generating ? '生成中…' : '确认并生成动作'}
           </button>
         )}
 
@@ -368,7 +368,7 @@ function Wizard({ onDone, onCancel }: { onDone: (card: Omit<AvatarCard, 'id'>) =
               cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1,
             }}
           >
-            {submitting ? '提交中…' : '提交训练'}
+            {submitting ? '提交中…' : '提交制作'}
           </button>
         )}
       </div>
@@ -412,9 +412,9 @@ export default function BanboCustomizePage() {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: C.textPrimary }}>伴播形象</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: C.textPrimary }}>我的伴播</div>
           <div style={{ fontSize: 12, color: C.textTertiary, marginTop: 2 }}>
-            管理你的 AI 伴播形象，完成训练后可用于直播
+            管理你的伴播形象，制作完成后可用于直播
           </div>
         </div>
         <button
