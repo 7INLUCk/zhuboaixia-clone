@@ -232,6 +232,7 @@ export default function App() {
         {/* 应用内容区 */}
         <div style={{
           flex: 1,
+          overflow: 'hidden',
           display: 'flex',
           fontSize: 14,
           color: C.textPrimary,
