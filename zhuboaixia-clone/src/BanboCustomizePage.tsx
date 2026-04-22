@@ -11,16 +11,46 @@ type ActionCard = {
   id: string; name: string; category: 'daily' | 'enter' | 'exit'
   color: string; retries: number; generating: boolean; done: boolean
 }
+type AgeGroup = '0-3' | '4-6' | '7-12' | '13-17'
+type Gender = '男' | '女'
+type AvatarFace = {
+  id: string; name: string; gender: Gender; ageGroup: AgeGroup; ageLabel: string; imageUrl: string
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PUBLIC_FACES = [
-  { id: 'f1', name: '暖暖', emoji: '🌸', gender: '女', tag: '温柔知性' },
-  { id: 'f2', name: '晴天', emoji: '☀️', gender: '女', tag: '活泼阳光' },
-  { id: 'f3', name: '冷冷', emoji: '❄️', gender: '女', tag: '冷淡高冷' },
-  { id: 'f4', name: '专业帝', emoji: '🎯', gender: '男', tag: '专业沉稳' },
-  { id: 'f5', name: '乐乐', emoji: '😄', gender: '男', tag: '亲切热情' },
-  { id: 'f6', name: '酷哥', emoji: '😎', gender: '男', tag: '时尚潮流' },
+const AGE_LABELS: Record<AgeGroup, string> = {
+  '0-3':   '婴幼儿 0–3岁',
+  '4-6':   '幼儿 4–6岁',
+  '7-12':  '儿童 7–12岁',
+  '13-17': '青少年 13–17岁',
+}
+
+const PUBLIC_FACES: AvatarFace[] = [
+  // 婴幼儿 0-3
+  { id: 'f01', name: '小豆豆', gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
+  { id: 'f02', name: '小米米', gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
+  { id: 'f03', name: '壮壮',   gender: '男', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
+  { id: 'f04', name: '小兔兔', gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
+  { id: 'f05', name: '软软',   gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
+  { id: 'f06', name: '糯糯',   gender: '女', ageGroup: '0-3', ageLabel: AGE_LABELS['0-3'], imageUrl: '' },
+  // 幼儿 4-6
+  { id: 'f07', name: '乐乐', gender: '男', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-male.jpg' },
+  { id: 'f08', name: '嘟嘟', gender: '男', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-male.jpg' },
+  { id: 'f09', name: '多多', gender: '男', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '/avatars/avatar-4-6-male.jpg' },
+  { id: 'f10', name: '甜甜', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '' },
+  { id: 'f11', name: '欢欢', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '' },
+  { id: 'f12', name: '萌萌', gender: '女', ageGroup: '4-6', ageLabel: AGE_LABELS['4-6'], imageUrl: '' },
+  // 儿童 7-12
+  { id: 'f13', name: '阳阳', gender: '男', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '' },
+  { id: 'f14', name: '浩浩', gender: '男', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '' },
+  { id: 'f15', name: '晴晴', gender: '女', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '' },
+  { id: 'f16', name: '悦悦', gender: '女', ageGroup: '7-12', ageLabel: AGE_LABELS['7-12'], imageUrl: '' },
+  // 青少年 13-17
+  { id: 'f17', name: '子豪', gender: '男', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '' },
+  { id: 'f18', name: '浩宇', gender: '男', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '' },
+  { id: 'f19', name: '子涵', gender: '女', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '' },
+  { id: 'f20', name: '晓雨', gender: '女', ageGroup: '13-17', ageLabel: AGE_LABELS['13-17'], imageUrl: '' },
 ]
 
 const CARD_COLORS = ['#FFB3D9','#B3D4FF','#C8F0D0','#FFE0B0','#D0E0FF','#FFD4F0','#FFCCE0','#A0C8FF']
@@ -227,6 +257,8 @@ function ActionVideoCard({ card, onRegenerate }: {
 
 export default function BanboCustomizePage() {
   const [selectedFace, setSelectedFace] = useState('')
+  const [genderFilter, setGenderFilter] = useState<'全部' | Gender>('全部')
+  const [ageFilter, setAgeFilter] = useState<'全部' | AgeGroup>('全部')
 
   const emptySlot = (): SlotData => ({ link: '', imageUrl: null })
   const [top, setTop]       = useState<SlotData>(emptySlot())
@@ -339,39 +371,102 @@ export default function BanboCustomizePage() {
 
         {/* ── 区块1：选择形象 ── */}
         <Section num={1} title="选择形象" locked={false} done={step1Done}>
-          <div style={{ fontSize: 13, color: C.textSecondary, marginBottom: 16 }}>
-            从公共库选择一位伴播形象，选中后解锁后续配置
+          {/* 筛选栏 */}
+          <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, color: C.textSecondary, width: 28, flexShrink: 0 }}>性别</span>
+              {(['全部', '男', '女'] as const).map(g => (
+                <button key={g} onClick={() => setGenderFilter(g)} style={{
+                  padding: '3px 12px', borderRadius: 12, cursor: 'pointer',
+                  border: `1px solid ${genderFilter === g ? C.primary : C.border}`,
+                  background: genderFilter === g ? '#F5F4FF' : '#fff',
+                  color: genderFilter === g ? C.primary : C.textSecondary,
+                  fontSize: 12, fontFamily: T.fonts.family,
+                }}>{g}</button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 12, color: C.textSecondary, width: 28, flexShrink: 0 }}>年龄</span>
+              {(['全部', '0-3', '4-6', '7-12', '13-17'] as const).map(a => (
+                <button key={a} onClick={() => setAgeFilter(a)} style={{
+                  padding: '3px 12px', borderRadius: 12, cursor: 'pointer',
+                  border: `1px solid ${ageFilter === a ? C.primary : C.border}`,
+                  background: ageFilter === a ? '#F5F4FF' : '#fff',
+                  color: ageFilter === a ? C.primary : C.textSecondary,
+                  fontSize: 12, fontFamily: T.fonts.family,
+                }}>
+                  {a === '全部' ? '全部' : a === '0-3' ? '0–3岁' : a === '4-6' ? '4–6岁' : a === '7-12' ? '7–12岁' : '13–17岁'}
+                </button>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-            {PUBLIC_FACES.map(f => {
-              const selected = selectedFace === f.id
-              return (
-                <div
-                  key={f.id}
-                  onClick={() => setSelectedFace(f.id)}
-                  style={{
-                    borderRadius: 10, padding: '14px 10px', cursor: 'pointer',
-                    textAlign: 'center', transition: 'all 0.15s',
-                    border: `2px solid ${selected ? C.primary : C.border}`,
-                    background: selected ? '#F5F4FF' : '#FAFAFA',
-                  }}
-                >
-                  <div style={{ fontSize: 32, marginBottom: 6 }}>{f.emoji}</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 4 }}>{f.name}</div>
-                  <div style={{
-                    display: 'inline-block', fontSize: 10, padding: '2px 6px', borderRadius: 8,
-                    background: f.gender === '女' ? '#FFF0F6' : '#EEF0FF',
-                    color: f.gender === '女' ? '#C91C7A' : C.primary,
-                    marginBottom: 3,
-                  }}>{f.gender}</div>
-                  <div style={{ fontSize: 11, color: C.textTertiary }}>{f.tag}</div>
-                  {selected && (
-                    <div style={{ marginTop: 6, fontSize: 11, color: C.primary, fontWeight: 600 }}>✓ 已选中</div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+
+          {/* 形象网格 */}
+          {(() => {
+            const filtered = PUBLIC_FACES.filter(f =>
+              (genderFilter === '全部' || f.gender === genderFilter) &&
+              (ageFilter === '全部' || f.ageGroup === ageFilter)
+            )
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+                {filtered.map(f => {
+                  const selected = selectedFace === f.id
+                  return (
+                    <div key={f.id} onClick={() => setSelectedFace(f.id)} style={{
+                      borderRadius: 10, border: `2px solid ${selected ? C.primary : C.border}`,
+                      background: selected ? '#F5F4FF' : '#fff',
+                      cursor: 'pointer', overflow: 'hidden', transition: 'all 0.15s',
+                    }}>
+                      {/* 图片区（4:5 比例） */}
+                      <div style={{ width: '100%', paddingTop: '125%', position: 'relative', background: '#F5F5F5' }}>
+                        {f.imageUrl ? (
+                          <img src={f.imageUrl} alt={f.name} style={{
+                            position: 'absolute', inset: 0, width: '100%', height: '100%',
+                            objectFit: 'cover', objectPosition: 'top',
+                          }} />
+                        ) : (
+                          <div style={{
+                            position: 'absolute', inset: 0,
+                            display: 'flex', flexDirection: 'column',
+                            alignItems: 'center', justifyContent: 'center',
+                            background: f.gender === '女' ? '#FFF0F6' : '#EEF0FF',
+                            gap: 4,
+                          }}>
+                            <span style={{ fontSize: 26 }}>{f.gender === '男' ? '👦' : '👧'}</span>
+                            <span style={{ fontSize: 10, color: C.textTertiary }}>待上线</span>
+                          </div>
+                        )}
+                        {selected && (
+                          <div style={{
+                            position: 'absolute', top: 6, right: 6,
+                            width: 18, height: 18, borderRadius: '50%',
+                            background: C.primary, color: '#fff',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 10, fontWeight: 700,
+                          }}>✓</div>
+                        )}
+                      </div>
+                      {/* 文字区 */}
+                      <div style={{ padding: '7px 8px 8px' }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary, marginBottom: 4 }}>{f.name}</div>
+                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                          <span style={{
+                            fontSize: 10, padding: '1px 5px', borderRadius: 6,
+                            background: f.gender === '女' ? '#FFF0F6' : '#EEF0FF',
+                            color: f.gender === '女' ? '#C91C7A' : C.primary,
+                          }}>{f.gender}</span>
+                          <span style={{
+                            fontSize: 10, padding: '1px 5px', borderRadius: 6,
+                            background: '#F3F4F6', color: C.textSecondary,
+                          }}>{f.ageGroup}岁</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()}
         </Section>
 
         {/* ── 区块2：配置穿搭 ── */}
@@ -490,7 +585,7 @@ export default function BanboCustomizePage() {
                   <div style={{ fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 12 }}>
                     配置确认
                   </div>
-                  <SummaryRow label="伴播形象" value={face ? `${face.emoji} ${face.name}（${face.gender} · ${face.tag}）` : '—'} />
+                  <SummaryRow label="伴播形象" value={face ? `${face.name}（${face.gender} · ${face.ageLabel}）` : '—'} />
                   <SummaryRow label="穿搭商品"
                     value={[top.link, bottom.link, shoes.link].filter(Boolean).length > 0
                       ? `${[top.link, bottom.link, shoes.link].filter(Boolean).length} 件已关联`
