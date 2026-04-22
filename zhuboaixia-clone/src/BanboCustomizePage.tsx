@@ -260,10 +260,10 @@ export default function BanboCustomizePage() {
   const [genderFilter, setGenderFilter] = useState<'全部' | Gender>('全部')
   const [ageFilter, setAgeFilter] = useState<'全部' | AgeGroup>('全部')
 
-  const emptySlot = (): SlotData => ({ link: '', imageUrl: null })
-  const [top, setTop]       = useState<SlotData>(emptySlot())
-  const [bottom, setBottom] = useState<SlotData>(emptySlot())
-  const [shoes, setShoes]   = useState<SlotData>(emptySlot())
+  const [productLinks, setProductLinks] = useState<string[]>([''])
+  const [refImages, setRefImages]       = useState<(string | null)[]>([null, null, null])
+  const refFileRef = useRef<HTMLInputElement>(null)
+  const [activeRefSlot, setActiveRefSlot] = useState<number | null>(null)
 
   const [generatingActions, setGeneratingActions] = useState(false)
   const [actionCards, setActionCards] = useState<ActionCard[]>([])
@@ -277,7 +277,7 @@ export default function BanboCustomizePage() {
   const sec4Ref = useRef<HTMLDivElement>(null)
 
   const step1Done = !!selectedFace
-  const step2Done = top.link.trim() !== '' || top.imageUrl !== null
+  const step2Done = productLinks.some(l => l.trim() !== '') || refImages.some(img => img !== null)
   const step3Done = actionConfirmed
   const actionsGenerated = actionCards.length > 0
 
@@ -334,7 +334,7 @@ export default function BanboCustomizePage() {
           预计 30–60 分钟完成<br />完成后状态将自动更新为「可使用」
         </div>
         <button
-          onClick={() => { setSubmitted(false); setSelectedFace(''); setTop(emptySlot()); setBottom(emptySlot()); setShoes(emptySlot()); setActionCards([]); setActionConfirmed(false) }}
+          onClick={() => { setSubmitted(false); setSelectedFace(''); setProductLinks(['']); setRefImages([null, null, null]); setActionCards([]); setActionConfirmed(false) }}
           style={{
             marginTop: 8, padding: '9px 24px', borderRadius: 6,
             fontSize: 13, fontWeight: 500, border: 'none',
@@ -473,14 +473,112 @@ export default function BanboCustomizePage() {
                 </div>
               )}
 
-              {/* 右栏：穿搭槽位 */}
+              {/* 右栏：商品绑定 + 穿搭参考图 */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, color: C.textTertiary, marginBottom: 12 }}>
-                  上传商品图并填写链接或 ID，伴播将自动匹配穿搭
+
+                {/* 商品绑定 */}
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary, marginBottom: 3 }}>商品绑定</div>
+                  <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 10 }}>
+                    绑定后可在直播配置中快速关联此形象
+                  </div>
+                  {productLinks.map((link, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 7, alignItems: 'center' }}>
+                      <input
+                        value={link}
+                        onChange={e => {
+                          const next = [...productLinks]
+                          next[i] = e.target.value
+                          setProductLinks(next)
+                        }}
+                        placeholder="粘贴抖店商品链接或商品 ID"
+                        style={{
+                          flex: 1, padding: '7px 10px', borderRadius: 6,
+                          border: `1px solid ${C.border}`, fontSize: 12,
+                          color: C.textPrimary, fontFamily: T.fonts.family,
+                          outline: 'none', boxSizing: 'border-box' as const,
+                        }}
+                        onFocus={e => (e.target.style.borderColor = C.primary)}
+                        onBlur={e => (e.target.style.borderColor = C.border)}
+                      />
+                      {productLinks.length > 1 && (
+                        <button
+                          onClick={() => setProductLinks(productLinks.filter((_, j) => j !== i))}
+                          style={{
+                            width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                            border: `1px solid ${C.border}`, background: '#fff',
+                            color: C.textTertiary, cursor: 'pointer', fontSize: 13,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}
+                        >×</button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setProductLinks([...productLinks, ''])}
+                    style={{
+                      fontSize: 12, color: C.primary, background: 'none',
+                      border: 'none', cursor: 'pointer', padding: 0,
+                      fontFamily: T.fonts.family,
+                    }}
+                  >＋ 添加商品</button>
                 </div>
-                <ImageSlot label="上身" required value={top} onChange={setTop} />
-                <ImageSlot label="下身" value={bottom} onChange={setBottom} />
-                <ImageSlot label="鞋子" value={shoes} onChange={setShoes} />
+
+                {/* 穿搭参考图 */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary, marginBottom: 3 }}>穿搭参考图</div>
+                  <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 10 }}>
+                    可上传商品详情图、模特照或搭配图，AI 自动参考（最多 3 张）
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[0, 1, 2].map(i => (
+                      <div
+                        key={i}
+                        onClick={() => { setActiveRefSlot(i); refFileRef.current?.click() }}
+                        style={{
+                          width: 80, height: 80, borderRadius: 8, cursor: 'pointer',
+                          border: `1px dashed ${refImages[i] ? C.primary : C.border}`,
+                          background: refImages[i] ? 'transparent' : '#FAFAFA',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          overflow: 'hidden', position: 'relative' as const,
+                        }}
+                      >
+                        {refImages[i] ? (
+                          <>
+                            <img src={refImages[i]!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <button
+                              onClick={e => { e.stopPropagation(); const next = [...refImages]; next[i] = null; setRefImages(next) }}
+                              style={{
+                                position: 'absolute', top: 2, right: 2,
+                                width: 16, height: 16, borderRadius: '50%',
+                                background: 'rgba(0,0,0,0.45)', border: 'none',
+                                color: '#fff', fontSize: 10, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}
+                            >×</button>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: 22, color: C.textTertiary }}>+</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <input
+                    ref={refFileRef}
+                    type="file" accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => {
+                      const file = e.target.files?.[0]
+                      if (!file || activeRefSlot === null) return
+                      const url = URL.createObjectURL(file)
+                      const next = [...refImages]
+                      next[activeRefSlot] = url
+                      setRefImages(next)
+                      e.target.value = ''
+                    }}
+                  />
+                </div>
+
               </div>
             </div>
 
@@ -587,10 +685,15 @@ export default function BanboCustomizePage() {
                     配置确认
                   </div>
                   <SummaryRow label="伴播形象" value={face ? `${face.name}（${face.gender} · ${face.ageLabel}）` : '—'} />
-                  <SummaryRow label="穿搭商品"
-                    value={[top.link, bottom.link, shoes.link].filter(Boolean).length > 0
-                      ? `${[top.link, bottom.link, shoes.link].filter(Boolean).length} 件已关联`
-                      : '未填写链接（已上传商品图）'}
+                  <SummaryRow label="商品绑定"
+                    value={productLinks.filter(l => l.trim()).length > 0
+                      ? `${productLinks.filter(l => l.trim()).length} 件`
+                      : '未绑定'}
+                  />
+                  <SummaryRow label="穿搭参考"
+                    value={refImages.filter(Boolean).length > 0
+                      ? `${refImages.filter(Boolean).length} 张参考图`
+                      : '未上传'}
                   />
                   <SummaryRow label="动作" value="10 个（8 日常 + 1 进场 + 1 出场）" />
                 </div>
