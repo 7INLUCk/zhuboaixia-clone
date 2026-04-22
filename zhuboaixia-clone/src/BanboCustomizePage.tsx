@@ -399,13 +399,13 @@ export default function BanboCustomizePage() {
                   const selected = selectedFace === f.id
                   return (
                     <div key={f.id} onClick={() => setSelectedFace(f.id)} style={{
-                      flexShrink: 0, width: 120,
+                      flexShrink: 0, width: 144,
                       borderRadius: 10, border: `2px solid ${selected ? C.primary : C.border}`,
                       background: selected ? '#F5F4FF' : '#fff',
                       cursor: 'pointer', overflow: 'hidden', transition: 'border-color 0.15s',
                     }}>
                       {/* 图片区（固定高度） */}
-                      <div style={{ width: '100%', height: 150, position: 'relative', background: '#F5F5F5' }}>
+                      <div style={{ width: '100%', height: 180, position: 'relative', background: '#F5F5F5' }}>
                         <img src={f.imageUrl} alt={f.name} style={{
                           width: '100%', height: '100%',
                           objectFit: 'cover', objectPosition: 'top',
