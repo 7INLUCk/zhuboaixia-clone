@@ -5,13 +5,13 @@ import BanboEntryScreen from './BanboEntryScreen'
 import BuyinDashboardOverlay from './BuyinDashboardOverlay'
 
 export type Mode = 'zhu' | 'ban'
-export type PageId = 
+export type PageId =
   | 'home-empty' | 'home-with-room' | 'create-room' | 'buy-membership' | 'tutorial'
   | 'dashboard-chat' | 'dashboard-director' | 'dashboard-comment'
   | 'dashboard-pricing' | 'dashboard-pricing-config'
   | 'dashboard-welcome' | 'dashboard-welcome-active'
   | 'dashboard-coupon' | 'dashboard-luckybag'
-  | 'banbo-home' | 'banbo-create'
+  | 'banbo-home' | 'banbo-create' | 'banbo-customize'
 
 type PageMode = 'screenshot' | 'css'
 
@@ -68,7 +68,7 @@ const PAGES: Record<PageId, PageConfig> = {
   'dashboard-welcome-active': { mode: 'screenshot', screenshot: '/screenshots/12-dashboard-welcome2.jpg', hotspots: TABS },
   'dashboard-coupon': { mode: 'screenshot', screenshot: '/screenshots/13-dashboard-coupon.jpg', hotspots: TABS },
   'dashboard-luckybag': { mode: 'screenshot', screenshot: '/screenshots/14-dashboard-luckybag.jpg', hotspots: TABS },
-  'banbo-home': { mode: 'css' }, 'banbo-create': { mode: 'css' },
+  'banbo-home': { mode: 'css' }, 'banbo-create': { mode: 'css' }, 'banbo-customize': { mode: 'css' },
 }
 
 const LABELS: Record<PageId, string> = {
@@ -78,7 +78,7 @@ const LABELS: Record<PageId, string> = {
   'dashboard-pricing': '声控开价', 'dashboard-pricing-config': '声控开价(已配置)',
   'dashboard-welcome': '欢迎感谢', 'dashboard-welcome-active': '欢迎感谢(已启用)',
   'dashboard-coupon': '发优惠券', 'dashboard-luckybag': '发福袋',
-  'banbo-home': '我的伴播', 'banbo-create': '创建直播间',
+  'banbo-home': '我的伴播', 'banbo-create': '创建直播间', 'banbo-customize': '定制伴播',
 }
 
 // 侧边栏菜单
@@ -182,14 +182,14 @@ function ScreenshotContent({
 }
 
 export default function App() {
-  const [page, setPage] = useState<PageId>('home-empty')
+  const [page, setPage] = useState<PageId>('banbo-customize')
   const [debug, setDebug] = useState(false)
   const [hover, setHover] = useState<string | null>(null)
   const [showBuyinOverlay, setShowBuyinOverlay] = useState(true)
 
   const config = PAGES[page]
   const navigate = (p: PageId) => setPage(p)
-  const activeSideKey = page.startsWith('dashboard') ? 'home-empty' : page
+  const activeSideKey = page.startsWith('dashboard') ? 'home-empty' : page === 'banbo-home' || page === 'banbo-create' ? 'banbo-customize' : page
 
   return (
     <div style={{
@@ -262,7 +262,7 @@ export default function App() {
             return (
               <div
                 key={item.key}
-                onClick={() => item.key === 'banbo-customize' ? setShowBuyinOverlay(true) : navigate(item.key as PageId)}
+                onClick={() => navigate(item.key as PageId)}
                 style={{
                   height: 44,
                   display: 'flex',
@@ -371,6 +371,7 @@ export default function App() {
           ) : (
             /* CSS 页（伴播专用） */
             <>
+              {page === 'banbo-customize' && <div style={{ flex: 1, background: '#fff' }} />}
               {page === 'banbo-home' && <BanboEntryScreen onStart={() => setShowBuyinOverlay(true)} />}
               {page === 'banbo-create' && (
                 <BanboCreatePage
