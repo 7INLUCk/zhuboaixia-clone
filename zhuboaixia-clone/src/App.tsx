@@ -185,7 +185,7 @@ export default function App() {
   const [page, setPage] = useState<PageId>('banbo-customize')
   const [debug, setDebug] = useState(false)
   const [hover, setHover] = useState<string | null>(null)
-  const [showBuyinOverlay, setShowBuyinOverlay] = useState(false)
+  const [showBuyinOverlay, setShowBuyinOverlay] = useState(true)
 
   const config = PAGES[page]
   const navigate = (p: PageId) => setPage(p)
@@ -386,7 +386,7 @@ export default function App() {
 
       {/* 巨量百应覆盖层：覆盖整个应用区域（侧边栏 + 主内容区） */}
       {showBuyinOverlay && (
-        <BuyinDashboardOverlay onClose={() => { setShowBuyinOverlay(false); setPage('banbo-home') }} />
+        <BuyinDashboardOverlay onClose={() => { setShowBuyinOverlay(false); setPage('banbo-customize') }} />
       )}
       </div>
     </div>
