@@ -185,7 +185,7 @@ export default function App() {
   const [page, setPage] = useState<PageId>('banbo-customize')
   const [debug, setDebug] = useState(false)
   const [hover, setHover] = useState<string | null>(null)
-  const [showBuyinOverlay, setShowBuyinOverlay] = useState(true)
+  const [showBuyinOverlay, setShowBuyinOverlay] = useState(false)
 
   const config = PAGES[page]
   const navigate = (p: PageId) => setPage(p)
