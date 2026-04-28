@@ -22,6 +22,9 @@ type ProductItem = {
   chatEnabled: boolean
 }
 
+// 自定义口令动作
+type CustomCommand = { id: string; command: string; actionLabel: string; videoUrl?: string }
+
 // 全局技能点ID
 const GLOBAL_SKILL_IDS = ['sp1', 'sp2', 'sp9']
 const AVATAR_SKILL_IDS = ['sp3', 'sp4', 'sp5', 'sp6', 'sp7', 'sp8']
@@ -730,6 +733,17 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
     setTimeout(() => setTriggeredSkill(null), 1500)
   }
 
+  // 自定义口令动作
+  const [customCommands, setCustomCommands] = useState<CustomCommand[]>([
+    { id: 'cc1', command: '卡皮巴拉吃板面', actionLabel: '大口吃板面 + 惊喜表情' },
+    { id: 'cc2', command: '卡皮巴拉跳支舞', actionLabel: '舞蹈动作' },
+    { id: 'cc3', command: '感谢各位粉丝支持', actionLabel: '面向用户鞠躬' },
+  ])
+  const [editingCC, setEditingCC] = useState<string | null>(null)
+  const [ccCommandDraft, setCcCommandDraft] = useState('')
+  const [ccActionDraft, setCcActionDraft] = useState('')
+  const [addingCC, setAddingCC] = useState(false)
+
   // 删除单条话术
   const removeSkillPhrase = (pointId: string, index: number) => {
     setSkillPointValues(prev => {
@@ -1296,6 +1310,58 @@ const openActionPreview = (ea: EventAction) => {
                     )
                   })}
                 </div>
+
+                {/* ---- 自定义口令动作 ---- */}
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12, borderLeft: '3px solid #FF6A00', paddingLeft: 8 }}>自定义口令动作</div>
+                  <div style={{ fontSize: 11, color: '#86909C', marginBottom: 10, fontStyle: 'italic' }}>一句口令精准触发一个指定动作，适合品牌定制场景</div>
+                  {customCommands.map(cc => {
+                    const isEditing = editingCC === cc.id
+                    const isTriggered = triggeredSkill === cc.id
+                    return (
+                      <div key={cc.id} style={{ marginBottom: 12, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>🎯 {cc.command}</span>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            {isLive ? (
+                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? '✓ 已触发' : '▶ 触发'}</button>
+                            ) : (
+                              <button onClick={() => { setEditingCC(cc.id); setCcCommandDraft(cc.command); setCcActionDraft(cc.actionLabel) }} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer' }}>编辑</button>
+                            )}
+                            <button onClick={() => setCustomCommands(prev => prev.filter(c => c.id !== cc.id))} style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#C9CDD4', fontSize: 12, cursor: 'pointer' }}>×</button>
+                          </div>
+                        </div>
+                        {isEditing ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <input value={ccCommandDraft} onChange={e => setCcCommandDraft(e.target.value)} placeholder="口令文本" style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
+                            <input value={ccActionDraft} onChange={e => setCcActionDraft(e.target.value)} placeholder="动作描述" style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
+                            <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                              <button onClick={() => setEditingCC(null)} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                              <button onClick={() => { if (ccCommandDraft.trim() && ccActionDraft.trim()) { setCustomCommands(prev => prev.map(c => c.id === cc.id ? { ...c, command: ccCommandDraft.trim(), actionLabel: ccActionDraft.trim() } : c)); setEditingCC(null) } }} style={{ padding: '4px 12px', borderRadius: 6, border: 'none', background: '#3370FF', color: '#fff', fontSize: 12, cursor: 'pointer' }}>保存</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 12, color: '#86909C', padding: '6px 10px', background: '#FAFAFA', borderRadius: 6 }}>动作：{cc.actionLabel}</div>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {addingCC ? (
+                    <div style={{ padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px dashed #3370FF' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <input value={ccCommandDraft} onChange={e => setCcCommandDraft(e.target.value)} placeholder="输入口令，如：卡皮巴拉吃板面" autoFocus style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
+                        <input value={ccActionDraft} onChange={e => setCcActionDraft(e.target.value)} placeholder="输入动作描述，如：大口吃板面 + 惊喜表情" style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
+                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                          <button onClick={() => { setAddingCC(false); setCcCommandDraft(''); setCcActionDraft('') }} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                          <button onClick={() => { if (ccCommandDraft.trim() && ccActionDraft.trim()) { setCustomCommands(prev => [...prev, { id: `cc${Date.now()}`, command: ccCommandDraft.trim(), actionLabel: ccActionDraft.trim() }]); setAddingCC(false); setCcCommandDraft(''); setCcActionDraft('') } }} style={{ padding: '4px 12px', borderRadius: 6, border: 'none', background: '#3370FF', color: '#fff', fontSize: 12, cursor: 'pointer' }}>添加</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div onClick={() => { setAddingCC(true); setCcCommandDraft(''); setCcActionDraft('') }} style={{ padding: '10px 14px', borderRadius: 12, border: '1px dashed #C9CDD4', color: '#86909C', fontSize: 13, cursor: 'pointer', textAlign: 'center' }}>＋ 添加自定义口令</div>
+                  )}
+                </div>
+
             </>
           </>
         ) : !selectedProduct ? (
@@ -1710,7 +1776,56 @@ const openActionPreview = (ea: EventAction) => {
               })}
             </div>
 
-
+                {/* ---- 自定义口令动作（商品区） ---- */}
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12, borderLeft: '3px solid #FF6A00', paddingLeft: 8 }}>自定义口令动作</div>
+                  <div style={{ fontSize: 11, color: '#86909C', marginBottom: 10, fontStyle: 'italic' }}>一句口令精准触发一个指定动作，适合品牌定制场景</div>
+                  {customCommands.map(cc => {
+                    const isEditing = editingCC === cc.id
+                    const isTriggered = triggeredSkill === cc.id
+                    return (
+                      <div key={cc.id} style={{ marginBottom: 12, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>🎯 {cc.command}</span>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            {isLive ? (
+                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? '✓ 已触发' : '▶ 触发'}</button>
+                            ) : (
+                              <button onClick={() => { setEditingCC(cc.id); setCcCommandDraft(cc.command); setCcActionDraft(cc.actionLabel) }} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer' }}>编辑</button>
+                            )}
+                            <button onClick={() => setCustomCommands(prev => prev.filter(c => c.id !== cc.id))} style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#C9CDD4', fontSize: 12, cursor: 'pointer' }}>×</button>
+                          </div>
+                        </div>
+                        {isEditing ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <input value={ccCommandDraft} onChange={e => setCcCommandDraft(e.target.value)} placeholder="口令文本" style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
+                            <input value={ccActionDraft} onChange={e => setCcActionDraft(e.target.value)} placeholder="动作描述" style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
+                            <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                              <button onClick={() => setEditingCC(null)} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                              <button onClick={() => { if (ccCommandDraft.trim() && ccActionDraft.trim()) { setCustomCommands(prev => prev.map(c => c.id === cc.id ? { ...c, command: ccCommandDraft.trim(), actionLabel: ccActionDraft.trim() } : c)); setEditingCC(null) } }} style={{ padding: '4px 12px', borderRadius: 6, border: 'none', background: '#3370FF', color: '#fff', fontSize: 12, cursor: 'pointer' }}>保存</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 12, color: '#86909C', padding: '6px 10px', background: '#FAFAFA', borderRadius: 6 }}>动作：{cc.actionLabel}</div>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {addingCC ? (
+                    <div style={{ padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px dashed #3370FF' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <input value={ccCommandDraft} onChange={e => setCcCommandDraft(e.target.value)} placeholder="输入口令，如：卡皮巴拉吃板面" autoFocus style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
+                        <input value={ccActionDraft} onChange={e => setCcActionDraft(e.target.value)} placeholder="输入动作描述，如：大口吃板面 + 惊喜表情" style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
+                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                          <button onClick={() => { setAddingCC(false); setCcCommandDraft(''); setCcActionDraft('') }} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                          <button onClick={() => { if (ccCommandDraft.trim() && ccActionDraft.trim()) { setCustomCommands(prev => [...prev, { id: `cc${Date.now()}`, command: ccCommandDraft.trim(), actionLabel: ccActionDraft.trim() }]); setAddingCC(false); setCcCommandDraft(''); setCcActionDraft('') } }} style={{ padding: '4px 12px', borderRadius: 6, border: 'none', background: '#3370FF', color: '#fff', fontSize: 12, cursor: 'pointer' }}>添加</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div onClick={() => { setAddingCC(true); setCcCommandDraft(''); setCcActionDraft('') }} style={{ padding: '10px 14px', borderRadius: 12, border: '1px dashed #C9CDD4', color: '#86909C', fontSize: 13, cursor: 'pointer', textAlign: 'center' }}>＋ 添加自定义口令</div>
+                  )}
+                </div>
 
             </>
         )}
