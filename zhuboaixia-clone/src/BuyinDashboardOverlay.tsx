@@ -181,6 +181,14 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
               cursor: 'pointer',
             }}
           />}
+          {/* 运行中截图左上角热区 → 跳回配置面板 */}
+          {previewRunning && <div
+            onClick={() => { setPreviewRunning(false); setActivePanel('main') }}
+            style={{
+              position: 'absolute', top: 0, left: 0, width: '25%', height: '5%',
+              cursor: 'pointer',
+            }}
+          />}
         </div>
       )}
       {activePanel === 'livePreview' && <BuyinLivePreviewPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
