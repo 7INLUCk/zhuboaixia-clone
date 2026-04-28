@@ -687,6 +687,60 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
   const eventActions = selectedAvatar ? (EVENT_ACTIONS[selectedAvatar.id] || DEFAULT_EVENT_ACTIONS).filter(a => !a.isTransition) : []
   const isPremium = selectedAvatar?.voiceTier === 'premium'
 
+  // Mock 直播记录数据
+  const MOCK_SESSIONS = [
+    {
+      id: 's1', date: '2026-04-28', start: '14:00', end: '16:15', duration: '2h 15min',
+      totalActions: 47, commandTriggers: 32, manualTriggers: 15, autoRate: 68,
+      avatarSwitches: 3,
+      top3: [
+        { name: '吃板面', count: 12 }, { name: '进场动作', count: 9 }, { name: '鲨鱼摇', count: 7 },
+      ],
+      details: [
+        { name: '进场动作', count: 9, type: 'command' },
+        { name: '出场动作', count: 4, type: 'command' },
+        { name: '日常动作', count: 6, type: 'auto' },
+        { name: '自动换装', count: 3, type: 'auto' },
+        { name: '吃板面', count: 12, type: 'custom', hitRate: 85 },
+        { name: '跳舞', count: 8, type: 'custom', hitRate: 72 },
+        { name: '鲨鱼摇', count: 7, type: 'custom', hitRate: 90 },
+        { name: '鞠躬感谢', count: 5, type: 'custom', hitRate: 60 },
+      ],
+    },
+    {
+      id: 's2', date: '2026-04-27', start: '19:30', end: '21:45', duration: '2h 15min',
+      totalActions: 38, commandTriggers: 25, manualTriggers: 13, autoRate: 66,
+      avatarSwitches: 2,
+      top3: [
+        { name: '跳舞', count: 10 }, { name: '鲨鱼摇', count: 8 }, { name: '进场动作', count: 6 },
+      ],
+      details: [
+        { name: '进场动作', count: 6, type: 'command' },
+        { name: '出场动作', count: 3, type: 'command' },
+        { name: '日常动作', count: 5, type: 'auto' },
+        { name: '跳舞', count: 10, type: 'custom', hitRate: 78 },
+        { name: '鲨鱼摇', count: 8, type: 'custom', hitRate: 88 },
+        { name: '鞠躬感谢', count: 4, type: 'custom', hitRate: 55 },
+      ],
+    },
+    {
+      id: 's3', date: '2026-04-26', start: '10:00', end: '12:30', duration: '2h 30min',
+      totalActions: 52, commandTriggers: 40, manualTriggers: 12, autoRate: 77,
+      avatarSwitches: 4,
+      top3: [
+        { name: '吃板面', count: 15 }, { name: '进场动作', count: 11 }, { name: '比心', count: 8 },
+      ],
+      details: [
+        { name: '进场动作', count: 11, type: 'command' },
+        { name: '出场动作', count: 5, type: 'command' },
+        { name: '日常动作', count: 8, type: 'auto' },
+        { name: '自动换装', count: 5, type: 'auto' },
+        { name: '吃板面', count: 15, type: 'custom', hitRate: 92 },
+        { name: '比心', count: 8, type: 'custom', hitRate: 80 },
+      ],
+    },
+  ]
+
   // 绑定/切换形象
   const handleSelectAvatar = (avatarId: string) => {
     if (addingToLiveSection) {
@@ -741,6 +795,10 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
   // 添加标签状态（智能触发类：点击+弹出的输入框）
   const [addingSkill, setAddingSkill] = useState<string | null>(null)
   const [addDraft, setAddDraft] = useState('')
+
+  // 直播记录视图
+  const [showHistory, setShowHistory] = useState(false)
+  const [selectedSession, setSelectedSession] = useState<string | null>(null)
 
   // 手动触发反馈状态
   const [triggeredSkill, setTriggeredSkill] = useState<string | null>(null)
@@ -943,11 +1001,24 @@ const openActionPreview = (ea: EventAction) => {
         padding: '10px 16px', borderBottom: '1px solid #F0F0F0', flexShrink: 0,
         background: '#FFFFFF',
       }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#1D2129' }}>助播虾伴播</span>
-        <button onClick={onClose} style={{
-          background: 'none', border: 'none', fontSize: 18, color: '#86909C',
-          cursor: 'pointer', lineHeight: 1, padding: '0 4px',
-        }}>×</button>
+        <span style={{ fontSize: 14, fontWeight: 600, color: '#1D2129' }}>{showHistory ? (selectedSession ? '场次详情' : '直播记录') : '助播虾伴播'}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {showHistory ? (
+            <button onClick={() => { if (selectedSession) setSelectedSession(null); else setShowHistory(false) }} style={{
+              background: 'none', border: 'none', fontSize: 12, color: '#3370FF',
+              cursor: 'pointer', padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4,
+            }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>返回</button>
+          ) : (
+            <button onClick={() => setShowHistory(true)} title="直播记录" style={{
+              background: 'none', border: 'none', color: '#86909C', cursor: 'pointer',
+              padding: '2px 4px', display: 'flex', alignItems: 'center',
+            }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></button>
+          )}
+          <button onClick={onClose} style={{
+            background: 'none', border: 'none', fontSize: 18, color: '#86909C',
+            cursor: 'pointer', lineHeight: 1, padding: '0 4px',
+          }}>×</button>
+        </div>
       </div>
       {/* 向导配置同步总览（有 wizardResult 时展示） */}
       {wizardResult && (() => {
@@ -1014,9 +1085,134 @@ const openActionPreview = (ea: EventAction) => {
         )
       })()}
 
+      {/* ===== 直播记录视图 ===== */}
+      {showHistory ? (
+        <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
+          {selectedSession ? (() => {
+            const session = MOCK_SESSIONS.find(s => s.id === selectedSession)
+            if (!session) return null
+            return (
+              <>
+                {/* 场次总览 */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, color: '#86909C', marginBottom: 8 }}>{session.date} {session.start}–{session.end}</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    {[
+                      { label: '互动总次数', value: session.totalActions, unit: '', color: '#1D2129' },
+                      { label: '自动化率', value: session.autoRate, unit: '%', color: '#1D2129' },
+                      { label: '口令触发', value: session.commandTriggers, unit: '', color: '#3370FF' },
+                      { label: '手动触发', value: session.manualTriggers, unit: '', color: '#FF6A00' },
+                    ].map(item => (
+                      <div key={item.label} style={{ background: '#F7F8FA', borderRadius: 10, padding: '10px 12px' }}>
+                        <div style={{ fontSize: 11, color: '#86909C', marginBottom: 2 }}>{item.label}</div>
+                        <div style={{ fontSize: 22, fontWeight: 700, color: item.color }}>{item.value}<span style={{ fontSize: 12, fontWeight: 400 }}>{item.unit}</span></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 分类明细 */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129', marginBottom: 10, borderLeft: '3px solid #3370FF', paddingLeft: 8 }}>行为明细</div>
+                  {session.details.map((d, i) => {
+                    const maxCount = Math.max(...session.details.map(x => x.count))
+                    return (
+                      <div key={i} style={{ marginBottom: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 12, color: '#1D2129' }}>{d.name}</span>
+                            <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: d.type === 'command' ? '#E8F3FF' : d.type === 'custom' ? '#FFF7E6' : '#F0F0F0', color: d.type === 'command' ? '#3370FF' : d.type === 'custom' ? '#FF6A00' : '#86909C' }}>
+                              {d.type === 'command' ? '口令' : d.type === 'custom' ? '自定义' : '自动'}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>{d.count} 次</span>
+                            {'hitRate' in d && <span style={{ fontSize: 10, color: '#86909C' }}>命中率 {(d as any).hitRate}%</span>}
+                          </div>
+                        </div>
+                        <div style={{ height: 4, background: '#F0F0F0', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', borderRadius: 2, width: `${(d.count / maxCount) * 100}%`, background: d.type === 'command' ? '#3370FF' : d.type === 'custom' ? '#FF6A00' : '#00B42A', transition: 'width 0.3s' }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* 形象切换 */}
+                <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '10px 12px', marginBottom: 16 }}>
+                  <span style={{ fontSize: 12, color: '#86909C' }}>形象切换</span>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: '#1D2129', marginLeft: 8 }}>{session.avatarSwitches} 次</span>
+                </div>
+
+                {/* 效果关联（占位） */}
+                <div style={{ borderRadius: 10, border: '1px dashed #C9CDD4', padding: '20px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, color: '#86909C', marginBottom: 4 }}>效果关联分析</div>
+                  <div style={{ fontSize: 11, color: '#C9CDD4' }}>接入抖店数据后可查看弹幕变化、成交关联等</div>
+                </div>
+              </>
+            )
+          })() : (
+            <>
+              {/* 汇总卡片 */}
+              <div style={{ background: 'linear-gradient(135deg, #F0F5FF 0%, #E8F3FF 100%)', borderRadius: 12, padding: '14px 16px', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>近 {MOCK_SESSIONS.length} 场汇总</span>
+                  <span style={{ fontSize: 11, color: '#86909C' }}>平均自动化率 {Math.round(MOCK_SESSIONS.reduce((s, x) => s + x.autoRate, 0) / MOCK_SESSIONS.length)}%</span>
+                </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.8)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 10, color: '#86909C', marginBottom: 2 }}>总互动</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: '#1D2129' }}>{MOCK_SESSIONS.reduce((s, x) => s + x.totalActions, 0)}</div>
+                  </div>
+                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.8)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 10, color: '#86909C', marginBottom: 2 }}>场均互动</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: '#3370FF' }}>{Math.round(MOCK_SESSIONS.reduce((s, x) => s + x.totalActions, 0) / MOCK_SESSIONS.length)}</div>
+                  </div>
+                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.8)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 10, color: '#86909C', marginBottom: 2 }}>最热动作</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#FF6A00', marginTop: 2 }}>吃板面</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 场次列表 */}
+              {MOCK_SESSIONS.map(session => (
+                <div
+                  key={session.id}
+                  onClick={() => setSelectedSession(session.id)}
+                  style={{
+                    marginBottom: 10, padding: '12px 14px', borderRadius: 12,
+                    background: '#FFFFFF', border: '1px solid #E5E6EB',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = '#3370FF')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = '#E5E6EB')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>{session.date} {session.start}–{session.end}</span>
+                    <span style={{ fontSize: 11, color: '#86909C' }}>{session.duration}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
+                    <span style={{ color: '#1D2129' }}>互动 <b>{session.totalActions}</b></span>
+                    <span style={{ color: '#3370FF' }}>口令 {session.commandTriggers}</span>
+                    <span style={{ color: '#FF6A00' }}>手动 {session.manualTriggers}</span>
+                    <span style={{ color: '#00B42A' }}>自动化 {session.autoRate}%</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+                    {session.top3.map((t, i) => (
+                      <span key={i} style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: '#F7F8FA', color: '#86909C' }}>{t.name} {t.count}次</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      ) : null}
+
       {/* 主内容区：左列+右列 */}
       <div style={{
-        display: 'flex', flex: 1, minHeight: 0,
+        display: showHistory ? 'none' : 'flex', flex: 1, minHeight: 0,
       }}>
       {/* ==================== 左列（约300px） ==================== */}
       <div style={{

@@ -29,6 +29,7 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
   const [reviewExpanded, setReviewExpanded] = useState(false)
   const [showSyncBanner, setShowSyncBanner] = useState(false)
   const [previewRunning, setPreviewRunning] = useState(false)
+  const [showLiveSummary, setShowLiveSummary] = useState(false)
   const editMode = wizardResult !== null
   const panelOpen = activePanel !== 'none'
   const switchPanel = (p: PanelKey) => setActivePanel(p)
@@ -193,6 +194,101 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
               cursor: 'pointer',
             }}
           />}
+          {/* 运行中截图右上角电源按钮热区 → 关播总结弹窗 */}
+          {previewRunning && <div
+            onClick={() => setShowLiveSummary(true)}
+            style={{
+              position: 'absolute', top: '1%', right: '2%', width: '10%', height: '5%',
+              cursor: 'pointer',
+            }}
+          />}
+        </div>
+      )}
+
+      {/* ===== 关播总结弹窗 ===== */}
+      {showLiveSummary && (
+        <div onClick={() => setShowLiveSummary(false)} style={{
+          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: 16, width: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            fontFamily: C.font, overflow: 'hidden',
+          }}>
+            {/* 顶部渐变 header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #FF6A00 0%, #FF8533 100%)',
+              padding: '20px 24px 16px', color: '#fff',
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>本场直播已结束</div>
+              <div style={{ fontSize: 12, opacity: 0.85 }}>伴播虾为您服务了 2 小时 15 分钟</div>
+            </div>
+
+            {/* 核心指标网格 */}
+            <div style={{ padding: '16px 24px 8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>互动总次数</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#1D2129' }}>47</div>
+              </div>
+              <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>自动化率</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#1D2129' }}>68<span style={{ fontSize: 14, fontWeight: 500 }}>%</span></div>
+              </div>
+              <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>口令触发</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#3370FF' }}>32</div>
+              </div>
+              <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>手动触发</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#FF6A00' }}>15</div>
+              </div>
+            </div>
+
+            {/* TOP3 技能 */}
+            <div style={{ padding: '8px 24px 16px' }}>
+              <div style={{ fontSize: 12, color: '#86909C', marginBottom: 8 }}>最活跃技能</div>
+              {[
+                { rank: 1, name: '吃板面', count: 12, color: '#FF6A00' },
+                { rank: 2, name: '进场动作', count: 9, color: '#3370FF' },
+                { rank: 3, name: '鲨鱼摇', count: 7, color: '#00B42A' },
+              ].map(item => (
+                <div key={item.rank} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ width: 20, height: 20, borderRadius: 5, background: item.color, color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{item.rank}</span>
+                  <span style={{ fontSize: 13, color: '#1D2129', flex: 1 }}>{item.name}</span>
+                  <span style={{ fontSize: 13, color: '#86909C' }}>{item.count} 次</span>
+                </div>
+              ))}
+            </div>
+
+            {/* 底部按钮 */}
+            <div style={{ padding: '0 24px 20px', display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => {
+                  setShowLiveSummary(false)
+                  setPreviewRunning(false)
+                  setActivePanel('main')
+                }}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: 8, border: 'none',
+                  background: '#3370FF', color: '#fff', fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: C.font,
+                }}
+              >查看完整报告</button>
+              <button
+                onClick={() => {
+                  setShowLiveSummary(false)
+                  setPreviewRunning(false)
+                  setActivePanel('zhuboxia-preview')
+                }}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: 8,
+                  border: '1px solid #E5E6EB', background: '#fff',
+                  color: '#86909C', fontSize: 13, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: C.font,
+                }}
+              >关闭伴播</button>
+            </div>
+          </div>
         </div>
       )}
       {activePanel === 'livePreview' && <BuyinLivePreviewPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
