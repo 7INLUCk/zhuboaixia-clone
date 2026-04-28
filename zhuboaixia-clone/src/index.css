@@ -35,6 +35,11 @@ body {
   background: #9ca3af;
 }
 
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Toggle switch */
 .toggle-switch {
   position: relative;

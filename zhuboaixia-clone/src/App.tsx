@@ -2,7 +2,10 @@ import React, { useState } from 'react'
 import BanboHomePage from './BanboHomePage'
 import BanboCreatePage from './BanboCreatePage'
 import BanboEntryScreen from './BanboEntryScreen'
-import BanboCustomizePage from './BanboCustomizePage'
+import BanboCustomizePage, { type SubmittedAvatarData, type DraftFaceData } from './BanboCustomizePage'
+import BanboManagePage from './BanboManagePage'
+import BanboPurchasePage from './BanboPurchasePage'
+import BuyMembershipPage from './BuyMembershipPage'
 import BuyinDashboardOverlay from './BuyinDashboardOverlay'
 
 export type Mode = 'zhu' | 'ban'
@@ -12,7 +15,7 @@ export type PageId =
   | 'dashboard-pricing' | 'dashboard-pricing-config'
   | 'dashboard-welcome' | 'dashboard-welcome-active'
   | 'dashboard-coupon' | 'dashboard-luckybag'
-  | 'banbo-home' | 'banbo-create' | 'banbo-customize'
+  | 'banbo-home' | 'banbo-create' | 'banbo-customize' | 'banbo-manage' | 'banbo-purchase'
 
 type PageMode = 'screenshot' | 'css'
 
@@ -56,7 +59,7 @@ const PAGES: Record<PageId, PageConfig> = {
   'home-with-room': { mode: 'screenshot', screenshot: '/screenshots/05-dashboard-voice-switch.jpg',
     hotspots: [...sidebar('home-with-room'), { id: 'card', x: 250, y: 130, w: 350, h: 420, targetPage: 'dashboard-chat', tooltip: '进入直播间' }] },
   'create-room': { mode: 'screenshot', screenshot: '/screenshots/04-create-room.jpg', hotspots: sidebar('create-room') },
-  'buy-membership': { mode: 'screenshot', screenshot: '/screenshots/03-buy-membership.jpg', hotspots: sidebar('buy-membership') },
+  'buy-membership': { mode: 'css' },
   'tutorial': { mode: 'screenshot', screenshot: '/screenshots/02-tutorial.jpg', hotspots: sidebar('tutorial') },
   'dashboard-chat': { mode: 'screenshot', screenshot: '/screenshots/06-dashboard-chat.jpg', hotspots: TABS },
   'dashboard-director': { mode: 'screenshot', screenshot: '/screenshots/07-dashboard-director.jpg', hotspots: TABS },
@@ -69,7 +72,7 @@ const PAGES: Record<PageId, PageConfig> = {
   'dashboard-welcome-active': { mode: 'screenshot', screenshot: '/screenshots/12-dashboard-welcome2.jpg', hotspots: TABS },
   'dashboard-coupon': { mode: 'screenshot', screenshot: '/screenshots/13-dashboard-coupon.jpg', hotspots: TABS },
   'dashboard-luckybag': { mode: 'screenshot', screenshot: '/screenshots/14-dashboard-luckybag.jpg', hotspots: TABS },
-  'banbo-home': { mode: 'css' }, 'banbo-create': { mode: 'css' }, 'banbo-customize': { mode: 'css' },
+  'banbo-home': { mode: 'css' }, 'banbo-create': { mode: 'css' }, 'banbo-customize': { mode: 'css' }, 'banbo-manage': { mode: 'css' }, 'banbo-purchase': { mode: 'css' },
 }
 
 const LABELS: Record<PageId, string> = {
@@ -79,13 +82,13 @@ const LABELS: Record<PageId, string> = {
   'dashboard-pricing': '声控开价', 'dashboard-pricing-config': '声控开价(已配置)',
   'dashboard-welcome': '欢迎感谢', 'dashboard-welcome-active': '欢迎感谢(已启用)',
   'dashboard-coupon': '发优惠券', 'dashboard-luckybag': '发福袋',
-  'banbo-home': '我的伴播', 'banbo-create': '创建直播间', 'banbo-customize': '定制伴播',
+  'banbo-home': '我的伴播', 'banbo-create': '创建直播间', 'banbo-customize': '定制伴播', 'banbo-manage': '定制伴播', 'banbo-purchase': '增购次数',
 }
 
 // 侧边栏菜单
 const NAV_ITEMS = [
   { key: 'home-empty', icon: '📺', label: '我的直播' },
-  { key: 'banbo-customize', icon: '🐟', label: '定制伴播' },
+  { key: 'banbo-manage', icon: '🐟', label: '定制伴播' },
   { key: 'tutorial', icon: '📖', label: '使用教程' },
   { key: 'buy-membership', icon: '💎', label: '购买会员' },
 ]
@@ -183,14 +186,24 @@ function ScreenshotContent({
 }
 
 export default function App() {
-  const [page, setPage] = useState<PageId>('banbo-customize')
+  const [page, setPage] = useState<PageId>('banbo-manage')
   const [debug, setDebug] = useState(false)
   const [hover, setHover] = useState<string | null>(null)
   const [showBuyinOverlay, setShowBuyinOverlay] = useState(true)
+  const [draftInProgress, setDraftInProgress] = useState(false)
+  const [draftFaceData, setDraftFaceData] = useState<DraftFaceData | null>(null)
+  const [customizeKey, setCustomizeKey] = useState(0)
+  const [initialFaceId, setInitialFaceId] = useState<string | undefined>(undefined)
+  const [submittedAvatars, setSubmittedAvatars] = useState<SubmittedAvatarData[]>([])
+  const [membershipInitialTab, setMembershipInitialTab] = useState<'subscription' | 'addon'>('subscription')
 
   const config = PAGES[page]
   const navigate = (p: PageId) => setPage(p)
-  const activeSideKey = page.startsWith('dashboard') ? 'home-empty' : page === 'banbo-home' || page === 'banbo-create' ? 'banbo-customize' : page
+  const goToMembership = (tab: 'subscription' | 'addon' = 'subscription') => {
+    setMembershipInitialTab(tab)
+    setPage('buy-membership')
+  }
+  const activeSideKey = page.startsWith('dashboard') ? 'home-empty' : (page === 'banbo-home' || page === 'banbo-create' || page === 'banbo-customize') ? 'banbo-manage' : page
 
   return (
     <div style={{
@@ -264,7 +277,7 @@ export default function App() {
             return (
               <div
                 key={item.key}
-                onClick={() => navigate(item.key as PageId)}
+                onClick={() => item.key === 'buy-membership' ? goToMembership('subscription') : navigate(item.key as PageId)}
                 style={{
                   height: 44,
                   display: 'flex',
@@ -373,7 +386,54 @@ export default function App() {
           ) : (
             /* CSS 页（伴播专用） */
             <>
-              {page === 'banbo-customize' && <BanboCustomizePage />}
+              {page === 'banbo-manage' && (
+                <BanboManagePage
+                  onNewAvatar={() => {
+                    setCustomizeKey(k => k + 1)
+                    setInitialFaceId(undefined)
+                    setDraftFaceData(null)
+                    setDraftInProgress(false)
+                    navigate('banbo-customize')
+                  }}
+                  draftInProgress={draftInProgress}
+                  draftFaceData={draftFaceData}
+                  onContinueDraft={(faceId) => {
+                    if (faceId) {
+                      setInitialFaceId(faceId)
+                      setCustomizeKey(k => k + 1)
+                      setDraftInProgress(true)
+                    }
+                    navigate('banbo-customize')
+                  }}
+                  submittedAvatars={submittedAvatars}
+                  onPurchaseMore={() => goToMembership('addon')}
+                />
+              )}
+              {page === 'banbo-purchase' && (
+                <BanboPurchasePage onBack={() => navigate('banbo-manage')} />
+              )}
+              {page === 'buy-membership' && <BuyMembershipPage key={membershipInitialTab} initialTab={membershipInitialTab} />}
+              {/* 始终挂载，仅按需显示，保留状态 */}
+              <div style={{
+                display: page === 'banbo-customize' ? 'flex' : 'none',
+                flexDirection: 'column', height: '100%', overflow: 'hidden',
+              }}>
+                <BanboCustomizePage
+                  key={customizeKey}
+                  initialFaceId={initialFaceId}
+                  onBack={() => navigate('banbo-manage')}
+                  onFaceSelected={(data) => {
+                    setDraftFaceData(data)
+                    setDraftInProgress(true)
+                  }}
+                  onSubmitted={(data) => {
+                    setSubmittedAvatars(prev => [...prev, data])
+                    setDraftInProgress(false)
+                    setDraftFaceData(null)
+                    navigate('banbo-manage')
+                  }}
+                />
+              </div>
               {page === 'banbo-home' && <BanboEntryScreen onStart={() => setShowBuyinOverlay(true)} />}
               {page === 'banbo-create' && (
                 <BanboCreatePage
@@ -388,7 +448,10 @@ export default function App() {
 
       {/* 巨量百应覆盖层：覆盖整个应用区域（侧边栏 + 主内容区） */}
       {showBuyinOverlay && (
-        <BuyinDashboardOverlay onClose={() => { setShowBuyinOverlay(false); setPage('banbo-customize') }} />
+        <BuyinDashboardOverlay
+          onClose={() => { setShowBuyinOverlay(false); setPage('banbo-manage') }}
+          onGoToManage={() => { setShowBuyinOverlay(false); setPage('banbo-manage') }}
+        />
       )}
       </div>
     </div>

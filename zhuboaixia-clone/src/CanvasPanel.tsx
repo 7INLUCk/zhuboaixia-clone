@@ -1263,7 +1263,7 @@ const openActionPreview = (ea: EventAction) => {
                               ) : (
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                   <span style={{ fontSize: 13, color: '#1D2129', padding: '7px 10px', background: '#FAFAFA', borderRadius: 6, flex: 1 }}>{getSkillDisplayText('sp3')}</span>
-                                  <button onClick={() => startEditing('sp3')} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>
+                                  <button onClick={() => startEditing('sp3')} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                                 </div>
                               )}
                             </div>
@@ -1302,7 +1302,7 @@ const openActionPreview = (ea: EventAction) => {
                         <div style={{ marginTop: 8 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <span style={{ fontSize: 13, color: '#1D2129', padding: '8px 12px', background: '#FAFAFA', borderRadius: 8, flex: 1 }}>{displayValue}</span>
-                            {!isReadOnly && <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>}
+                            {!isReadOnly && <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>}
                           </div>
                           {point.id === 'sp1' && currentBoundAvatar?.tag && (
                             <div style={{ fontSize: 10, color: '#86909C', marginTop: 4 }}>
@@ -1335,32 +1335,29 @@ const openActionPreview = (ea: EventAction) => {
                     const isTriggered = triggeredSkill === cc.id
                     const action = CUSTOM_ACTION_LIBRARY.find(a => a.id === cc.actionId)
                     return (
-                      <div key={cc.id} style={{ marginBottom: 12, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>🎯 {cc.actionLabel}</span>
-                            <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: cc.command ? '#E8F3FF' : '#F3F4F6', color: cc.command ? '#3370FF' : '#86909C' }}>{cc.command ? '口令+手动' : '仅手动'}</span>
-                          </div>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            {isLive && (
+                      <div key={cc.id} style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                            {isLive ? (
                               <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? '✓ 已触发' : '▶ 触发'}</button>
+                            ) : (
+                              <button onClick={() => setPreviewPopup({ videoUrl: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', title: `${cc.actionLabel} 预览`, avatarName: '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
                             )}
-                            <button onClick={() => setCustomCommands(prev => prev.filter(c => c.id !== cc.id))} style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#C9CDD4', fontSize: 12, cursor: 'pointer' }}>×</button>
+                            <button onClick={() => setCustomCommands(prev => prev.filter(c => c.id !== cc.id))} style={{ background: 'none', border: 'none', color: '#C9CDD4', fontSize: 16, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>×</button>
                           </div>
                         </div>
-                        {action && <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>{action.description}</div>}
+                        <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6, fontStyle: 'italic' }}>主播说出以下口令时即可触发，支持模糊匹配</div>
                         {isEditing ? (
-                          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                            <input value={ccCommandDraft} onChange={e => setCcCommandDraft(e.target.value)} placeholder="留空=仅手动触发" style={{ flex: 1, padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
-                            <button onClick={() => { setCustomCommands(prev => prev.map(c => c.id === cc.id ? { ...c, command: ccCommandDraft.trim() } : c)); setEditingCC(null) }} style={{ padding: '5px 12px', borderRadius: 6, border: 'none', background: '#3370FF', color: '#fff', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>保存</button>
-                            <button onClick={() => setEditingCC(null)} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                          <div style={{ marginTop: 8 }}>
+                            <input value={ccCommandDraft} onChange={e => setCcCommandDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { setCustomCommands(prev => prev.map(c => c.id === cc.id ? { ...c, command: ccCommandDraft.trim() } : c)); setEditingCC(null) } if (e.key === 'Escape') setEditingCC(null) }} onBlur={() => { setCustomCommands(prev => prev.map(c => c.id === cc.id ? { ...c, command: ccCommandDraft.trim() } : c)); setEditingCC(null) }} autoFocus placeholder="输入口令，留空则仅支持手动触发" style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#FAFAFA', borderRadius: 6 }}>
-                            <span style={{ fontSize: 12, color: cc.command ? '#1D2129' : '#C9CDD4' }}>
-                              {cc.command ? `口令：「${cc.command}」` : '未配口令，仅支持手动触发'}
-                            </span>
-                            {!isLive && <button onClick={() => { setEditingCC(cc.id); setCcCommandDraft(cc.command) }} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>✏️</button>}
+                          <div style={{ marginTop: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <span style={{ fontSize: 13, color: cc.command ? '#1D2129' : '#C9CDD4', padding: '8px 12px', background: '#FAFAFA', borderRadius: 8, flex: 1 }}>{cc.command || '未配置口令（仅手动触发）'}</span>
+                              <button onClick={() => { setEditingCC(cc.id); setCcCommandDraft(cc.command) }} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1596,12 +1593,12 @@ const openActionPreview = (ea: EventAction) => {
                   if (isCommand) {
                     // 口令触发类：总有值，显示✏️
                     return (
-                      <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>
+                      <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                     )
                   } else {
                     // 智能触发类：有值显示✏️，无值显示+补充
                     return hasValue ? (
-                      <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>
+                      <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                     ) : (
                       <button onClick={() => startEditing(point.id)} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>+ 补充</button>
                     )
@@ -1623,7 +1620,7 @@ const openActionPreview = (ea: EventAction) => {
                           ) : (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <span style={{ fontSize: 13, color: '#1D2129', padding: '7px 10px', background: '#FAFAFA', borderRadius: 6, flex: 1 }}>{getSkillDisplayText('sp3')}</span>
-                              <button onClick={() => startEditing('sp3')} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✏️</button>
+                              <button onClick={() => startEditing('sp3')} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                             </div>
                           )}
                         </div>
@@ -1790,34 +1787,30 @@ const openActionPreview = (ea: EventAction) => {
                   {customCommands.map(cc => {
                     const isEditing = editingCC === cc.id
                     const isTriggered = triggeredSkill === cc.id
-                    const action = CUSTOM_ACTION_LIBRARY.find(a => a.id === cc.actionId)
                     return (
-                      <div key={cc.id} style={{ marginBottom: 12, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>🎯 {cc.actionLabel}</span>
-                            <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: cc.command ? '#E8F3FF' : '#F3F4F6', color: cc.command ? '#3370FF' : '#86909C' }}>{cc.command ? '口令+手动' : '仅手动'}</span>
-                          </div>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            {isLive && (
+                      <div key={cc.id} style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                            {isLive ? (
                               <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? '✓ 已触发' : '▶ 触发'}</button>
+                            ) : (
+                              <button onClick={() => setPreviewPopup({ videoUrl: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', title: `${cc.actionLabel} 预览`, avatarName: '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
                             )}
-                            <button onClick={() => setCustomCommands(prev => prev.filter(c => c.id !== cc.id))} style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#C9CDD4', fontSize: 12, cursor: 'pointer' }}>×</button>
+                            <button onClick={() => setCustomCommands(prev => prev.filter(c => c.id !== cc.id))} style={{ background: 'none', border: 'none', color: '#C9CDD4', fontSize: 16, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>×</button>
                           </div>
                         </div>
-                        {action && <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>{action.description}</div>}
+                        <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6, fontStyle: 'italic' }}>主播说出以下口令时即可触发，支持模糊匹配</div>
                         {isEditing ? (
-                          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                            <input value={ccCommandDraft} onChange={e => setCcCommandDraft(e.target.value)} placeholder="留空=仅手动触发" style={{ flex: 1, padding: '7px 10px', borderRadius: 6, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none' }} />
-                            <button onClick={() => { setCustomCommands(prev => prev.map(c => c.id === cc.id ? { ...c, command: ccCommandDraft.trim() } : c)); setEditingCC(null) }} style={{ padding: '5px 12px', borderRadius: 6, border: 'none', background: '#3370FF', color: '#fff', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>保存</button>
-                            <button onClick={() => setEditingCC(null)} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #E5E6EB', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer' }}>取消</button>
+                          <div style={{ marginTop: 8 }}>
+                            <input value={ccCommandDraft} onChange={e => setCcCommandDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { setCustomCommands(prev => prev.map(c => c.id === cc.id ? { ...c, command: ccCommandDraft.trim() } : c)); setEditingCC(null) } if (e.key === 'Escape') setEditingCC(null) }} onBlur={() => { setCustomCommands(prev => prev.map(c => c.id === cc.id ? { ...c, command: ccCommandDraft.trim() } : c)); setEditingCC(null) }} autoFocus placeholder="输入口令，留空则仅支持手动触发" style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #3370FF', background: '#FAFAFA', color: '#1D2129', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#FAFAFA', borderRadius: 6 }}>
-                            <span style={{ fontSize: 12, color: cc.command ? '#1D2129' : '#C9CDD4' }}>
-                              {cc.command ? `口令：「${cc.command}」` : '未配口令，仅支持手动触发'}
-                            </span>
-                            {!isLive && <button onClick={() => { setEditingCC(cc.id); setCcCommandDraft(cc.command) }} style={{ background: 'none', border: 'none', color: '#86909C', fontSize: 13, cursor: 'pointer' }}>✏️</button>}
+                          <div style={{ marginTop: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <span style={{ fontSize: 13, color: cc.command ? '#1D2129' : '#C9CDD4', padding: '8px 12px', background: '#FAFAFA', borderRadius: 8, flex: 1 }}>{cc.command || '未配置口令（仅手动触发）'}</span>
+                              <button onClick={() => { setEditingCC(cc.id); setCcCommandDraft(cc.command) }} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                            </div>
                           </div>
                         )}
                       </div>
