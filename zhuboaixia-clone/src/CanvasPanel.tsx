@@ -746,7 +746,7 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
   const [triggeredSkill, setTriggeredSkill] = useState<string | null>(null)
   const triggerSkill = (skillId: string) => {
     setTriggeredSkill(skillId)
-    setTimeout(() => setTriggeredSkill(null), 1500)
+    setTimeout(() => setTriggeredSkill(null), 3000)
   }
 
   // 自定义口令动作
