@@ -695,45 +695,52 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
       top3: [
         { name: '吃板面', count: 12 }, { name: '进场动作', count: 9 }, { name: '鲨鱼摇', count: 7 },
       ],
-      details: [
-        { name: '进场动作', count: 9, type: 'command' },
-        { name: '出场动作', count: 4, type: 'command' },
-        { name: '日常动作', count: 6, type: 'auto' },
-        { name: '自动换装', count: 3, type: 'auto' },
-        { name: '吃板面', count: 12, type: 'custom', hitRate: 85 },
-        { name: '跳舞', count: 8, type: 'custom', hitRate: 72 },
-        { name: '鲨鱼摇', count: 7, type: 'custom', hitRate: 90 },
-        { name: '鞠躬感谢', count: 5, type: 'custom', hitRate: 60 },
+      categories: [
+        { name: '场控动作', color: '#3370FF', items: [
+          { name: '进场动作', count: 9 }, { name: '出场动作', count: 4 }, { name: '日常动作', count: 6 }, { name: '自动换装', count: 3 },
+        ]},
+        { name: '互动表演', color: '#FF6A00', items: [
+          { name: '吃板面', count: 12, hitRate: 85 }, { name: '跳舞', count: 8, hitRate: 72 }, { name: '鲨鱼摇', count: 7, hitRate: 90 }, { name: '鞠躬感谢', count: 5, hitRate: 60 },
+        ]},
+        { name: '营销辅助', color: '#00B42A', items: [
+          { name: '逼单助攻', count: 3 }, { name: '效果肯定', count: 2 },
+        ]},
       ],
     },
     {
       id: 's2', date: '2026-04-27', start: '19:30', end: '21:45', duration: '2h 15min',
-      totalActions: 38, commandTriggers: 25, manualTriggers: 13,      avatarSwitches: 2,
+      totalActions: 38, commandTriggers: 25, manualTriggers: 13, avatarSwitches: 2,
       top3: [
         { name: '跳舞', count: 10 }, { name: '鲨鱼摇', count: 8 }, { name: '进场动作', count: 6 },
       ],
-      details: [
-        { name: '进场动作', count: 6, type: 'command' },
-        { name: '出场动作', count: 3, type: 'command' },
-        { name: '日常动作', count: 5, type: 'auto' },
-        { name: '跳舞', count: 10, type: 'custom', hitRate: 78 },
-        { name: '鲨鱼摇', count: 8, type: 'custom', hitRate: 88 },
-        { name: '鞠躬感谢', count: 4, type: 'custom', hitRate: 55 },
+      categories: [
+        { name: '场控动作', color: '#3370FF', items: [
+          { name: '进场动作', count: 6 }, { name: '出场动作', count: 3 }, { name: '日常动作', count: 5 },
+        ]},
+        { name: '互动表演', color: '#FF6A00', items: [
+          { name: '跳舞', count: 10, hitRate: 78 }, { name: '鲨鱼摇', count: 8, hitRate: 88 }, { name: '鞠躬感谢', count: 4, hitRate: 55 },
+        ]},
+        { name: '营销辅助', color: '#00B42A', items: [
+          { name: '逼单助攻', count: 2 },
+        ]},
       ],
     },
     {
       id: 's3', date: '2026-04-26', start: '10:00', end: '12:30', duration: '2h 30min',
-      totalActions: 52, commandTriggers: 40, manualTriggers: 12,      avatarSwitches: 4,
+      totalActions: 52, commandTriggers: 40, manualTriggers: 12, avatarSwitches: 4,
       top3: [
         { name: '吃板面', count: 15 }, { name: '进场动作', count: 11 }, { name: '比心', count: 8 },
       ],
-      details: [
-        { name: '进场动作', count: 11, type: 'command' },
-        { name: '出场动作', count: 5, type: 'command' },
-        { name: '日常动作', count: 8, type: 'auto' },
-        { name: '自动换装', count: 5, type: 'auto' },
-        { name: '吃板面', count: 15, type: 'custom', hitRate: 92 },
-        { name: '比心', count: 8, type: 'custom', hitRate: 80 },
+      categories: [
+        { name: '场控动作', color: '#3370FF', items: [
+          { name: '进场动作', count: 11 }, { name: '出场动作', count: 5 }, { name: '日常动作', count: 8 }, { name: '自动换装', count: 5 },
+        ]},
+        { name: '互动表演', color: '#FF6A00', items: [
+          { name: '吃板面', count: 15, hitRate: 92 }, { name: '比心', count: 8, hitRate: 80 },
+        ]},
+        { name: '营销辅助', color: '#00B42A', items: [
+          { name: '感谢下单', count: 4 }, { name: '产品演示', count: 3 },
+        ]},
       ],
     },
   ]
@@ -1108,38 +1115,36 @@ const openActionPreview = (ea: EventAction) => {
                   </div>
                 </div>
 
-                {/* 分类明细 */}
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129', marginBottom: 10, borderLeft: '3px solid #3370FF', paddingLeft: 8 }}>行为明细</div>
-                  {session.details.map((d, i) => {
-                    const maxCount = Math.max(...session.details.map(x => x.count))
-                    return (
-                      <div key={i} style={{ marginBottom: 8 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 12, color: '#1D2129' }}>{d.name}</span>
-                            <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: d.type === 'command' ? '#E8F3FF' : d.type === 'custom' ? '#FFF7E6' : '#F0F0F0', color: d.type === 'command' ? '#3370FF' : d.type === 'custom' ? '#FF6A00' : '#86909C' }}>
-                              {d.type === 'command' ? '口令' : d.type === 'custom' ? '自定义' : '自动'}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>{d.count} 次</span>
-                            {'hitRate' in d && <span style={{ fontSize: 10, color: '#86909C' }}>命中率 {(d as any).hitRate}%</span>}
-                          </div>
+                {/* 分类明细（3大类折叠） */}
+                {session.categories.map(cat => {
+                  const catTotal = cat.items.reduce((s, x) => s + x.count, 0)
+                  const maxCount = Math.max(...cat.items.map(x => x.count))
+                  return (
+                    <div key={cat.name} style={{ marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: cat.color }} />
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>{cat.name}</span>
                         </div>
-                        <div style={{ height: 4, background: '#F0F0F0', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', borderRadius: 2, width: `${(d.count / maxCount) * 100}%`, background: d.type === 'command' ? '#3370FF' : d.type === 'custom' ? '#FF6A00' : '#00B42A', transition: 'width 0.3s' }} />
-                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: cat.color }}>{catTotal} 次</span>
                       </div>
-                    )
-                  })}
-                </div>
-
-                {/* 形象切换 */}
-                <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '10px 12px', marginBottom: 16 }}>
-                  <span style={{ fontSize: 12, color: '#86909C' }}>形象切换</span>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: '#1D2129', marginLeft: 8 }}>{session.avatarSwitches} 次</span>
-                </div>
+                      {cat.items.map((item, i) => (
+                        <div key={i} style={{ marginBottom: 6, paddingLeft: 9 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                            <span style={{ fontSize: 12, color: '#1D2129' }}>{item.name}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>{item.count} 次</span>
+                              {'hitRate' in item && <span style={{ fontSize: 10, color: '#86909C' }}>命中 {(item as any).hitRate}%</span>}
+                            </div>
+                          </div>
+                          <div style={{ height: 4, background: '#F0F0F0', borderRadius: 2, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', borderRadius: 2, width: `${(item.count / maxCount) * 100}%`, background: cat.color, transition: 'width 0.3s' }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })}
 
                 {/* 效果关联（占位） */}
                 <div style={{ borderRadius: 10, border: '1px dashed #C9CDD4', padding: '20px 16px', textAlign: 'center' }}>
