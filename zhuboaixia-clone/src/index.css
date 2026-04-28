@@ -40,6 +40,20 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Playing bars animation */
+@keyframes bar1 {
+  0%, 100% { height: 4px; }
+  50% { height: 10px; }
+}
+@keyframes bar2 {
+  0%, 100% { height: 10px; }
+  50% { height: 4px; }
+}
+@keyframes bar3 {
+  0%, 100% { height: 6px; }
+  50% { height: 12px; }
+}
+
 /* Toggle switch */
 .toggle-switch {
   position: relative;

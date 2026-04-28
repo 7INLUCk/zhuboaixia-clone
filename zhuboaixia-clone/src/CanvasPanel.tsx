@@ -1233,7 +1233,7 @@ const openActionPreview = (ea: EventAction) => {
                             fontWeight: 500,
                             transition: 'all 0.2s',
                           }}
-                        >{isTriggered ? '✓ 已触发' : '▶ 触发'}</button>
+                        >{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                       }
                       if (point.id === 'sp1') return inlinePreview?.type === 'entrance' ? (
                         <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
@@ -1340,7 +1340,7 @@ const openActionPreview = (ea: EventAction) => {
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
                           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                             {isLive ? (
-                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? '✓ 已触发' : '▶ 触发'}</button>
+                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                             ) : (
                               <button onClick={() => setPreviewPopup({ videoUrl: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', title: `${cc.actionLabel} 预览`, avatarName: '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
                             )}
@@ -1552,7 +1552,7 @@ const openActionPreview = (ea: EventAction) => {
                         fontWeight: 500,
                         transition: 'all 0.2s',
                       }}
-                    >{isTriggered ? '✓ 已触发' : '▶ 触发'}</button>
+                    >{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                   }
                   if (point.id === 'sp1') {
                     return inlinePreview?.type === 'entrance' ? (
@@ -1793,7 +1793,7 @@ const openActionPreview = (ea: EventAction) => {
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
                           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                             {isLive ? (
-                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? '✓ 已触发' : '▶ 触发'}</button>
+                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                             ) : (
                               <button onClick={() => setPreviewPopup({ videoUrl: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', title: `${cc.actionLabel} 预览`, avatarName: '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
                             )}
