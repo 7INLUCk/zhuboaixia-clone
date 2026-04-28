@@ -1209,7 +1209,7 @@ const openActionPreview = (ea: EventAction) => {
                 {/* ---- 技能点 ---- */}
                 <div style={{ marginBottom: 20, marginTop: currentBoundAvatar ? 0 : 16 }}>
                   <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12, borderLeft: '3px solid #3370FF', paddingLeft: 8 }}>技能点</div>
-                  {SKILL_POINTS.map(point => {
+                  {SKILL_POINTS.filter(p => !['sp5','sp6','sp7','sp8','sp9'].includes(p.id)).map(point => {
                     const isCommand = point.triggerType === 'command'
                     const isEditing = editingSkill === point.id
                     const currentValue = getSkillValue(point.id)
@@ -1528,7 +1528,7 @@ const openActionPreview = (ea: EventAction) => {
             {/* ---- 技能点（9 个，按 Figma 设计稿） ---- */}
             <div style={{ marginBottom: 20 }}>
               <div style={{ color: '#1D2129', fontWeight: 600, fontSize: 14, marginBottom: 12, borderLeft: '3px solid #3370FF', paddingLeft: 8 }}>技能点</div>
-              {SKILL_POINTS.map(point => {
+              {SKILL_POINTS.filter(p => !['sp5','sp6','sp7','sp8','sp9'].includes(p.id)).map(point => {
                 const isCommand = point.triggerType === 'command'
                 const isEditing = editingSkill === point.id
                 const currentValue = getSkillValue(point.id)
