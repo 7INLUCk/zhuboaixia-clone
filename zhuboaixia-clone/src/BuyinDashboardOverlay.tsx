@@ -227,8 +227,8 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
                 <div style={{ fontSize: 24, fontWeight: 700, color: '#1D2129' }}>47</div>
               </div>
               <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>自动化率</div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: '#1D2129' }}>68<span style={{ fontSize: 14, fontWeight: 500 }}>%</span></div>
+                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>形象切换</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#1D2129' }}>3<span style={{ fontSize: 14, fontWeight: 500 }}> 次</span></div>
               </div>
               <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '12px 14px' }}>
                 <div style={{ fontSize: 11, color: '#86909C', marginBottom: 4 }}>口令触发</div>

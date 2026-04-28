@@ -691,8 +691,7 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
   const MOCK_SESSIONS = [
     {
       id: 's1', date: '2026-04-28', start: '14:00', end: '16:15', duration: '2h 15min',
-      totalActions: 47, commandTriggers: 32, manualTriggers: 15, autoRate: 68,
-      avatarSwitches: 3,
+      totalActions: 47, commandTriggers: 32, manualTriggers: 15,      avatarSwitches: 3,
       top3: [
         { name: '吃板面', count: 12 }, { name: '进场动作', count: 9 }, { name: '鲨鱼摇', count: 7 },
       ],
@@ -709,8 +708,7 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
     },
     {
       id: 's2', date: '2026-04-27', start: '19:30', end: '21:45', duration: '2h 15min',
-      totalActions: 38, commandTriggers: 25, manualTriggers: 13, autoRate: 66,
-      avatarSwitches: 2,
+      totalActions: 38, commandTriggers: 25, manualTriggers: 13,      avatarSwitches: 2,
       top3: [
         { name: '跳舞', count: 10 }, { name: '鲨鱼摇', count: 8 }, { name: '进场动作', count: 6 },
       ],
@@ -725,8 +723,7 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
     },
     {
       id: 's3', date: '2026-04-26', start: '10:00', end: '12:30', duration: '2h 30min',
-      totalActions: 52, commandTriggers: 40, manualTriggers: 12, autoRate: 77,
-      avatarSwitches: 4,
+      totalActions: 52, commandTriggers: 40, manualTriggers: 12,      avatarSwitches: 4,
       top3: [
         { name: '吃板面', count: 15 }, { name: '进场动作', count: 11 }, { name: '比心', count: 8 },
       ],
@@ -1099,7 +1096,7 @@ const openActionPreview = (ea: EventAction) => {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {[
                       { label: '互动总次数', value: session.totalActions, unit: '', color: '#1D2129' },
-                      { label: '自动化率', value: session.autoRate, unit: '%', color: '#1D2129' },
+                      { label: '形象切换', value: session.avatarSwitches, unit: ' 次', color: '#1D2129' },
                       { label: '口令触发', value: session.commandTriggers, unit: '', color: '#3370FF' },
                       { label: '手动触发', value: session.manualTriggers, unit: '', color: '#FF6A00' },
                     ].map(item => (
@@ -1157,7 +1154,7 @@ const openActionPreview = (ea: EventAction) => {
               <div style={{ background: 'linear-gradient(135deg, #F0F5FF 0%, #E8F3FF 100%)', borderRadius: 12, padding: '14px 16px', marginBottom: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>近 {MOCK_SESSIONS.length} 场汇总</span>
-                  <span style={{ fontSize: 11, color: '#86909C' }}>平均自动化率 {Math.round(MOCK_SESSIONS.reduce((s, x) => s + x.autoRate, 0) / MOCK_SESSIONS.length)}%</span>
+                  <span style={{ fontSize: 11, color: '#86909C' }}>共 {MOCK_SESSIONS.length} 场</span>
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
                   <div style={{ flex: 1, background: 'rgba(255,255,255,0.8)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
@@ -1196,7 +1193,7 @@ const openActionPreview = (ea: EventAction) => {
                     <span style={{ color: '#1D2129' }}>互动 <b>{session.totalActions}</b></span>
                     <span style={{ color: '#3370FF' }}>口令 {session.commandTriggers}</span>
                     <span style={{ color: '#FF6A00' }}>手动 {session.manualTriggers}</span>
-                    <span style={{ color: '#00B42A' }}>自动化 {session.autoRate}%</span>
+                    <span style={{ color: '#00B42A' }}>切换 {session.avatarSwitches}次</span>
                   </div>
                   <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
                     {session.top3.map((t, i) => (
