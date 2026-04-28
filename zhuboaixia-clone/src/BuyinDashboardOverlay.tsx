@@ -195,34 +195,30 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
             }}
           />}
           {/* 运行中截图右上角电源按钮热区 → 关播总结弹窗 */}
-          {previewRunning && <div
+          {previewRunning && !showLiveSummary && <div
             onClick={() => setShowLiveSummary(true)}
             style={{
               position: 'absolute', top: '1%', right: '2%', width: '10%', height: '5%',
               cursor: 'pointer',
             }}
           />}
-        </div>
-      )}
-
-      {/* ===== 关播总结弹窗 ===== */}
-      {showLiveSummary && (
-        <div onClick={() => setShowLiveSummary(false)} style={{
-          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: '#fff', borderRadius: 16, width: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-            fontFamily: C.font, overflow: 'hidden',
-          }}>
-            {/* 顶部渐变 header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #FF6A00 0%, #FF8533 100%)',
-              padding: '20px 24px 16px', color: '#fff',
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>本场直播已结束</div>
-              <div style={{ fontSize: 12, opacity: 0.85 }}>伴播虾为您服务了 2 小时 15 分钟</div>
-            </div>
+          {/* 关播总结弹窗（叠在截图面板上方） */}
+          {showLiveSummary && (
+            <>
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 20 }} />
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                zIndex: 21, width: '88%', maxHeight: '90%', overflow: 'auto',
+                background: '#fff', borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                fontFamily: C.font,
+              }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #FF6A00 0%, #FF8533 100%)',
+                  padding: '20px 24px 16px', color: '#fff', borderRadius: '16px 16px 0 0',
+                }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>本场伴播总结</div>
+                  <div style={{ fontSize: 12, opacity: 0.85 }}>伴播虾为您服务了 2 小时 15 分钟</div>
+                </div>
 
             {/* 核心指标网格 */}
             <div style={{ padding: '16px 24px 8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -286,9 +282,11 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
                   color: '#86909C', fontSize: 13, fontWeight: 500,
                   cursor: 'pointer', fontFamily: C.font,
                 }}
-              >关闭伴播</button>
+              >返回</button>
             </div>
           </div>
+            </>
+          )}
         </div>
       )}
       {activePanel === 'livePreview' && <BuyinLivePreviewPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
