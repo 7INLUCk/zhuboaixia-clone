@@ -19,10 +19,10 @@ import BanboSetupWizard from './BanboSetupWizard'
 import { PanelKey, C } from './shared'
 import type { WizardResult } from './wizard/types'
 
-type ActivePanel = 'none' | 'main' | 'livePreview' | 'config' | PanelKey
+type ActivePanel = 'none' | 'main' | 'livePreview' | 'config' | 'zhuboxia-preview' | PanelKey
 type BanboState = 'unconfigured' | 'wizard' | 'configured'
 
-export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void }) {
+export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClose: () => void; onGoToManage?: () => void }) {
   const [activePanel, setActivePanel] = useState<ActivePanel>('main')
   const [banboState, setBanboState] = useState<BanboState>('configured')
   const [wizardResult, setWizardResult] = useState<WizardResult | null>(null)
@@ -72,7 +72,7 @@ export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void
           )}
           {banboState === 'configured' && (
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-              <CanvasPanel onClose={() => setActivePanel('none')} wizardResult={wizardResult ?? undefined} />
+              <CanvasPanel onClose={() => setActivePanel('zhuboxia-preview')} wizardResult={wizardResult ?? undefined} onGoToManage={onGoToManage} />
 
               {/* 同步成功横幅（4秒后自动消失） */}
               {showSyncBanner && (
@@ -146,6 +146,25 @@ export default function BuyinDashboardOverlay({ onClose }: { onClose: () => void
               })()}
             </div>
           )}
+        </div>
+      )}
+      {activePanel === 'zhuboxia-preview' && (
+        <div
+          onClick={() => setActivePanel('main')}
+          style={{
+            position: 'absolute', top: 0, right: 0, bottom: 0,
+            width: 420, zIndex: 10, cursor: 'pointer',
+            boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
+            background: '#000',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <img
+            src="/screenshots/zhuboxia-panel.png"
+            alt="助播虾预览"
+            draggable={false}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', userSelect: 'none' }}
+          />
         </div>
       )}
       {activePanel === 'livePreview' && <BuyinLivePreviewPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
