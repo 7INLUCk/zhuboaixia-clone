@@ -28,6 +28,7 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
   const [wizardResult, setWizardResult] = useState<WizardResult | null>(null)
   const [reviewExpanded, setReviewExpanded] = useState(false)
   const [showSyncBanner, setShowSyncBanner] = useState(false)
+  const [previewRunning, setPreviewRunning] = useState(false)
   const editMode = wizardResult !== null
   const panelOpen = activePanel !== 'none'
   const switchPanel = (p: PanelKey) => setActivePanel(p)
@@ -72,7 +73,7 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
           )}
           {banboState === 'configured' && (
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-              <CanvasPanel onClose={() => setActivePanel('zhuboxia-preview')} wizardResult={wizardResult ?? undefined} onGoToManage={onGoToManage} />
+              <CanvasPanel onClose={() => { setPreviewRunning(false); setActivePanel('zhuboxia-preview') }} wizardResult={wizardResult ?? undefined} onGoToManage={onGoToManage} />
 
               {/* 同步成功横幅（4秒后自动消失） */}
               {showSyncBanner && (
@@ -159,18 +160,27 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
           }}
         >
           <img
-            src="/screenshots/zhuboxia-panel.png"
+            src={previewRunning ? '/screenshots/zhuboxia-running.jpg' : '/screenshots/zhuboxia-panel.png'}
             alt="助播虾预览"
             draggable={false}
             style={{ width: '100%', height: '100%', objectFit: 'contain', userSelect: 'none', pointerEvents: 'none' }}
           />
-          <div
+          {/* 右侧按钮列热区（形象/配音/KT板/设置/设备）→ 跳回配置面板 */}
+          {!previewRunning && <div
             onClick={() => setActivePanel('main')}
             style={{
               position: 'absolute', top: '5%', right: 0, width: '15%', height: '40%',
               cursor: 'pointer',
             }}
-          />
+          />}
+          {/* 启动助播虾按钮热区 → 切换到运行中截图 */}
+          {!previewRunning && <div
+            onClick={() => setPreviewRunning(true)}
+            style={{
+              position: 'absolute', top: '68%', left: '10%', width: '80%', height: '7%',
+              cursor: 'pointer',
+            }}
+          />}
         </div>
       )}
       {activePanel === 'livePreview' && <BuyinLivePreviewPanel onClose={() => setActivePanel('none')} onContinueConfig={() => setActivePanel('avatar')} />}
