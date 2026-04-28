@@ -73,7 +73,7 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
           )}
           {banboState === 'configured' && (
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-              <CanvasPanel onClose={() => { setPreviewRunning(false); setActivePanel('zhuboxia-preview') }} wizardResult={wizardResult ?? undefined} onGoToManage={onGoToManage} />
+              <CanvasPanel onClose={() => { setPreviewRunning(false); setActivePanel('zhuboxia-preview') }} wizardResult={wizardResult ?? undefined} onGoToManage={onGoToManage} isLive={previewRunning} />
 
               {/* 同步成功横幅（4秒后自动消失） */}
               {showSyncBanner && (
