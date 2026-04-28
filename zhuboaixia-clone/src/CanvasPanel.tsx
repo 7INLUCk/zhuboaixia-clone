@@ -23,22 +23,22 @@ type ProductItem = {
 }
 
 // 自定义口令动作
-type CustomAction = { id: string; name: string; description: string; category: string }
+type CustomAction = { id: string; name: string; description: string; category: string; videoUrl: string }
 type CustomCommand = { id: string; actionId: string; command: string; actionLabel: string; videoUrl?: string }
 
 const CUSTOM_ACTION_LIBRARY: CustomAction[] = [
-  { id: 'ca1', name: '吃板面', description: '大口吃板面动作，吃完露出惊喜表情', category: '趣味互动' },
-  { id: 'ca2', name: '跳舞', description: '跳一段舞蹈动作', category: '趣味互动' },
-  { id: 'ca3', name: '鞠躬感谢', description: '面向用户鞠躬致谢', category: '互动礼仪' },
-  { id: 'ca4', name: '鲨鱼摇', description: '左右摇摆鲨鱼舞', category: '趣味互动' },
-  { id: 'ca5', name: '比心', description: '双手比心动作', category: '互动礼仪' },
-  { id: 'ca6', name: '挥手打招呼', description: '热情挥手欢迎观众', category: '互动礼仪' },
-  { id: 'ca7', name: '拍手鼓掌', description: '鼓掌叫好，烘托气氛', category: '互动礼仪' },
-  { id: 'ca8', name: '倒数321', description: '手指倒数 3-2-1 手势', category: '促销配合' },
-  { id: 'ca9', name: '指向商品', description: '手指向商品方向引导注意力', category: '促销配合' },
-  { id: 'ca10', name: '举牌展示', description: '举起促销牌/价格牌', category: '促销配合' },
-  { id: 'ca11', name: '转圈展示', description: '原地转一圈展示穿搭', category: '穿搭展示' },
-  { id: 'ca12', name: 'T台走步', description: '走几步 T 台模特步', category: '穿搭展示' },
+  { id: 'ca1', name: '吃板面', description: '大口吃板面动作，吃完露出惊喜表情', category: '趣味互动', videoUrl: '/videos/action_daily1.mp4' },
+  { id: 'ca2', name: '跳舞', description: '跳一段舞蹈动作', category: '趣味互动', videoUrl: '/videos/action_daily2.mp4' },
+  { id: 'ca3', name: '鞠躬感谢', description: '面向用户鞠躬致谢', category: '互动礼仪', videoUrl: '/videos/action_enter.mp4' },
+  { id: 'ca4', name: '鲨鱼摇', description: '左右摇摆鲨鱼舞', category: '趣味互动', videoUrl: '/videos/action_exit.mp4' },
+  { id: 'ca5', name: '比心', description: '双手比心动作', category: '互动礼仪', videoUrl: '/videos/action_daily1.mp4' },
+  { id: 'ca6', name: '挥手打招呼', description: '热情挥手欢迎观众', category: '互动礼仪', videoUrl: '/videos/action_daily2.mp4' },
+  { id: 'ca7', name: '拍手鼓掌', description: '鼓掌叫好，烘托气氛', category: '互动礼仪', videoUrl: '/videos/action_enter.mp4' },
+  { id: 'ca8', name: '倒数321', description: '手指倒数 3-2-1 手势', category: '促销配合', videoUrl: '/videos/action_exit.mp4' },
+  { id: 'ca9', name: '指向商品', description: '手指向商品方向引导注意力', category: '促销配合', videoUrl: '/videos/action_daily1.mp4' },
+  { id: 'ca10', name: '举牌展示', description: '举起促销牌/价格牌', category: '促销配合', videoUrl: '/videos/action_daily2.mp4' },
+  { id: 'ca11', name: '转圈展示', description: '原地转一圈展示穿搭', category: '穿搭展示', videoUrl: '/videos/action_enter.mp4' },
+  { id: 'ca12', name: 'T台走步', description: '走几步 T 台模特步', category: '穿搭展示', videoUrl: '/videos/action_exit.mp4' },
 ]
 
 // 全局技能点ID
@@ -1855,49 +1855,51 @@ const openActionPreview = (ea: EventAction) => {
       {/* 动作库选择弹窗 */}
       {showActionPicker && (() => {
         const enabledIds = new Set(customCommands.map(c => c.actionId))
-        const categories = [...new Set(CUSTOM_ACTION_LIBRARY.map(a => a.category))]
         return (
           <div onClick={() => setShowActionPicker(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, width: 420, maxHeight: '80%', overflow: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', fontFamily: C.font }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, width: 480, maxHeight: '80%', overflow: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', fontFamily: C.font }}>
               <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid #E5E6EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 15, fontWeight: 600, color: '#1D2129' }}>动作库</span>
                 <button onClick={() => setShowActionPicker(false)} style={{ background: 'none', border: 'none', fontSize: 18, color: '#86909C', cursor: 'pointer' }}>×</button>
               </div>
-              <div style={{ padding: '12px 20px 20px' }}>
-                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 14 }}>选择要启用的动作，添加后可配口令</div>
-                {categories.map(cat => (
-                  <div key={cat} style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#86909C', marginBottom: 8, textTransform: 'uppercase' }}>{cat}</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                      {CUSTOM_ACTION_LIBRARY.filter(a => a.category === cat).map(action => {
-                        const isEnabled = enabledIds.has(action.id)
-                        return (
-                          <div
-                            key={action.id}
-                            onClick={() => {
-                              if (isEnabled) return
-                              setCustomCommands(prev => [...prev, { id: `cc${Date.now()}`, actionId: action.id, command: '', actionLabel: action.name }])
-                            }}
-                            style={{
-                              padding: '10px 12px', borderRadius: 10,
-                              border: isEnabled ? '1px solid #00B42A' : '1px solid #E5E6EB',
-                              background: isEnabled ? '#F0FFF4' : '#fff',
-                              cursor: isEnabled ? 'default' : 'pointer',
-                              opacity: isEnabled ? 0.7 : 1,
-                              transition: 'all 0.15s',
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>{action.name}</span>
-                              {isEnabled && <span style={{ fontSize: 10, color: '#00B42A' }}>✓ 已添加</span>}
-                            </div>
-                            <div style={{ fontSize: 11, color: '#86909C', lineHeight: 1.4 }}>{action.description}</div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))}
+              <div style={{ padding: '12px 16px 20px' }}>
+                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 12 }}>选择要启用的动作，添加后可配口令</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                  {CUSTOM_ACTION_LIBRARY.map(action => {
+                    const isEnabled = enabledIds.has(action.id)
+                    return (
+                      <div
+                        key={action.id}
+                        onClick={() => {
+                          if (isEnabled) return
+                          setCustomCommands(prev => [...prev, { id: `cc${Date.now()}`, actionId: action.id, command: '', actionLabel: action.name }])
+                        }}
+                        style={{
+                          borderRadius: 10, overflow: 'hidden',
+                          border: isEnabled ? '1px solid #00B42A' : '1px solid #E5E6EB',
+                          background: isEnabled ? '#F0FFF4' : '#fff',
+                          cursor: isEnabled ? 'default' : 'pointer',
+                          opacity: isEnabled ? 0.7 : 1,
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        <div style={{ position: 'relative', paddingTop: '100%', background: '#F7F8FA' }}>
+                          <video
+                            src={action.videoUrl}
+                            autoPlay muted loop playsInline
+                            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+                          />
+                          {isEnabled && (
+                            <div style={{ position: 'absolute', top: 6, right: 6, background: '#00B42A', color: '#fff', fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 4 }}>✓ 已添加</div>
+                          )}
+                        </div>
+                        <div style={{ padding: '8px 10px', textAlign: 'center' }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>{action.name}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </div>
