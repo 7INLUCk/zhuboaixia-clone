@@ -150,10 +150,9 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
       )}
       {activePanel === 'zhuboxia-preview' && (
         <div
-          onClick={() => setActivePanel('main')}
           style={{
             position: 'absolute', top: 0, right: 0, bottom: 0,
-            width: 420, zIndex: 10, cursor: 'pointer',
+            width: 420, zIndex: 10,
             boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
             background: '#000',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -163,7 +162,14 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
             src="/screenshots/zhuboxia-panel.png"
             alt="助播虾预览"
             draggable={false}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', userSelect: 'none' }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', userSelect: 'none', pointerEvents: 'none' }}
+          />
+          <div
+            onClick={() => setActivePanel('main')}
+            style={{
+              position: 'absolute', top: '5%', right: 0, width: '15%', height: '40%',
+              cursor: 'pointer',
+            }}
           />
         </div>
       )}
