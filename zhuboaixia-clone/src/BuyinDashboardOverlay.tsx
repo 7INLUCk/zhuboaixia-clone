@@ -216,8 +216,8 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
                   background: 'linear-gradient(135deg, #FF6A00 0%, #FF8533 100%)',
                   padding: '20px 24px 16px', color: '#fff', borderRadius: '16px 16px 0 0',
                 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>本场伴播总结</div>
-                  <div style={{ fontSize: 12, opacity: 0.85 }}>伴播虾为您服务了 2 小时 15 分钟</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>本次伴播服务已结束</div>
+                  <div style={{ fontSize: 12, opacity: 0.85 }}>伴播虾本次为您服务了 2 小时 15 分钟</div>
                 </div>
 
             {/* 核心指标网格 */}
