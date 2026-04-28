@@ -165,6 +165,8 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
             draggable={false}
             style={{ width: '100%', height: '100%', objectFit: 'contain', userSelect: 'none', pointerEvents: 'none' }}
           />
+          {/* 预加载第二张图 */}
+          {!previewRunning && <link rel="preload" as="image" href="/screenshots/zhuboxia-running.jpg" />}
           {/* 右侧按钮列热区（形象/配音/KT板/设置/设备）→ 跳回配置面板 */}
           {!previewRunning && <div
             onClick={() => setActivePanel('main')}
