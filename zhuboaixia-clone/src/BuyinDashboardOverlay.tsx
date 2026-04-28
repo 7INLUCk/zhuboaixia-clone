@@ -177,7 +177,7 @@ export default function BuyinDashboardOverlay({ onClose, onGoToManage }: { onClo
           {!previewRunning && <div
             onClick={() => setPreviewRunning(true)}
             style={{
-              position: 'absolute', top: '68%', left: '10%', width: '80%', height: '7%',
+              position: 'absolute', top: '68%', left: '10%', width: '80%', height: '12%',
               cursor: 'pointer',
             }}
           />}
