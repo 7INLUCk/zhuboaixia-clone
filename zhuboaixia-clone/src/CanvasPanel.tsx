@@ -891,7 +891,7 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
             background: '#1D2129', color: '#fff', fontSize: 11, whiteSpace: 'nowrap',
             pointerEvents: 'none', zIndex: 10,
           }}>
-            {muted ? '搭话已暂停' : '搭话开启中'}
+            {muted ? '播放时暂停搭话' : '播放时保持搭话'}
           </div>
         )}
       </span>
