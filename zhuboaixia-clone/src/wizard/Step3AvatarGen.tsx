@@ -1,5 +1,5 @@
 // src/wizard/Step3AvatarGen.tsx — 形象生成（固定槽位穿搭 + 定装照）
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { C } from '../shared'
 import { CARGO_PRODUCTS, FACE_LIBRARY } from './mockData'
 import type { WizardState, AvatarConfig, OutfitSlot, FixedSlotKey, PortraitRound } from './types'
@@ -74,6 +74,10 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
   // key: configId, value: true=force-expanded, false=force-collapsed
   const [cardExpansionOverrides, setCardExpansionOverrides] = useState<Record<string, boolean>>({})
   const [showCoverageDetail, setShowCoverageDetail] = useState(false)
+
+  const [uploadToast, setUploadToast] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const pendingUploadRef = useRef<{ configId: string; slotKey: FixedSlotKey } | null>(null)
 
   const isCardExpanded = (config: { id: string; portraitStatus: string }) =>
     config.id in cardExpansionOverrides
@@ -237,6 +241,60 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
     setSlotModal(null)
   }
 
+  useEffect(() => {
+    if (!uploadToast) return
+    const t = setTimeout(() => setUploadToast(null), 3500)
+    return () => clearTimeout(t)
+  }, [uploadToast])
+
+  const triggerUpload = (configId: string, slotKey: FixedSlotKey) => {
+    pendingUploadRef.current = { configId, slotKey }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !pendingUploadRef.current) return
+    const { configId, slotKey } = pendingUploadRef.current
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      setUploadToast('仅支持 JPG、PNG、WebP 格式')
+      return
+    }
+
+    if (file.size > 7 * 1024 * 1024) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
+      setUploadToast(`图片大小不能超过 7MB，当前 ${sizeMB}MB，请压缩后重试`)
+      return
+    }
+
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const w = img.naturalWidth
+      const h = img.naturalHeight
+      URL.revokeObjectURL(url)
+      if (w * h < 196) {
+        setUploadToast('图片分辨率太低，请上传更高清的图片')
+        return
+      }
+      if (w > 3072 || h > 3072) {
+        setUploadToast(`图片尺寸超出限制（最大 3072×3072），当前 ${w}×${h}，请缩小后重试`)
+        return
+      }
+      handleUploadSlot(configId, slotKey)
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      setUploadToast('图片文件已损坏，请更换')
+    }
+    img.src = url
+  }
+
   const handleRemoveSlot = (configId: string, slotKey: FixedSlotKey) => {
     const config = avatarConfigs.find(c => c.id === configId)
     if (!config) return
@@ -297,6 +355,19 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', position: 'relative' }}>
+
+      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={handleFileSelected} />
+
+      {uploadToast && (
+        <div style={{
+          position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',
+          padding: '10px 20px', borderRadius: 8, zIndex: 9999,
+          background: '#FFF1F0', border: '1px solid #FFA39E', color: '#CF1322',
+          fontSize: 13, fontWeight: 500, boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        }}>
+          {uploadToast}
+        </div>
+      )}
 
       {/* 编辑模式：未覆盖商品提醒 */}
       {editMode && uncoveredProducts.length > 0 && (
@@ -594,9 +665,10 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
                   })()}
                 </div>
                 <div style={{ padding: '12px 20px', borderTop: `1px solid ${C.border}`, flexShrink: 0 }}>
-                  <button onClick={() => handleUploadSlot(slotModal.configId, slotModal.slotKey)} style={{ width: '100%', padding: '9px 0', borderRadius: 8, fontSize: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.text, cursor: 'pointer', fontFamily: C.font }}>
+                  <button onClick={() => triggerUpload(slotModal.configId, slotModal.slotKey)} style={{ width: '100%', padding: '9px 0', borderRadius: 8, fontSize: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.text, cursor: 'pointer', fontFamily: C.font }}>
                     📁 从本地上传图片（不选商品）
                   </button>
+                  <div style={{ fontSize: 10, color: C.textTert, textAlign: 'center', marginTop: 4 }}>支持 JPG / PNG / WebP，单张不超过 7MB，建议尺寸不超过 3072×3072</div>
                 </div>
               </>
             )}
@@ -662,7 +734,7 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
                   </div>
                 </div>
                 <div style={{ padding: '12px 20px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: 8, flexShrink: 0 }}>
-                  <button onClick={() => handleUploadSlot(slotModal.configId, slotModal.slotKey)} style={{ flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.text, cursor: 'pointer', fontFamily: C.font }}>
+                  <button onClick={() => triggerUpload(slotModal.configId, slotModal.slotKey)} style={{ flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 12, border: `1px solid ${C.border}`, background: '#fff', color: C.text, cursor: 'pointer', fontFamily: C.font }}>
                     📁 从本地上传
                   </button>
                   <button onClick={handleConfirmSelection} style={{ flex: 2, padding: '9px 0', borderRadius: 8, fontSize: 12, border: 'none', background: C.blue, color: '#fff', fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}>
