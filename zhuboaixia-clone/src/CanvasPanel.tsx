@@ -697,15 +697,31 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
       ],
       categories: [
         { name: '场控动作', color: '#3370FF', items: [
-          { name: '进场动作', count: 9 }, { name: '出场动作', count: 4 }, { name: '日常动作', count: 6 }, { name: '自动换装', count: 3 },
+          { name: '进场动作', count: 9 }, { name: '出场动作', count: 4 }, { name: '日常动作', count: 6 }, { name: '自动换装', count: 3 }, { name: '伴播换装', count: 5 },
         ]},
         { name: '互动表演', color: '#FF6A00', items: [
-          { name: '吃板面', count: 12, hitRate: 85 }, { name: '跳舞', count: 8, hitRate: 72 }, { name: '鲨鱼摇', count: 7, hitRate: 90 }, { name: '鞠躬感谢', count: 5, hitRate: 60 },
+          { name: '吃板面', count: 12 }, { name: '跳舞', count: 8 }, { name: '鲨鱼摇', count: 7 }, { name: '鞠躬感谢', count: 5 },
         ]},
         { name: '营销辅助', color: '#00B42A', items: [
           { name: '逼单助攻', count: 3 }, { name: '效果肯定', count: 2 },
         ]},
       ],
+      effectData: {
+        danmaku: {
+          periods: [
+            { time: '14:00', count: 23 }, { time: '14:10', count: 45 }, { time: '14:20', count: 38 },
+            { time: '14:30', count: 67 }, { time: '14:40', count: 52 }, { time: '14:50', count: 41 },
+          ],
+          actions: [{ time: '14:15', name: '吃板面' }, { time: '14:28', name: '跳舞' }, { time: '14:35', name: '鲨鱼摇' }],
+          summary: '伴播动作触发后 30 秒内，弹幕量平均提升 65%',
+        },
+        sales: { totalGmv: 3280, totalOrders: 47, duringBanboRate: 0.82, postActionOrders: 18, postActionRate: 0.38 },
+        highlights: [
+          { time: '14:35', action: '鲨鱼摇', delta: 42, bars: [12, 28, 54] as [number, number, number] },
+          { time: '14:15', action: '吃板面', delta: 31, bars: [14, 22, 45] as [number, number, number] },
+          { time: '15:20', action: '跳舞', delta: 25, bars: [18, 30, 43] as [number, number, number] },
+        ],
+      },
     },
     {
       id: 's2', date: '2026-04-27', start: '19:30', end: '21:45', duration: '2h 15min',
@@ -715,15 +731,31 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
       ],
       categories: [
         { name: '场控动作', color: '#3370FF', items: [
-          { name: '进场动作', count: 6 }, { name: '出场动作', count: 3 }, { name: '日常动作', count: 5 },
+          { name: '进场动作', count: 6 }, { name: '出场动作', count: 3 }, { name: '日常动作', count: 5 }, { name: '伴播换装', count: 3 },
         ]},
         { name: '互动表演', color: '#FF6A00', items: [
-          { name: '跳舞', count: 10, hitRate: 78 }, { name: '鲨鱼摇', count: 8, hitRate: 88 }, { name: '鞠躬感谢', count: 4, hitRate: 55 },
+          { name: '跳舞', count: 10 }, { name: '鲨鱼摇', count: 8 }, { name: '鞠躬感谢', count: 4 },
         ]},
         { name: '营销辅助', color: '#00B42A', items: [
           { name: '逼单助攻', count: 2 },
         ]},
       ],
+      effectData: {
+        danmaku: {
+          periods: [
+            { time: '19:30', count: 18 }, { time: '19:40', count: 31 }, { time: '19:50', count: 55 },
+            { time: '20:00', count: 42 }, { time: '20:10', count: 48 }, { time: '20:20', count: 36 },
+          ],
+          actions: [{ time: '19:45', name: '跳舞' }, { time: '19:55', name: '鲨鱼摇' }],
+          summary: '伴播动作触发后 30 秒内，弹幕量平均提升 52%',
+        },
+        sales: { totalGmv: 2150, totalOrders: 31, duringBanboRate: 0.76, postActionOrders: 11, postActionRate: 0.35 },
+        highlights: [
+          { time: '19:55', action: '鲨鱼摇', delta: 38, bars: [15, 25, 53] as [number, number, number] },
+          { time: '19:45', action: '跳舞', delta: 28, bars: [12, 20, 40] as [number, number, number] },
+          { time: '20:30', action: '鞠躬感谢', delta: 18, bars: [20, 26, 38] as [number, number, number] },
+        ],
+      },
     },
     {
       id: 's3', date: '2026-04-26', start: '10:00', end: '12:30', duration: '2h 30min',
@@ -733,15 +765,31 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
       ],
       categories: [
         { name: '场控动作', color: '#3370FF', items: [
-          { name: '进场动作', count: 11 }, { name: '出场动作', count: 5 }, { name: '日常动作', count: 8 }, { name: '自动换装', count: 5 },
+          { name: '进场动作', count: 11 }, { name: '出场动作', count: 5 }, { name: '日常动作', count: 8 }, { name: '自动换装', count: 5 }, { name: '伴播换装', count: 7 },
         ]},
         { name: '互动表演', color: '#FF6A00', items: [
-          { name: '吃板面', count: 15, hitRate: 92 }, { name: '比心', count: 8, hitRate: 80 },
+          { name: '吃板面', count: 15 }, { name: '比心', count: 8 },
         ]},
         { name: '营销辅助', color: '#00B42A', items: [
           { name: '感谢下单', count: 4 }, { name: '产品演示', count: 3 },
         ]},
       ],
+      effectData: {
+        danmaku: {
+          periods: [
+            { time: '10:00', count: 15 }, { time: '10:10', count: 28 }, { time: '10:20', count: 44 },
+            { time: '10:30', count: 72 }, { time: '10:40', count: 58 }, { time: '10:50', count: 49 },
+          ],
+          actions: [{ time: '10:15', name: '吃板面' }, { time: '10:25', name: '比心' }, { time: '10:38', name: '吃板面' }],
+          summary: '伴播动作触发后 30 秒内，弹幕量平均提升 78%',
+        },
+        sales: { totalGmv: 4560, totalOrders: 63, duringBanboRate: 0.88, postActionOrders: 26, postActionRate: 0.41 },
+        highlights: [
+          { time: '10:30', action: '吃板面', delta: 51, bars: [16, 35, 67] as [number, number, number] },
+          { time: '10:25', action: '比心', delta: 33, bars: [20, 28, 53] as [number, number, number] },
+          { time: '11:05', action: '吃板面', delta: 29, bars: [22, 32, 51] as [number, number, number] },
+        ],
+      },
     },
   ]
 
@@ -803,6 +851,12 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
   // 直播记录视图
   const [showHistory, setShowHistory] = useState(false)
   const [selectedSession, setSelectedSession] = useState<string | null>(null)
+
+  // 搭话暂停开关（触发技能时是否暂停搭话能力）
+  const [muteTalkSkills, setMuteTalkSkills] = useState<Record<string, boolean>>({
+    sp1: true, sp2: true, sp9: true, // 进出场/表演默认暂停
+  })
+  const toggleMuteTalk = (id: string) => setMuteTalkSkills(prev => ({ ...prev, [id]: !prev[id] }))
 
   // 手动触发反馈状态
   const [triggeredSkill, setTriggeredSkill] = useState<string | null>(null)
@@ -1012,16 +1066,16 @@ const openActionPreview = (ea: EventAction) => {
               background: 'none', border: 'none', fontSize: 12, color: '#3370FF',
               cursor: 'pointer', padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4,
             }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>返回</button>
-          ) : (
+          ) : (<>
             <button onClick={() => setShowHistory(true)} title="直播记录" style={{
               background: 'none', border: 'none', color: '#86909C', cursor: 'pointer',
               padding: '2px 4px', display: 'flex', alignItems: 'center',
             }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></button>
-          )}
-          <button onClick={onClose} style={{
-            background: 'none', border: 'none', fontSize: 18, color: '#86909C',
-            cursor: 'pointer', lineHeight: 1, padding: '0 4px',
-          }}>×</button>
+            <button onClick={onClose} style={{
+              background: 'none', border: 'none', fontSize: 18, color: '#86909C',
+              cursor: 'pointer', lineHeight: 1, padding: '0 4px',
+            }}>×</button>
+          </>)}
         </div>
       </div>
       {/* 向导配置同步总览（有 wizardResult 时展示） */}
@@ -1134,7 +1188,6 @@ const openActionPreview = (ea: EventAction) => {
                             <span style={{ fontSize: 12, color: '#1D2129' }}>{item.name}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>{item.count} 次</span>
-                              {'hitRate' in item && <span style={{ fontSize: 10, color: '#86909C' }}>命中 {(item as any).hitRate}%</span>}
                             </div>
                           </div>
                           <div style={{ height: 4, background: '#F0F0F0', borderRadius: 2, overflow: 'hidden' }}>
@@ -1146,11 +1199,100 @@ const openActionPreview = (ea: EventAction) => {
                   )
                 })}
 
-                {/* 效果关联（占位） */}
-                <div style={{ borderRadius: 10, border: '1px dashed #C9CDD4', padding: '20px 16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 13, color: '#86909C', marginBottom: 4 }}>效果关联分析</div>
-                  <div style={{ fontSize: 11, color: '#C9CDD4' }}>接入抖店数据后可查看弹幕变化、成交关联等</div>
-                </div>
+                {/* 效果关联分析 */}
+                {session.effectData ? (() => {
+                  const ef = session.effectData
+                  const maxDanmaku = Math.max(...ef.danmaku.periods.map(p => p.count))
+                  const maxHighlightBar = Math.max(...ef.highlights.flatMap(h => h.bars))
+                  return (
+                    <div style={{ marginTop: 4 }}>
+                      <div style={{ fontSize: 10, color: '#C9CDD4', marginBottom: 10, textAlign: 'right' }}>数据来源：抖店</div>
+
+                      {/* 弹幕热度变化 */}
+                      <div style={{ borderRadius: 10, background: '#FAFBFC', border: '1px solid #F0F0F0', padding: '14px 16px', marginBottom: 12 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129', marginBottom: 12, borderLeft: '3px solid #722ED1', paddingLeft: 8 }}>弹幕热度变化</div>
+                        <div style={{ position: 'relative', height: 120, display: 'flex', alignItems: 'flex-end', gap: 6, paddingBottom: 20 }}>
+                          {ef.danmaku.periods.map((p, i) => (
+                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                              <span style={{ fontSize: 9, color: '#86909C', marginBottom: 2 }}>{p.count}</span>
+                              <div style={{ width: '100%', maxWidth: 28, height: `${(p.count / maxDanmaku) * 80}px`, background: 'linear-gradient(180deg, #722ED1 0%, #B37FEB 100%)', borderRadius: '3px 3px 0 0', transition: 'height 0.3s' }} />
+                              <span style={{ fontSize: 8, color: '#C9CDD4', marginTop: 4, position: 'absolute', bottom: -16 }}>{p.time}</span>
+                            </div>
+                          ))}
+                          {ef.danmaku.actions.map((a, i) => {
+                            const periodIdx = ef.danmaku.periods.findIndex((p, pi) => {
+                              const nextTime = ef.danmaku.periods[pi + 1]?.time
+                              return a.time >= p.time && (!nextTime || a.time < nextTime)
+                            })
+                            if (periodIdx < 0) return null
+                            const leftPct = ((periodIdx + 0.5) / ef.danmaku.periods.length) * 100
+                            return (
+                              <div key={i} style={{ position: 'absolute', left: `${leftPct}%`, top: 0, bottom: 20, width: 0, borderLeft: '1px dashed #FF6A00', pointerEvents: 'none' }}>
+                                <span style={{ position: 'absolute', top: -2, left: 4, fontSize: 8, color: '#FF6A00', whiteSpace: 'nowrap' }}>{a.name}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#00B42A', marginTop: 12, fontWeight: 500 }}>{ef.danmaku.summary}</div>
+                      </div>
+
+                      {/* 成交关联 */}
+                      <div style={{ borderRadius: 10, background: '#FAFBFC', border: '1px solid #F0F0F0', padding: '14px 16px', marginBottom: 12 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129', marginBottom: 12, borderLeft: '3px solid #722ED1', paddingLeft: 8 }}>成交关联</div>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                          <div style={{ flex: 1, background: '#fff', borderRadius: 8, padding: '10px 8px', textAlign: 'center', border: '1px solid #F0F0F0' }}>
+                            <div style={{ fontSize: 10, color: '#86909C', marginBottom: 2 }}>本场成交额</div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: '#1D2129' }}>¥{ef.sales.totalGmv.toLocaleString()}</div>
+                          </div>
+                          <div style={{ flex: 1, background: '#fff', borderRadius: 8, padding: '10px 8px', textAlign: 'center', border: '1px solid #F0F0F0' }}>
+                            <div style={{ fontSize: 10, color: '#86909C', marginBottom: 2 }}>成交笔数</div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: '#1D2129' }}>{ef.sales.totalOrders}<span style={{ fontSize: 11, fontWeight: 400, color: '#86909C' }}> 笔</span></div>
+                          </div>
+                          <div style={{ flex: 1, background: '#fff', borderRadius: 8, padding: '10px 8px', textAlign: 'center', border: '1px solid #F0F0F0' }}>
+                            <div style={{ fontSize: 10, color: '#86909C', marginBottom: 2 }}>伴播期间占比</div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: '#00B42A' }}>{Math.round(ef.sales.duringBanboRate * 100)}%</div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 11, color: '#4E5969', background: '#F7F8FA', borderRadius: 6, padding: '8px 10px' }}>
+                          伴播动作触发后 1 分钟内成交 <span style={{ fontWeight: 600, color: '#1D2129' }}>{ef.sales.postActionOrders} 笔</span>，占总成交 <span style={{ fontWeight: 600, color: '#00B42A' }}>{Math.round(ef.sales.postActionRate * 100)}%</span>
+                        </div>
+                      </div>
+
+                      {/* 高光时刻 */}
+                      <div style={{ borderRadius: 10, background: '#FAFBFC', border: '1px solid #F0F0F0', padding: '14px 16px' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129', borderLeft: '3px solid #722ED1', paddingLeft: 8 }}>高光时刻</div>
+                        <div style={{ fontSize: 10, color: '#86909C', marginBottom: 10, paddingLeft: 11 }}>弹幕峰值对应的伴播动作</div>
+                        {ef.highlights.map((h, i) => {
+                          const barMax = Math.max(...h.bars)
+                          return (
+                            <div key={i}>
+                              {i > 0 && <div style={{ height: 1, background: '#F0F0F0', margin: '8px 0' }} />}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ fontSize: 11, color: '#86909C', fontFamily: 'monospace', minWidth: 36 }}>{h.time}</span>
+                                <div style={{ flex: 1 }}>
+                                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>{h.action}</span>
+                                  <span style={{ fontSize: 11, color: '#722ED1', marginLeft: 6 }}>+{h.delta} 条</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 24 }}>
+                                  {['前', '中', '后'].map((label, bi) => (
+                                    <div key={bi} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                      <div style={{ width: 8, height: `${(h.bars[bi] / maxHighlightBar) * 20}px`, background: bi === 2 ? '#722ED1' : bi === 1 ? '#B37FEB' : '#E8E8E8', borderRadius: 1.5 }} />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })() : (
+                  <div style={{ borderRadius: 10, border: '1px dashed #C9CDD4', padding: '20px 16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: '#86909C', marginBottom: 4 }}>效果关联分析</div>
+                    <div style={{ fontSize: 11, color: '#C9CDD4' }}>接入抖店数据后可查看弹幕变化、成交关联等</div>
+                  </div>
+                )}
               </>
             )
           })() : (
@@ -1419,15 +1561,17 @@ const openActionPreview = (ea: EventAction) => {
                     const renderLivePreviewButton = () => {
                       if (!point.hasPreview) return null
                       const isTriggered = triggeredSkill === point.id
+                      const isOtherPlaying = triggeredSkill !== null && triggeredSkill !== point.id
                       if (isLive) {
                         return <button
                           onClick={() => triggerSkill(point.id)}
-                          disabled={isTriggered}
+                          disabled={isTriggered || isOtherPlaying}
+                          title={isOtherPlaying ? '正在播放中，请等待完成' : undefined}
                           style={{
-                            padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer',
+                            padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer',
                             border: 'none',
-                            background: isTriggered ? '#E6F9EF' : '#FF6A00',
-                            color: isTriggered ? '#00B42A' : '#fff',
+                            background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00',
+                            color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff',
                             fontWeight: 500,
                             transition: 'all 0.2s',
                           }}
@@ -1519,6 +1663,14 @@ const openActionPreview = (ea: EventAction) => {
                         </div>
                         <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6, fontStyle: 'italic' }}>{point.description}</div>
                         {renderLiveValueArea()}
+                        {point.id !== 'sp4' && (
+                          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px dashed #E5E6EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: 12, color: '#86909C' }}>触发时暂停搭话</span>
+                            <div onClick={() => toggleMuteTalk(point.id)} style={{ width: 36, height: 20, borderRadius: 10, background: muteTalkSkills[point.id] ? '#3370FF' : '#C9CDD4', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
+                              <div style={{ width: 16, height: 16, borderRadius: 8, background: '#fff', position: 'absolute', top: 2, left: muteTalkSkills[point.id] ? 18 : 2, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -1531,6 +1683,7 @@ const openActionPreview = (ea: EventAction) => {
                   {customCommands.map(cc => {
                     const isEditing = editingCC === cc.id
                     const isTriggered = triggeredSkill === cc.id
+                    const isOtherPlaying = triggeredSkill !== null && triggeredSkill !== cc.id
                     const action = CUSTOM_ACTION_LIBRARY.find(a => a.id === cc.actionId)
                     return (
                       <div key={cc.id} style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
@@ -1538,7 +1691,7 @@ const openActionPreview = (ea: EventAction) => {
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
                           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                             {isLive ? (
-                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
+                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered || isOtherPlaying} title={isOtherPlaying ? '正在播放中，请等待完成' : undefined} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00', color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                             ) : (
                               <button onClick={() => setPreviewPopup({ videoUrl: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', title: `${cc.actionLabel} 预览`, avatarName: '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
                             )}
@@ -1558,6 +1711,12 @@ const openActionPreview = (ea: EventAction) => {
                             </div>
                           </div>
                         )}
+                        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px dashed #E5E6EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 12, color: '#86909C' }}>触发时暂停搭话</span>
+                          <div onClick={() => toggleMuteTalk(cc.id)} style={{ width: 36, height: 20, borderRadius: 10, background: muteTalkSkills[cc.id] ? '#3370FF' : '#C9CDD4', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
+                            <div style={{ width: 16, height: 16, borderRadius: 8, background: '#fff', position: 'absolute', top: 2, left: muteTalkSkills[cc.id] ? 18 : 2, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                          </div>
+                        </div>
                       </div>
                     )
                   })}
@@ -1738,15 +1897,17 @@ const openActionPreview = (ea: EventAction) => {
                 const renderPreviewButton = () => {
                   if (!hasPreview) return null
                   const isTriggered = triggeredSkill === point.id
+                  const isOtherPlaying = triggeredSkill !== null && triggeredSkill !== point.id
                   if (isLive) {
                     return <button
                       onClick={() => triggerSkill(point.id)}
-                      disabled={isTriggered}
+                      disabled={isTriggered || isOtherPlaying}
+                      title={isOtherPlaying ? '正在播放中，请等待完成' : undefined}
                       style={{
-                        padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer',
+                        padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer',
                         border: 'none',
-                        background: isTriggered ? '#E6F9EF' : '#FF6A00',
-                        color: isTriggered ? '#00B42A' : '#fff',
+                        background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00',
+                        color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff',
                         fontWeight: 500,
                         transition: 'all 0.2s',
                       }}
@@ -1973,6 +2134,14 @@ const openActionPreview = (ea: EventAction) => {
                     <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6, fontStyle: 'italic' }}>{point.description}</div>
                     {/* 值区域（显示态/编辑态） */}
                     {renderValueArea()}
+                    {point.id !== 'sp4' && (
+                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px dashed #E5E6EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 12, color: '#86909C' }}>触发时暂停搭话</span>
+                        <div onClick={() => toggleMuteTalk(point.id)} style={{ width: 36, height: 20, borderRadius: 10, background: muteTalkSkills[point.id] ? '#3370FF' : '#C9CDD4', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
+                          <div style={{ width: 16, height: 16, borderRadius: 8, background: '#fff', position: 'absolute', top: 2, left: muteTalkSkills[point.id] ? 18 : 2, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -1985,13 +2154,14 @@ const openActionPreview = (ea: EventAction) => {
                   {customCommands.map(cc => {
                     const isEditing = editingCC === cc.id
                     const isTriggered = triggeredSkill === cc.id
+                    const isOtherPlaying = triggeredSkill !== null && triggeredSkill !== cc.id
                     return (
                       <div key={cc.id} style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 12, background: '#FFFFFF', border: '1px solid #E5E6EB' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
                           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                             {isLive ? (
-                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: isTriggered ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : '#FF6A00', color: isTriggered ? '#00B42A' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
+                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered || isOtherPlaying} title={isOtherPlaying ? '正在播放中，请等待完成' : undefined} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00', color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                             ) : (
                               <button onClick={() => setPreviewPopup({ videoUrl: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', title: `${cc.actionLabel} 预览`, avatarName: '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
                             )}
@@ -2011,6 +2181,12 @@ const openActionPreview = (ea: EventAction) => {
                             </div>
                           </div>
                         )}
+                        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px dashed #E5E6EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 12, color: '#86909C' }}>触发时暂停搭话</span>
+                          <div onClick={() => toggleMuteTalk(cc.id)} style={{ width: 36, height: 20, borderRadius: 10, background: muteTalkSkills[cc.id] ? '#3370FF' : '#C9CDD4', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
+                            <div style={{ width: 16, height: 16, borderRadius: 8, background: '#fff', position: 'absolute', top: 2, left: muteTalkSkills[cc.id] ? 18 : 2, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                          </div>
+                        </div>
                       </div>
                     )
                   })}
