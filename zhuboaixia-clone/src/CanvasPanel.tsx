@@ -857,6 +857,34 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
     sp1: true, sp2: true, sp9: true, // 进出场/表演默认暂停
   })
   const toggleMuteTalk = (id: string) => setMuteTalkSkills(prev => ({ ...prev, [id]: !prev[id] }))
+  const [muteTalkHover, setMuteTalkHover] = useState<string | null>(null)
+
+  const MuteTalkIcon = ({ id }: { id: string }) => {
+    const muted = !!muteTalkSkills[id]
+    return (
+      <span
+        onMouseEnter={() => setMuteTalkHover(id)}
+        onMouseLeave={() => setMuteTalkHover(null)}
+        onClick={() => toggleMuteTalk(id)}
+        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', position: 'relative' }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={muted ? '#3370FF' : '#C9CDD4'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          {muted && <line x1="4" y1="4" x2="20" y2="20" stroke="#3370FF" strokeWidth="2.5"/>}
+        </svg>
+        {muteTalkHover === id && (
+          <div style={{
+            position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+            marginBottom: 6, padding: '4px 8px', borderRadius: 4,
+            background: '#1D2129', color: '#fff', fontSize: 11, whiteSpace: 'nowrap',
+            pointerEvents: 'none', zIndex: 10,
+          }}>
+            {muted ? '搭话已暂停' : '搭话开启中'}
+          </div>
+        )}
+      </span>
+    )
+  }
 
   // 手动触发反馈状态
   const [triggeredSkill, setTriggeredSkill] = useState<string | null>(null)
@@ -1660,15 +1688,7 @@ const openActionPreview = (ea: EventAction) => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{point.name}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            {point.id !== 'sp4' && (
-                              <span onClick={() => toggleMuteTalk(point.id)} title={muteTalkSkills[point.id] ? '触发时暂停搭话（点击关闭）' : '触发时允许搭话（点击暂停）'} style={{ cursor: 'pointer', fontSize: 14, opacity: muteTalkSkills[point.id] ? 1 : 0.35, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center' }}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={muteTalkSkills[point.id] ? '#3370FF' : '#C9CDD4'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M8 13a4 4 0 0 0 8 0"/>
-                                  <circle cx="12" cy="12" r="10"/>
-                                  {muteTalkSkills[point.id] && <line x1="4" y1="4" x2="20" y2="20" stroke="#3370FF" strokeWidth="2"/>}
-                                </svg>
-                              </span>
-                            )}
+                            {point.id !== 'sp4' && <MuteTalkIcon id={point.id} />}
                             {renderLivePreviewButton()}
                           </div>
                         </div>
@@ -1693,13 +1713,7 @@ const openActionPreview = (ea: EventAction) => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
                           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                            <span onClick={() => toggleMuteTalk(cc.id)} title={muteTalkSkills[cc.id] ? '触发时暂停搭话（点击关闭）' : '触发时允许搭话（点击暂停）'} style={{ cursor: 'pointer', opacity: muteTalkSkills[cc.id] ? 1 : 0.35, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center' }}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={muteTalkSkills[cc.id] ? '#3370FF' : '#C9CDD4'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M8 13a4 4 0 0 0 8 0"/>
-                                <circle cx="12" cy="12" r="10"/>
-                                {muteTalkSkills[cc.id] && <line x1="4" y1="4" x2="20" y2="20" stroke="#3370FF" strokeWidth="2"/>}
-                              </svg>
-                            </span>
+                            <MuteTalkIcon id={cc.id} />
                             {isLive ? (
                               <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered || isOtherPlaying} title={isOtherPlaying ? '正在播放中，请等待完成' : undefined} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00', color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                             ) : (
@@ -2133,15 +2147,7 @@ const openActionPreview = (ea: EventAction) => {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                       <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{point.name}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {point.id !== 'sp4' && (
-                          <span onClick={() => toggleMuteTalk(point.id)} title={muteTalkSkills[point.id] ? '触发时暂停搭话（点击关闭）' : '触发时允许搭话（点击暂停）'} style={{ cursor: 'pointer', opacity: muteTalkSkills[point.id] ? 1 : 0.35, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center' }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={muteTalkSkills[point.id] ? '#3370FF' : '#C9CDD4'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M8 13a4 4 0 0 0 8 0"/>
-                              <circle cx="12" cy="12" r="10"/>
-                              {muteTalkSkills[point.id] && <line x1="4" y1="4" x2="20" y2="20" stroke="#3370FF" strokeWidth="2"/>}
-                            </svg>
-                          </span>
-                        )}
+                        {point.id !== 'sp4' && <MuteTalkIcon id={point.id} />}
                         {renderPreviewButton()}
                       </div>
                     </div>
@@ -2167,13 +2173,7 @@ const openActionPreview = (ea: EventAction) => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
                           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                            <span onClick={() => toggleMuteTalk(cc.id)} title={muteTalkSkills[cc.id] ? '触发时暂停搭话（点击关闭）' : '触发时允许搭话（点击暂停）'} style={{ cursor: 'pointer', opacity: muteTalkSkills[cc.id] ? 1 : 0.35, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center' }}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={muteTalkSkills[cc.id] ? '#3370FF' : '#C9CDD4'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M8 13a4 4 0 0 0 8 0"/>
-                                <circle cx="12" cy="12" r="10"/>
-                                {muteTalkSkills[cc.id] && <line x1="4" y1="4" x2="20" y2="20" stroke="#3370FF" strokeWidth="2"/>}
-                              </svg>
-                            </span>
+                            <MuteTalkIcon id={cc.id} />
                             {isLive ? (
                               <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered || isOtherPlaying} title={isOtherPlaying ? '正在播放中，请等待完成' : undefined} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00', color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                             ) : (
