@@ -32,6 +32,9 @@ export type OutfitSlot = {
   productId: string | null
   selectedImageIndex: number
   source: 'product' | 'uploaded' | 'empty'
+  analysisStatus: 'idle' | 'analyzing' | 'done'
+  chromaBg: 'green' | 'blue' | 'yellow' | null
+  chromaOverridden?: boolean
 }
 
 export type AvatarMode = 'ip' | 'universal' | 'product-bound'

@@ -29,6 +29,8 @@ type RefImage = {
   detectedParts?: RefImagePart[]
   selectedParts?: RefImagePart[]
   partsLocked?: boolean  // true when AI detected human_outfit (full-body), auto-selects all parts
+  chromaBg?: 'green' | 'blue' | 'yellow'
+  chromaOverridden?: boolean
 }
 
 const REF_TYPE_LABEL: Record<RefImageType, string> = {
@@ -416,6 +418,7 @@ export default function BanboCustomizePage({
   const currentTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [refImages, setRefImages] = useState<RefImage[]>([])
+  const [chromaOverridePending, setChromaOverridePending] = useState<Set<string>>(new Set())
   const refFileRef = useRef<HTMLInputElement>(null)
   const uploadCount = useRef(0)
 
@@ -445,7 +448,7 @@ export default function BanboCustomizePage({
         const partsLocked = imageType === 'human_outfit'
         setRefImages(prev => prev.map(img =>
           img.id === id
-            ? { ...img, phase: 'selecting', imageType, selectedParts: defaultParts, partsLocked }
+            ? { ...img, phase: 'selecting', imageType, selectedParts: defaultParts, partsLocked, chromaBg: 'blue' }
             : img
         ))
       }, 1000)
@@ -492,6 +495,16 @@ export default function BanboCustomizePage({
 
   function removeRefImage(id: string) {
     setRefImages(prev => prev.filter(img => img.id !== id))
+    setChromaOverridePending(prev => { const s = new Set(prev); s.delete(id); return s })
+  }
+
+  function confirmChromaOverride(id: string) {
+    setRefImages(prev => prev.map(img => img.id === id ? { ...img, chromaOverridden: true } : img))
+    setChromaOverridePending(prev => { const s = new Set(prev); s.delete(id); return s })
+  }
+
+  function cancelChromaOverride(id: string) {
+    setChromaOverridePending(prev => { const s = new Set(prev); s.delete(id); return s })
   }
 
   function handleInputChange(value: string) {
@@ -1217,7 +1230,8 @@ export default function BanboCustomizePage({
                 上传商品图或模特图，选择需要参考的部位（最多 3 张）
               </div>
               <div style={{ fontSize: 11, color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 6, padding: '5px 9px', marginBottom: 10, lineHeight: 1.5 }}>
-                建议上传纯色背景的商品平铺图，上身效果最好；使用模特上身图或多商品混排图，生成效果可能偏差。
+                优先上传服装上身图，并确保服饰关键细节、logo、图案等未被遮挡。{' '}
+                <a href="#" style={{ color: '#92400E', textDecoration: 'underline' }}>最佳实践</a>
               </div>
 
               {refImages.map(img => {
@@ -1259,80 +1273,140 @@ export default function BanboCustomizePage({
                       )}
                       {img.phase === 'selecting' && (
                         <>
-                          <span style={{ fontSize: 11, color: C.textSecondary, flexShrink: 0 }}>参考部位</span>
-                          {ALL_PARTS.map(part => {
-                            const checked = img.selectedParts?.includes(part) ?? false
-                            const claimed = claimedByOthers.has(part)
-                            const locked = img.partsLocked
-                            if (claimed) return (
-                              <span key={part} style={{
-                                padding: '2px 9px', borderRadius: 10, fontSize: 11,
-                                border: `1px solid ${C.border}`,
-                                background: '#F9FAFB', color: C.textTertiary,
+                          {img.chromaBg && img.chromaBg !== 'green' && !img.chromaOverridden ? (
+                            // 绿色服饰：软拦截，可强制覆盖
+                            <>
+                              <span style={{ fontSize: 11, color: '#DC2626', fontWeight: 600, flexShrink: 0 }}>✗ 含绿色服饰</span>
+                              {ALL_PARTS.map(part => (
+                                <span key={part} style={{
+                                  padding: '2px 9px', borderRadius: 10, fontSize: 11,
+                                  border: `1px solid ${C.border}`,
+                                  background: '#F9FAFB', color: C.textTertiary,
+                                  flexShrink: 0, userSelect: 'none' as const,
+                                }}>{part}</span>
+                              ))}
+                              <span style={{
+                                padding: '2px 12px', borderRadius: 6, fontSize: 11,
+                                background: '#E5E7EB', color: C.textTertiary,
                                 flexShrink: 0, userSelect: 'none' as const,
+                              }}>确认</span>
+                              <div style={{
+                                flexBasis: '100%', marginTop: 4,
+                                padding: '5px 9px', borderRadius: 6,
+                                background: '#FEF2F2', border: `1px solid #FECACA`,
+                                fontSize: 11, color: '#DC2626', lineHeight: 1.5,
                               }}>
-                                {part}<span style={{ fontSize: 9, marginLeft: 3 }}>已占用</span>
-                              </span>
-                            )
-                            if (locked) return (
-                              <span key={part} style={{
-                                padding: '2px 9px', borderRadius: 10, fontSize: 11,
-                                border: `1px solid ${C.primary}`,
-                                background: '#F5F4FF', color: C.primary,
-                                flexShrink: 0, userSelect: 'none' as const,
-                                cursor: 'default',
-                              }}>✓ {part}</span>
-                            )
-                            return (
-                              <button key={part} onClick={() => toggleRefPart(img.id, part)} style={{
-                                padding: '2px 9px', borderRadius: 10, fontSize: 11, cursor: 'pointer',
-                                border: `1px solid ${checked ? C.primary : C.border}`,
-                                background: checked ? '#F5F4FF' : '#fff',
-                                color: checked ? C.primary : C.textSecondary,
-                                fontFamily: T.fonts.family, flexShrink: 0,
-                              }}>{checked ? '✓ ' : ''}{part}</button>
-                            )
-                          })}
-                          <button
-                            onClick={() => confirmRefImage(img.id)}
-                            disabled={!(img.selectedParts ?? []).length}
-                            style={{
-                              padding: '2px 12px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
-                              border: 'none', fontFamily: T.fonts.family, flexShrink: 0,
-                              background: (img.selectedParts ?? []).length ? C.primary : '#E5E7EB',
-                              color: (img.selectedParts ?? []).length ? '#fff' : C.textTertiary,
-                            }}
-                          >确认</button>
-                          {img.partsLocked && (
-                            <div style={{
-                              flexBasis: '100%', marginTop: 4,
-                              padding: '5px 9px', borderRadius: 6,
-                              background: '#F5F4FF', border: `1px solid #DDD9FF`,
-                              fontSize: 11, color: '#5850EC', lineHeight: 1.5,
-                            }}>
-                              已识别为全身穿搭图，将参考全部部位。
-                              <span
-                                onClick={() => unlockRefParts(img.id)}
-                                style={{ color: C.primary, cursor: 'pointer', marginLeft: 4, textDecoration: 'underline' }}
-                              >识别有误？</span>
-                            </div>
-                          )}
-                          {(img.selectedParts ?? []).length === 0 && (
-                            <span style={{ fontSize: 10, color: C.textTertiary, flexBasis: '100%' }}>
-                              所有部位已被其他图占用，可删除此图
-                            </span>
+                                此图含绿色服饰，无法用于定装照生成，请点右侧 × 删除后重新上传。
+                                {chromaOverridePending.has(img.id) ? (
+                                  <>
+                                    <span style={{ color: '#7F1D1D' }}>确定强制使用？</span>
+                                    <span
+                                      onClick={() => confirmChromaOverride(img.id)}
+                                      style={{ marginLeft: 4, color: '#B91C1C', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                                    >确定</span>
+                                    <span
+                                      onClick={() => cancelChromaOverride(img.id)}
+                                      style={{ marginLeft: 4, color: '#6B7280', textDecoration: 'underline', cursor: 'pointer' }}
+                                    >取消</span>
+                                  </>
+                                ) : (
+                                  <span
+                                    onClick={() => setChromaOverridePending(prev => new Set(prev).add(img.id))}
+                                    style={{ marginLeft: 4, color: '#6B7280', textDecoration: 'underline', cursor: 'pointer' }}
+                                  >误识别？强制使用</span>
+                                )}
+                              </div>
+                            </>
+                          ) : (
+                            // 正常流程
+                            <>
+                              <span style={{ fontSize: 11, color: C.textSecondary, flexShrink: 0 }}>参考部位</span>
+                              {ALL_PARTS.map(part => {
+                                const checked = img.selectedParts?.includes(part) ?? false
+                                const claimed = claimedByOthers.has(part)
+                                const locked = img.partsLocked
+                                if (claimed) return (
+                                  <span key={part} style={{
+                                    padding: '2px 9px', borderRadius: 10, fontSize: 11,
+                                    border: `1px solid ${C.border}`,
+                                    background: '#F9FAFB', color: C.textTertiary,
+                                    flexShrink: 0, userSelect: 'none' as const,
+                                  }}>
+                                    {part}<span style={{ fontSize: 9, marginLeft: 3 }}>已占用</span>
+                                  </span>
+                                )
+                                if (locked) return (
+                                  <span key={part} style={{
+                                    padding: '2px 9px', borderRadius: 10, fontSize: 11,
+                                    border: `1px solid ${C.primary}`,
+                                    background: '#F5F4FF', color: C.primary,
+                                    flexShrink: 0, userSelect: 'none' as const,
+                                    cursor: 'default',
+                                  }}>✓ {part}</span>
+                                )
+                                return (
+                                  <button key={part} onClick={() => toggleRefPart(img.id, part)} style={{
+                                    padding: '2px 9px', borderRadius: 10, fontSize: 11, cursor: 'pointer',
+                                    border: `1px solid ${checked ? C.primary : C.border}`,
+                                    background: checked ? '#F5F4FF' : '#fff',
+                                    color: checked ? C.primary : C.textSecondary,
+                                    fontFamily: T.fonts.family, flexShrink: 0,
+                                  }}>{checked ? '✓ ' : ''}{part}</button>
+                                )
+                              })}
+                              <button
+                                onClick={() => confirmRefImage(img.id)}
+                                disabled={!(img.selectedParts ?? []).length}
+                                style={{
+                                  padding: '2px 12px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+                                  border: 'none', fontFamily: T.fonts.family, flexShrink: 0,
+                                  background: (img.selectedParts ?? []).length ? C.primary : '#E5E7EB',
+                                  color: (img.selectedParts ?? []).length ? '#fff' : C.textTertiary,
+                                }}
+                              >确认</button>
+                              {img.partsLocked && (
+                                <div style={{
+                                  flexBasis: '100%', marginTop: 4,
+                                  padding: '5px 9px', borderRadius: 6,
+                                  background: '#F5F4FF', border: `1px solid #DDD9FF`,
+                                  fontSize: 11, color: '#5850EC', lineHeight: 1.5,
+                                }}>
+                                  已识别为全身穿搭图，将参考全部部位。
+                                  <span
+                                    onClick={() => unlockRefParts(img.id)}
+                                    style={{ color: C.primary, cursor: 'pointer', marginLeft: 4, textDecoration: 'underline' }}
+                                  >识别有误？</span>
+                                </div>
+                              )}
+                              {(img.selectedParts ?? []).length === 0 && (
+                                <span style={{ fontSize: 10, color: C.textTertiary, flexBasis: '100%' }}>
+                                  所有部位已被其他图占用，可删除此图
+                                </span>
+                              )}
+                            </>
                           )}
                         </>
                       )}
                       {img.phase === 'confirmed' && (
                         <>
-                          <span style={{ fontSize: 11, color: '#16A34A', flexShrink: 0 }}>✓ 已确认</span>
-                          {(img.selectedParts ?? []).map(part => (
-                            <span key={part} style={{
-                              fontSize: 10, padding: '1px 7px', borderRadius: 10,
-                              background: '#F5F4FF', color: C.primary, border: `1px solid #DDD9FF`,
-                            }}>{part}</span>
-                          ))}
+                          {img.chromaBg && img.chromaBg !== 'green' && !img.chromaOverridden ? (
+                            <span style={{ fontSize: 11, color: '#B45309', flexShrink: 0, fontWeight: 600 }}>⚠ 含绿色元素</span>
+                          ) : img.chromaOverridden ? (
+                            <span style={{ fontSize: 11, color: '#B45309', flexShrink: 0, fontWeight: 600 }}>⚠ 强制使用</span>
+                          ) : (
+                            <span style={{ fontSize: 11, color: '#16A34A', flexShrink: 0 }}>✓ 已确认</span>
+                          )}
+                          {(img.selectedParts ?? []).map(part => {
+                            const warn = (img.chromaBg && img.chromaBg !== 'green' && !img.chromaOverridden) || img.chromaOverridden
+                            return (
+                              <span key={part} style={{
+                                fontSize: 10, padding: '1px 7px', borderRadius: 10,
+                                background: warn ? '#FFF7ED' : '#F5F4FF',
+                                color: warn ? '#B45309' : C.primary,
+                                border: `1px solid ${warn ? '#FECF8A' : '#DDD9FF'}`,
+                              }}>{part}</span>
+                            )
+                          })}
                           <button onClick={() => editRefImage(img.id)} style={{
                             fontSize: 11, color: C.textTertiary, background: 'none',
                             border: 'none', cursor: 'pointer', padding: 0,

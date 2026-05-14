@@ -29,10 +29,25 @@ const MAX_ADJUST = 3
 
 function makeEmptySlots(): OutfitSlot[] {
   return [
-    { slot: 'top',    productId: null, selectedImageIndex: 0, source: 'empty' },
-    { slot: 'bottom', productId: null, selectedImageIndex: 0, source: 'empty' },
-    { slot: 'shoes',  productId: null, selectedImageIndex: 0, source: 'empty' },
+    { slot: 'top',    productId: null, selectedImageIndex: 0, source: 'empty', analysisStatus: 'idle', chromaBg: null },
+    { slot: 'bottom', productId: null, selectedImageIndex: 0, source: 'empty', analysisStatus: 'idle', chromaBg: null },
+    { slot: 'shoes',  productId: null, selectedImageIndex: 0, source: 'empty', analysisStatus: 'idle', chromaBg: null },
   ]
+}
+
+function mockChromaBg(): 'green' | 'blue' | 'yellow' {
+  return 'blue'
+}
+
+function getConfigFinalChroma(config: AvatarConfig): 'green' | 'blue' | 'yellow' {
+  const priority: Record<string, number> = { green: 1, blue: 2, yellow: 3 }
+  let result: 'green' | 'blue' | 'yellow' = 'green'
+  for (const slot of config.outfitSlots) {
+    if (slot.analysisStatus === 'done' && slot.chromaBg && !slot.chromaOverridden) {
+      if (priority[slot.chromaBg] > priority[result]) result = slot.chromaBg
+    }
+  }
+  return result
 }
 
 function makeConfig(faceId: string, faceType: 'ip' | 'realistic', avatarIndex: number): AvatarConfig {
@@ -76,8 +91,11 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
   const [showCoverageDetail, setShowCoverageDetail] = useState(false)
 
   const [uploadToast, setUploadToast] = useState<string | null>(null)
+  const [chromaBlockModal, setChromaBlockModal] = useState<{ configId: string; conflictSlotLabels: string[] } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pendingUploadRef = useRef<{ configId: string; slotKey: FixedSlotKey } | null>(null)
+  const avatarConfigsRef = useRef(avatarConfigs)
+  useEffect(() => { avatarConfigsRef.current = avatarConfigs })
 
   const isCardExpanded = (config: { id: string; portraitStatus: string }) =>
     config.id in cardExpansionOverrides
@@ -136,6 +154,22 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
   const generatePortrait = (configId: string) => {
     const config = avatarConfigs.find(c => c.id === configId)
     if (!config) return
+
+    const isAnalyzing = config.outfitSlots.some(s => s.analysisStatus === 'analyzing')
+    if (isAnalyzing) {
+      setUploadToast('图片分析中，请稍候再生成')
+      return
+    }
+
+    const finalChroma = getConfigFinalChroma(config)
+    if (finalChroma !== 'green') {
+      const conflictSlotLabels = config.outfitSlots
+        .filter(s => s.analysisStatus === 'done' && s.chromaBg && s.chromaBg !== 'green')
+        .map(s => SLOT_LABEL[s.slot])
+      setChromaBlockModal({ configId, conflictSlotLabels })
+      return
+    }
+
     setGeneratingId(configId)
     updateConfig(configId, { portraitStatus: 'generating' })
     setTimeout(() => {
@@ -209,7 +243,7 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
     if (pendingIsCombined && (slotKey === 'top' || slotKey === 'bottom')) {
       newSlots = newSlots.map(s =>
         (s.slot === 'top' || s.slot === 'bottom')
-          ? { ...s, productId: pendingProductId, selectedImageIndex: pendingImageIdx, source: 'product' as const }
+          ? { ...s, productId: pendingProductId, selectedImageIndex: pendingImageIdx, source: 'product' as const, analysisStatus: 'done' as const, chromaBg: 'green' as const }
           : s
       )
     } else {
@@ -219,9 +253,9 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
       const wasCombined = !!(currentSlot?.productId && currentSlot.productId === oppositeSlot?.productId)
 
       newSlots = newSlots.map(s => {
-        if (s.slot === slotKey) return { ...s, productId: pendingProductId, selectedImageIndex: pendingImageIdx, source: 'product' as const }
+        if (s.slot === slotKey) return { ...s, productId: pendingProductId, selectedImageIndex: pendingImageIdx, source: 'product' as const, analysisStatus: 'done' as const, chromaBg: 'green' as const }
         if (wasCombined && oppositeKey && s.slot === oppositeKey) {
-          return { ...s, productId: null, selectedImageIndex: 0, source: 'empty' as const }
+          return { ...s, productId: null, selectedImageIndex: 0, source: 'empty' as const, analysisStatus: 'idle' as const, chromaBg: null }
         }
         return s
       })
@@ -235,7 +269,7 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
     const config = avatarConfigs.find(c => c.id === configId)
     if (!config) return
     const newSlots = config.outfitSlots.map(s =>
-      s.slot === slotKey ? { ...s, productId: null, selectedImageIndex: 0, source: 'uploaded' as const } : s
+      s.slot === slotKey ? { ...s, productId: null, selectedImageIndex: 0, source: 'uploaded' as const, analysisStatus: 'analyzing' as const, chromaBg: null } : s
     )
     updateConfig(configId, { outfitSlots: newSlots, portraitStatus: 'pending', portraitAppliedRoundId: null })
     setSlotModal(null)
@@ -287,6 +321,27 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
         return
       }
       handleUploadSlot(configId, slotKey)
+
+      // 伪装分析过程：2-3s 后写入 mock 结果
+      const delay = 2000 + Math.random() * 1000
+      setTimeout(() => {
+        const latestConfigs = avatarConfigsRef.current
+        const latestConfig = latestConfigs.find(c => c.id === configId)
+        if (!latestConfig) return
+        const targetSlot = latestConfig.outfitSlots.find(s => s.slot === slotKey)
+        if (!targetSlot || targetSlot.analysisStatus !== 'analyzing') return
+        const chroma = mockChromaBg()
+        onUpdate({
+          avatarConfigs: latestConfigs.map(c =>
+            c.id === configId ? {
+              ...c,
+              outfitSlots: c.outfitSlots.map(s =>
+                s.slot === slotKey ? { ...s, analysisStatus: 'done', chromaBg: chroma } : s
+              )
+            } : c
+          )
+        })
+      }, delay)
     }
     img.onerror = () => {
       URL.revokeObjectURL(url)
@@ -305,17 +360,26 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
     if (isCombined && (slotKey === 'top' || slotKey === 'bottom')) {
       newSlots = newSlots.map(s =>
         (s.slot === 'top' || s.slot === 'bottom')
-          ? { slot: s.slot, productId: null, selectedImageIndex: 0, source: 'empty' as const }
+          ? { slot: s.slot, productId: null, selectedImageIndex: 0, source: 'empty' as const, analysisStatus: 'idle' as const, chromaBg: null }
           : s
       )
     } else {
       newSlots = newSlots.map(s =>
         s.slot === slotKey
-          ? { slot: s.slot, productId: null, selectedImageIndex: 0, source: 'empty' as const }
+          ? { slot: s.slot, productId: null, selectedImageIndex: 0, source: 'empty' as const, analysisStatus: 'idle' as const, chromaBg: null }
           : s
       )
     }
     updateConfig(configId, { outfitSlots: newSlots, portraitStatus: 'pending', portraitAppliedRoundId: null })
+  }
+
+  const handleOverrideSlot = (configId: string, slotKey: FixedSlotKey) => {
+    const config = avatarConfigs.find(c => c.id === configId)
+    if (!config) return
+    const newSlots = config.outfitSlots.map(s =>
+      s.slot === slotKey ? { ...s, chromaOverridden: true } : s
+    )
+    updateConfig(configId, { outfitSlots: newSlots })
   }
 
   // ── Coverage ──
@@ -514,6 +578,7 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
                 onCollapse={() => setCardExpanded(config.id, false)}
                 onSlotClick={(slotKey) => openSlotModal(config.id, slotKey)}
                 onSlotRemove={(slotKey) => handleRemoveSlot(config.id, slotKey)}
+                onSlotOverride={(slotKey) => handleOverrideSlot(config.id, slotKey)}
                 onDelete={faceConfigs.length > 1 ? () => deleteConfig(config.id) : undefined}
                 onGenerate={() => generatePortrait(config.id)}
                 onDoRegenerate={(c) => doRegenerate(config.id, c)}
@@ -560,6 +625,46 @@ export default function Step3AvatarGen({ state, onUpdate, onNext, onPrev, editMo
           </button>
         </div>
       </div>
+
+      {/* ── 绿色冲突硬拦截弹窗 ── */}
+      {chromaBlockModal && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}
+          onClick={() => setChromaBlockModal(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 400, borderRadius: 16, background: '#fff', boxShadow: '0 8px 40px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+            {/* 顶部橙色警示带 */}
+            <div style={{ background: '#FFF7ED', borderBottom: '1px solid #FECF8A', padding: '16px 20px 14px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FED7AA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>⚠️</div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#92400E' }}>参考图含绿色元素</div>
+                <div style={{ fontSize: 12, color: '#B45309', marginTop: 3 }}>
+                  检测到「{chromaBlockModal.conflictSlotLabels.join('」「')}」参考图
+                </div>
+              </div>
+            </div>
+            {/* 正文 */}
+            <div style={{ padding: '16px 20px' }}>
+              <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.8 }}>
+                上传的参考图中含有<b>绿色或蓝绿色</b>服装元素（如草绿、军绿、荧光绿等）。
+              </div>
+              <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.8, marginTop: 8 }}>
+                当前版本仅支持绿幕背景，绿色区域在合成时会被误抠除，导致定装照出现残缺。请更换不含绿色的参考图后再生成。
+              </div>
+              <div style={{ marginTop: 16, padding: '10px 12px', borderRadius: 8, background: '#F9FAFB', border: '1px solid #E5E7EB', fontSize: 12, color: '#6B7280', lineHeight: 1.7 }}>
+                💡 建议使用<b>白底平铺图</b>，避免含绿色、蓝绿色系的服装图片
+              </div>
+            </div>
+            {/* 按钮区 */}
+            <div style={{ padding: '0 20px 20px' }}>
+              <button
+                onClick={() => setChromaBlockModal(null)}
+                style={{ width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: C.orange, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: C.font }}
+              >
+                重新上传参考图
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── 槽位选择弹窗（两步）── */}
       {slotModal && slotModalConfig && (
@@ -766,6 +871,7 @@ type AvatarCardProps = {
   onCollapse: () => void
   onSlotClick: (slotKey: FixedSlotKey) => void
   onSlotRemove: (slotKey: FixedSlotKey) => void
+  onSlotOverride: (slotKey: FixedSlotKey) => void
   onDelete?: () => void
   onGenerate: () => void
   onDoRegenerate: (c: AvatarConfig) => void
@@ -775,7 +881,7 @@ type AvatarCardProps = {
   getFaceEmoji: (id: string) => string
 }
 
-function AvatarCard({ config, index, totalForFace, colorIdx, generatingId, isExpanded, onExpand, onCollapse, onSlotClick, onSlotRemove, onDelete, onGenerate, onDoRegenerate, onApplyRound, onBackToReviewing, onUpdateField, getFaceEmoji }: AvatarCardProps) {
+function AvatarCard({ config, index, totalForFace, colorIdx, generatingId, isExpanded, onExpand, onCollapse, onSlotClick, onSlotRemove, onSlotOverride, onDelete, onGenerate, onDoRegenerate, onApplyRound, onBackToReviewing, onUpdateField, getFaceEmoji }: AvatarCardProps) {
   const [preview, setPreview] = useState<PreviewInfo | null>(null)
 
   const topSlot    = config.outfitSlots.find(s => s.slot === 'top')!
@@ -847,20 +953,24 @@ function AvatarCard({ config, index, totalForFace, colorIdx, generatingId, isExp
             <div style={{ fontSize: 11, fontWeight: 600, color: C.textSec, marginBottom: 8, letterSpacing: '0.02em' }}>穿搭槽位</div>
             {isDress ? (
               <SlotRow label="上下身一体" product={topProduct} source={topSlot.source} imageIdx={topSlot.selectedImageIndex}
-                onClick={() => onSlotClick('top')} onRemove={() => onSlotRemove('top')}
+                analysisStatus={topSlot.analysisStatus} chromaBg={topSlot.chromaBg} chromaOverridden={topSlot.chromaOverridden}
+                onClick={() => onSlotClick('top')} onRemove={() => onSlotRemove('top')} onOverride={() => onSlotOverride('top')}
                 onImageClick={() => setPreview({ product: topProduct, imageIdx: topSlot.selectedImageIndex, source: topSlot.source })} />
             ) : (
               <>
                 <SlotRow label="上身" product={topProduct}    source={topSlot.source}    imageIdx={topSlot.selectedImageIndex}
-                  onClick={() => onSlotClick('top')}    onRemove={() => onSlotRemove('top')}
+                  analysisStatus={topSlot.analysisStatus} chromaBg={topSlot.chromaBg} chromaOverridden={topSlot.chromaOverridden}
+                  onClick={() => onSlotClick('top')}    onRemove={() => onSlotRemove('top')} onOverride={() => onSlotOverride('top')}
                   onImageClick={() => setPreview({ product: topProduct, imageIdx: topSlot.selectedImageIndex, source: topSlot.source })} />
                 <SlotRow label="下身" product={bottomProduct} source={bottomSlot.source} imageIdx={bottomSlot.selectedImageIndex}
-                  onClick={() => onSlotClick('bottom')} onRemove={() => onSlotRemove('bottom')}
+                  analysisStatus={bottomSlot.analysisStatus} chromaBg={bottomSlot.chromaBg} chromaOverridden={bottomSlot.chromaOverridden}
+                  onClick={() => onSlotClick('bottom')} onRemove={() => onSlotRemove('bottom')} onOverride={() => onSlotOverride('bottom')}
                   onImageClick={() => setPreview({ product: bottomProduct, imageIdx: bottomSlot.selectedImageIndex, source: bottomSlot.source })} />
               </>
             )}
             <SlotRow label="鞋子" product={shoesProduct} source={shoesSlot.source} imageIdx={shoesSlot.selectedImageIndex}
-              onClick={() => onSlotClick('shoes')} onRemove={() => onSlotRemove('shoes')}
+              analysisStatus={shoesSlot.analysisStatus} chromaBg={shoesSlot.chromaBg} chromaOverridden={shoesSlot.chromaOverridden}
+              onClick={() => onSlotClick('shoes')} onRemove={() => onSlotRemove('shoes')} onOverride={() => onSlotOverride('shoes')}
               onImageClick={() => setPreview({ product: shoesProduct, imageIdx: shoesSlot.selectedImageIndex, source: shoesSlot.source })} />
           </div>
         )}
@@ -903,17 +1013,23 @@ function AvatarCard({ config, index, totalForFace, colorIdx, generatingId, isExp
 
 // ── SlotRow ──
 
-function SlotRow({ label, product, source, imageIdx, onClick, onRemove, onImageClick }: {
+function SlotRow({ label, product, source, imageIdx, analysisStatus, chromaBg, chromaOverridden, onClick, onRemove, onOverride, onImageClick }: {
   label: string
   product: typeof CARGO_PRODUCTS[0] | null
   source: 'product' | 'uploaded' | 'empty'
   imageIdx: number
+  analysisStatus: 'idle' | 'analyzing' | 'done'
+  chromaBg: 'green' | 'blue' | 'yellow' | null
+  chromaOverridden?: boolean
   onClick: () => void
   onRemove: () => void
+  onOverride: () => void
   onImageClick?: () => void
 }) {
+  const [overridePending, setOverridePending] = useState(false)
   const isEmpty = source === 'empty'
   const isUploaded = source === 'uploaded'
+  const hasChromaWarn = isUploaded && analysisStatus === 'done' && chromaBg !== 'green' && chromaBg !== null && !chromaOverridden
 
   const thumbBg = isUploaded
     ? '#E8EAED'
@@ -921,8 +1037,17 @@ function SlotRow({ label, product, source, imageIdx, onClick, onRemove, onImageC
       ? THUMB_COLORS[imageIdx % THUMB_COLORS.length]
       : '#F2F3F5'
 
+  const rowBorder = isEmpty
+    ? C.border
+    : hasChromaWarn
+      ? '#F97316'
+      : chromaOverridden
+        ? '#FECF8A'
+        : C.blue + '50'
+  const rowBg = isEmpty ? '#FAFBFC' : hasChromaWarn ? '#FFF7ED' : chromaOverridden ? '#FFFBEB' : '#F0F6FF'
+
   return (
-    <div onClick={isEmpty ? onClick : undefined} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, marginBottom: 7, border: `1px solid ${isEmpty ? C.border : C.blue + '50'}`, background: isEmpty ? '#FAFBFC' : '#F0F6FF', cursor: isEmpty ? 'pointer' : 'default' }}>
+    <div onClick={isEmpty ? onClick : undefined} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, marginBottom: 7, border: `1px solid ${rowBorder}`, background: rowBg, cursor: isEmpty ? 'pointer' : 'default' }}>
       <div style={{ flexShrink: 0 }}>
         <span style={{ fontSize: 11, fontWeight: 600, color: '#555', background: '#EFEFEF', borderRadius: 5, padding: '2px 8px', whiteSpace: 'nowrap' }}>
           {label}
@@ -943,7 +1068,40 @@ function SlotRow({ label, product, source, imageIdx, onClick, onRemove, onImageC
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             {isUploaded ? (
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.text }}>已上传图片</div>
+              <>
+                <div style={{ fontSize: 12, fontWeight: 500, color: hasChromaWarn ? '#92400E' : chromaOverridden ? '#B45309' : C.text }}>已上传图片</div>
+                {analysisStatus === 'analyzing' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', border: `1.5px solid ${C.blue}`, borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+                    <span style={{ fontSize: 10, color: C.textSec }}>颜色分析中…</span>
+                  </div>
+                )}
+                {chromaOverridden && (
+                  <div style={{ fontSize: 10, color: '#B45309', marginTop: 2 }}>⚠ 强制使用（含绿色元素）</div>
+                )}
+                {hasChromaWarn && !overridePending && (
+                  <div style={{ fontSize: 10, color: '#B45309', marginTop: 2, fontWeight: 600 }}>
+                    ⚠ 含绿色元素
+                    <span
+                      onClick={e => { e.stopPropagation(); setOverridePending(true) }}
+                      style={{ marginLeft: 5, color: '#6B7280', fontWeight: 400, textDecoration: 'underline', cursor: 'pointer' }}
+                    >误识别？强制使用</span>
+                  </div>
+                )}
+                {hasChromaWarn && overridePending && (
+                  <div style={{ fontSize: 10, color: '#7F1D1D', marginTop: 2, fontWeight: 600 }}>
+                    确定强制使用？
+                    <span
+                      onClick={e => { e.stopPropagation(); onOverride(); setOverridePending(false) }}
+                      style={{ marginLeft: 5, color: '#B91C1C', textDecoration: 'underline', cursor: 'pointer' }}
+                    >确定</span>
+                    <span
+                      onClick={e => { e.stopPropagation(); setOverridePending(false) }}
+                      style={{ marginLeft: 4, color: '#6B7280', fontWeight: 400, textDecoration: 'underline', cursor: 'pointer' }}
+                    >取消</span>
+                  </div>
+                )}
+              </>
             ) : product ? (
               <div style={{ fontSize: 12, fontWeight: 500, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {product.linkNum}号 {product.name}

@@ -42,7 +42,7 @@ const CUSTOM_ACTION_LIBRARY: CustomAction[] = [
 ]
 
 // 全局技能点ID
-const GLOBAL_SKILL_IDS = ['sp1', 'sp2', 'sp9']
+const GLOBAL_SKILL_IDS = ['sp1', 'sp2', 'sp9', 'sp10']
 const AVATAR_SKILL_IDS = ['sp3', 'sp4', 'sp5', 'sp6', 'sp7', 'sp8']
 
 // 全局口令配置
@@ -291,15 +291,16 @@ const PRODUCTS_INIT: ProductItem[] = [
 
 // ============ 技能点数据（9 个，按 Figma 设计稿） ============
 const SKILL_POINTS: SkillPoint[] = [
-  { id: 'sp1', name: '伴播进入直播间', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '有请模特入场', hasPreview: true },
-  { id: 'sp2', name: '伴播退出直播间', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '请模特先下场', hasPreview: true },
-  { id: 'sp3', name: '伴播换装', triggerType: 'command', description: '说出链接号口令，自动切换对应商品形象', defaultValue: '看看 [N] 号链接的模特上身效果', hasPreview: false },
-  { id: 'sp4', name: '伴播展示穿版效果', triggerType: 'auto', description: '智能触发，根据讲解商品自动切换伴播形象', hasPreview: false },
+  { id: 'sp1', name: '伴播进入直播间', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '看下上身效果', hasPreview: true },
+  { id: 'sp2', name: '伴播退出直播间', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '模特先下场', hasPreview: true },
+  { id: 'sp3', name: '伴播换装', triggerType: 'command', description: '说出链接号口令，自动切换对应商品形象', defaultValue: '来看 [N] 号链接的上身效果', hasPreview: false },
+  { id: 'sp4', name: '立即换装', triggerType: 'auto', description: '主播讲到哪个商品，自动切换到该商品绑定的伴播形象', hasPreview: false },
   { id: 'sp5', name: '效果肯定', triggerType: 'auto', description: '智能触发，主播塑品时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：效果很好，质量不错，值得买', hasPreview: true },
   { id: 'sp6', name: '逼单助攻', triggerType: 'auto', description: '智能触发，主播逼单时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：现在下单，优惠有限，抓紧抢', hasPreview: true },
   { id: 'sp7', name: '产品演示', triggerType: 'auto', description: '智能触发，主播演示产品时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：看看这个，展示一下，细节在这', hasPreview: true },
   { id: 'sp8', name: '感谢下单', triggerType: 'auto', description: '智能触发，主播感谢用户下单时，AI 自动识别对应话术并触发伴播动作', placeholder: '多条话术可用逗号分隔，如：感谢支持，谢谢宝宝，下单了', hasPreview: true },
   { id: 'sp9', name: '整活表演', triggerType: 'command', description: '主播说出以下口令时即可触发，支持模糊匹配', defaultValue: '给大家表演一下才艺', hasPreview: true },
+  { id: 'sp10', name: '穿版展示', triggerType: 'auto', description: '伴播多种动作展示服饰的穿版上身效果', hasPreview: true },
 ]
 
 // 形象 × 技能组 动作映射（演示用：部分形象部分技能组无动作）
@@ -646,9 +647,9 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
     { avatarId: 'av2', tag: '小红', skills: mkSkills() },
   ])
   const [globalCommands, setGlobalCommands] = useState<GlobalCommands>({
-    entrance: '有请模特上场',
-    exit: '请模特先下场',
-    switch: '看看{N}号链接的模特上身效果',
+    entrance: '看下上身效果',
+    exit: '模特先下场',
+    switch: '来看[N]号链接的上身效果',
   })
 
   // 批量选择
@@ -914,6 +915,8 @@ export default function CanvasPanel({ onClose, wizardResult, onGoToManage, isLiv
   const [editingCC, setEditingCC] = useState<string | null>(null)
   const [ccCommandDraft, setCcCommandDraft] = useState('')
   const [showActionPicker, setShowActionPicker] = useState(false)
+  const [showQuickBindModal, setShowQuickBindModal] = useState(false)
+  const [quickBindSelections, setQuickBindSelections] = useState<Record<string, string | null>>({})
 
   // 删除单条话术
   const removeSkillPhrase = (pointId: string, index: number) => {
@@ -1427,11 +1430,30 @@ const openActionPreview = (ea: EventAction) => {
         {/* ===== 下半部分：直播间商品 ===== */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <div style={{ padding: '10px 16px', background: '#F7F8FA', flexShrink: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>直播间商品</div>
-            <div style={{ fontSize: 11, color: '#86909C', marginTop: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1D2129' }}>直播间商品</div>
+              <button
+                onClick={() => {
+                  const init: Record<string, string | null> = {}
+                  products.forEach(p => {
+                    const candidates = AVATAR_LIBRARY.filter(av => av.configuredProductLabels?.includes(p.name))
+                    if (candidates.length === 0) return
+                    const currentBound = p.boundAvatars[0]?.avatarId ?? null
+                    const newest = candidates.reduce((a, b) =>
+                      AVATAR_LIBRARY.indexOf(b) > AVATAR_LIBRARY.indexOf(a) ? b : a
+                    )
+                    const preselect = candidates.find(av => av.id === currentBound)?.id ?? newest.id
+                    init[p.id] = preselect
+                  })
+                  setQuickBindSelections(init)
+                  setShowQuickBindModal(true)
+                }}
+                style={{ fontSize: 11, color: '#3370FF', padding: '3px 8px', background: 'transparent', border: '1px solid #3370FF', borderRadius: 5, cursor: 'pointer' }}
+              >一键绑定</button>
+            </div>
+            <div style={{ fontSize: 11, color: '#86909C', marginTop: 2 }}>
               {products.length}个商品 · {products.filter(p => p.boundAvatars.length > 0).length}个已绑定
             </div>
-
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
             {products.map(p => {
@@ -1467,7 +1489,7 @@ const openActionPreview = (ea: EventAction) => {
                       color: hasAvatar ? '#86909C' : '#FFFFFF',
                       fontSize: 12, fontWeight: 500, cursor: 'pointer',
                     }}>
-                    {hasAvatar ? `${p.boundAvatars.length}个形象 +` : '去绑定'}
+                    {hasAvatar ? '已配置' : '去绑定'}
                   </button>
                 </div>
               )
@@ -1577,11 +1599,7 @@ const openActionPreview = (ea: EventAction) => {
                       const conflict = liveAvatars.some((ba, i) => i !== selectedLiveAvatarIdx && ba.tag === currentBoundAvatar.tag)
                       return conflict ? (
                         <div style={{ fontSize: 10, color: '#F53F3F', marginTop: 4 }}>⚠ 指定词与其他形象重复，主播说此词时可能触发错误</div>
-                      ) : (
-                        <div style={{ fontSize: 10, color: '#86909C', marginTop: 4 }}>
-                          主播说出此词时，自动切换到该形象
-                        </div>
-                      )
+                      ) : null
                     })()}
                   </div>
                 )}
@@ -1596,40 +1614,25 @@ const openActionPreview = (ea: EventAction) => {
                     const isAutoType = point.triggerType === 'auto' && !!point.placeholder
                     const phrases = isAutoType ? (currentValue as string[]) : (currentBoundAvatar?.skills?.[point.id] || [])
                     const hasValue = isAutoType ? phrases.length > 0 : !!(currentValue && typeof currentValue === 'string' && currentValue.trim())
-                    const isReadOnly = point.id === 'sp4'
+                    const isReadOnly = point.id === 'sp4' || point.id === 'sp10'
 
                     const renderLivePreviewButton = () => {
                       if (!point.hasPreview) return null
                       const isTriggered = triggeredSkill === point.id
                       const isOtherPlaying = triggeredSkill !== null && triggeredSkill !== point.id
-                      if (isLive) {
-                        return <button
-                          onClick={() => triggerSkill(point.id)}
-                          disabled={isTriggered || isOtherPlaying}
-                          title={isOtherPlaying ? '正在播放中，请等待完成' : undefined}
-                          style={{
-                            padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer',
-                            border: 'none',
-                            background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00',
-                            color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff',
-                            fontWeight: 500,
-                            transition: 'all 0.2s',
-                          }}
-                        >{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
-                      }
-                      if (point.id === 'sp1') return inlinePreview?.type === 'entrance' ? (
-                        <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
-                      ) : (
-                        <button onClick={() => openPreview('entrance')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
-                      )
-                      if (point.id === 'sp2') return inlinePreview?.type === 'exit' ? (
-                        <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
-                      ) : (
-                        <button onClick={() => openPreview('exit')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
-                      )
-                      const videoMap: Record<string, { url: string; label: string }> = { 'sp5': { url: 'https://assets.miimii.ai/b/avatar-effect-positive.mp4', label: '效果肯定' }, 'sp6': { url: 'https://assets.miimii.ai/b/avatar-effect-push.mp4', label: '逼单助攻' }, 'sp7': { url: 'https://assets.miimii.ai/b/avatar-effect-demo.mp4', label: '产品演示' }, 'sp8': { url: 'https://assets.miimii.ai/b/avatar-effect-thanks.mp4', label: '感谢下单' }, 'sp9': { url: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', label: '整活表演' } }
-                      const v = videoMap[point.id]
-                      return v ? <button onClick={() => setPreviewPopup({ videoUrl: v.url, title: `${v.label} 预览`, avatarName: selectedAvatar?.name || '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button> : null
+                      return <button
+                        onClick={() => triggerSkill(point.id)}
+                        disabled={isTriggered || isOtherPlaying}
+                        title={isOtherPlaying ? '正在播放中，请等待完成' : undefined}
+                        style={{
+                          padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer',
+                          border: 'none',
+                          background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00',
+                          color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff',
+                          fontWeight: 500,
+                          transition: 'all 0.2s',
+                        }}
+                      >{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                     }
 
                     const renderLiveValueArea = () => {
@@ -1648,9 +1651,6 @@ const openActionPreview = (ea: EventAction) => {
                                   <button onClick={() => startEditing('sp3')} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                                 </div>
                               )}
-                            </div>
-                            <div style={{ fontSize: 10, color: '#86909C', marginTop: 4 }}>
-                              绑定多个形象时，加说指定词可精准切换
                             </div>
                           </div>
                         )
@@ -1686,11 +1686,6 @@ const openActionPreview = (ea: EventAction) => {
                             <span style={{ fontSize: 13, color: '#1D2129', padding: '8px 12px', background: '#FAFAFA', borderRadius: 8, flex: 1 }}>{displayValue}</span>
                             {!isReadOnly && <button onClick={() => startEditing(point.id)} style={{ background: 'none', border: 'none', color: '#86909C', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>}
                           </div>
-                          {point.id === 'sp1' && currentBoundAvatar?.tag && (
-                            <div style={{ fontSize: 10, color: '#86909C', marginTop: 4 }}>
-                              主播说出此词时，自动切换到该形象
-                            </div>
-                          )}
                         </div>
                       )
                     }
@@ -1726,11 +1721,7 @@ const openActionPreview = (ea: EventAction) => {
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
                           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                             <MuteTalkIcon id={cc.id} />
-                            {isLive ? (
-                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered || isOtherPlaying} title={isOtherPlaying ? '正在播放中，请等待完成' : undefined} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00', color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
-                            ) : (
-                              <button onClick={() => setPreviewPopup({ videoUrl: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', title: `${cc.actionLabel} 预览`, avatarName: '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
-                            )}
+                            <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered || isOtherPlaying} title={isOtherPlaying ? '正在播放中，请等待完成' : undefined} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00', color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                             <button onClick={() => setCustomCommands(prev => prev.filter(c => c.id !== cc.id))} style={{ background: 'none', border: 'none', color: '#C9CDD4', fontSize: 16, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>×</button>
                           </div>
                         </div>
@@ -1761,29 +1752,78 @@ const openActionPreview = (ea: EventAction) => {
           </div>
         ) : (
           <>
+            {/* ---- 快速绑定候选区 ---- */}
+            {(() => {
+              const candidates = AVATAR_LIBRARY.filter(av =>
+                av.configuredProductLabels?.includes(selectedProduct.name)
+              )
+              if (candidates.length === 0) return null
+              const currentBoundId = selectedProduct.boundAvatars[0]?.avatarId ?? null
+              const hasAlternative = candidates.some(av => av.id !== currentBoundId)
+              if (!hasAlternative) return null
+              return (
+                <div style={{ marginBottom: 12, padding: '10px 12px', background: '#F0F5FF', borderRadius: 10, border: '1px solid #C5D9FF' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#1D2129' }}>快速绑定</span>
+                    <span style={{ fontSize: 11, color: '#86909C' }}>制作时已关联此商品</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    {candidates.map(av => {
+                      const isCurrent = av.id === currentBoundId
+                      if (isCurrent) return (
+                        <div key={av.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                          <div style={{ width: 52, height: 52, borderRadius: 10, overflow: 'hidden', background: '#E5E6EB', border: '2px solid #3370FF', flexShrink: 0 }}>
+                            <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                          <span style={{ fontSize: 11, color: '#3370FF', fontWeight: 500 }}>{av.name}</span>
+                          <span style={{ fontSize: 10, color: '#3370FF', background: '#E8F3FF', padding: '2px 6px', borderRadius: 4 }}>当前</span>
+                        </div>
+                      )
+                      return (
+                        <div key={av.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                          <div style={{ width: 52, height: 52, borderRadius: 10, overflow: 'hidden', background: '#E5E6EB', flexShrink: 0 }}>
+                            <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                          <span style={{ fontSize: 11, color: '#1D2129', fontWeight: 500 }}>{av.name}</span>
+                          <button
+                            onClick={() => {
+                              const existing = selectedProduct.boundAvatars.find(ba => ba.avatarId === av.id)
+                              const newBound = existing ?? { avatarId: av.id, tag: av.name, skills: mkSkills() }
+                              setProducts(prev => prev.map(p =>
+                                p.id === selectedProductId ? { ...p, boundAvatars: [newBound] } : p
+                              ))
+                            }}
+                            style={{ fontSize: 11, color: '#3370FF', padding: '3px 10px', background: '#fff', border: '1px solid #3370FF', borderRadius: 5, cursor: 'pointer', lineHeight: 1.4 }}
+                          >{currentBoundId ? '切换' : '绑定'}</button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })()}
+
             {/* ---- 形象切换条（有绑定时显示） ---- */}
             {selectedProduct && selectedProduct.boundAvatars.length > 0 ? (
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>已绑形象 · 点击切换配置</div>
+                <div style={{ fontSize: 11, color: '#86909C', marginBottom: 6 }}>当前伴播</div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {selectedProduct.boundAvatars.map((ba, idx) => {
+                  {selectedProduct.boundAvatars.slice(0, 1).map((ba, idx) => {
                     const av = AVATAR_LIBRARY.find(a => a.id === ba.avatarId)
-                    const isSelected = selectedProductAvatarIdx === idx
                     return (
-                      <div key={idx} onClick={() => setSelectedProductAvatarIdx(idx)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, background: isSelected ? '#E8F3FF' : '#F7F8FA', border: isSelected ? '1px solid #3370FF' : '1px solid #E5E6EB', transition: 'all 0.15s' }}>
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, flexShrink: 0, background: '#E8F3FF', border: '1px solid #3370FF' }}>
                         <div style={{ width: 22, height: 22, borderRadius: 4, overflow: 'hidden', background: '#F0F0F0', flexShrink: 0 }}>
                           {av && <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
-                        <span style={{ fontSize: 12, color: isSelected ? '#3370FF' : '#1D2129', fontWeight: isSelected ? 500 : 400 }}>{av?.name || '未知'}</span>
-                        <span onClick={e => {
-                          e.stopPropagation()
-                          setProducts(prev => prev.map(p => p.id === selectedProductId ? { ...p, boundAvatars: p.boundAvatars.filter((_, i) => i !== idx) } : p))
-                          if (selectedProductAvatarIdx >= selectedProduct.boundAvatars.length - 1) setSelectedProductAvatarIdx(Math.max(0, selectedProduct.boundAvatars.length - 2))
+                        <span style={{ fontSize: 12, color: '#3370FF', fontWeight: 500 }}>{av?.name || '未知'}</span>
+                        <span onClick={() => {
+                          setProducts(prev => prev.map(p => p.id === selectedProductId ? { ...p, boundAvatars: [] } : p))
+                          setSelectedProductAvatarIdx(0)
                         }} style={{ fontSize: 11, color: '#C9CDD4', cursor: 'pointer', marginLeft: 2, lineHeight: 1 }}>✕</span>
                       </div>
                     )
                   })}
-                  <button onClick={() => { setBindMode('single'); setShowAvatarSwitch(true) }} style={{ padding: '6px 10px', borderRadius: 8, border: '1px dashed #3370FF', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>+ 再绑一个</button>
+                  <button onClick={() => { setBindMode('single'); setShowAvatarSwitch(true) }} style={{ padding: '6px 10px', borderRadius: 8, border: '1px dashed #86909C', background: 'transparent', color: '#86909C', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>切换形象</button>
                 </div>
               </div>
             ) : null}
@@ -1900,11 +1940,7 @@ const openActionPreview = (ea: EventAction) => {
                   const conflict = selectedProduct!.boundAvatars.some((ba, i) => i !== selectedProductAvatarIdx && ba.tag === currentBoundAvatar.tag)
                   return conflict ? (
                     <div style={{ fontSize: 10, color: '#F53F3F', marginTop: 4 }}>⚠ 指定词与其他形象重复，主播说此词时可能触发错误</div>
-                  ) : (
-                    <div style={{ fontSize: 10, color: '#86909C', marginTop: 4 }}>
-                      主播说出此词时，自动切换到该形象
-                    </div>
-                  )
+                  ) : null
                 })()}
               </div>
             )}
@@ -1920,7 +1956,7 @@ const openActionPreview = (ea: EventAction) => {
                 const isAutoType = point.triggerType === 'auto' && !!point.placeholder
                 const phrases = isAutoType ? (currentValue as string[]) : []
                 const hasValue = isAutoType ? phrases.length > 0 : !!(currentValue && typeof currentValue === 'string' && currentValue.trim())
-                const isReadOnly = point.id === 'sp4' // 伴播展示穿版效果永远只读
+                const isReadOnly = point.id === 'sp4' || point.id === 'sp10' // 伴播展示穿版效果永远只读
                 const hasPreview = point.hasPreview
 
                 // 渲染预览/触发按钮
@@ -1928,52 +1964,19 @@ const openActionPreview = (ea: EventAction) => {
                   if (!hasPreview) return null
                   const isTriggered = triggeredSkill === point.id
                   const isOtherPlaying = triggeredSkill !== null && triggeredSkill !== point.id
-                  if (isLive) {
-                    return <button
-                      onClick={() => triggerSkill(point.id)}
-                      disabled={isTriggered || isOtherPlaying}
-                      title={isOtherPlaying ? '正在播放中，请等待完成' : undefined}
-                      style={{
-                        padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer',
-                        border: 'none',
-                        background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00',
-                        color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff',
-                        fontWeight: 500,
-                        transition: 'all 0.2s',
-                      }}
-                    >{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
-                  }
-                  if (point.id === 'sp1') {
-                    return inlinePreview?.type === 'entrance' ? (
-                      <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
-                    ) : (
-                      <button onClick={() => openPreview('entrance')} disabled={!selectedAvatar} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: selectedAvatar ? '#3370FF' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed' }}>预览效果</button>
-                    )
-                  }
-                  if (point.id === 'sp2') {
-                    return inlinePreview?.type === 'exit' ? (
-                      <button onClick={() => switchInlinePreview('default')} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>取消</button>
-                    ) : (
-                      <button onClick={() => openPreview('exit')} disabled={!selectedAvatar} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: selectedAvatar ? '#3370FF' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed' }}>预览效果</button>
-                    )
-                  }
-                  // 其他有预览的技能点
-                  return (
-                    <button onClick={() => {
-                      const videoMap: Record<string, { url: string, label: string }> = {
-                        'sp5': { url: 'https://assets.miimii.ai/b/avatar-effect-positive.mp4', label: '效果肯定' },
-                        'sp6': { url: 'https://assets.miimii.ai/b/avatar-effect-push.mp4', label: '逼单助攻' },
-                        'sp7': { url: 'https://assets.miimii.ai/b/avatar-effect-demo.mp4', label: '产品演示' },
-                        'sp8': { url: 'https://assets.miimii.ai/b/avatar-effect-thanks.mp4', label: '感谢下单' },
-                        'sp9': { url: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', label: '整活表演' },
-                      }
-                      const v = videoMap[point.id]
-                      if (v && selectedAvatar) {
-                        const avatarName = AVATAR_LIBRARY.find(a => a.id === selectedAvatar.id)?.name || ''
-                        setPreviewPopup({ videoUrl: v.url, title: `${v.label} 预览`, avatarName })
-                      }
-                    }} disabled={!selectedAvatar} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: selectedAvatar ? '#3370FF' : '#C9CDD4', fontSize: 12, cursor: selectedAvatar ? 'pointer' : 'not-allowed' }}>预览效果</button>
-                  )
+                  return <button
+                    onClick={() => triggerSkill(point.id)}
+                    disabled={isTriggered || isOtherPlaying}
+                    title={isOtherPlaying ? '正在播放中，请等待完成' : undefined}
+                    style={{
+                      padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer',
+                      border: 'none',
+                      background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00',
+                      color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff',
+                      fontWeight: 500,
+                      transition: 'all 0.2s',
+                    }}
+                  >{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                 }
 
                 // 渲染编辑按钮（显示态时）
@@ -2113,11 +2116,6 @@ const openActionPreview = (ea: EventAction) => {
                             <span style={{ fontSize: 13, color: '#1D2129', padding: '8px 12px', background: '#FAFAFA', borderRadius: 8, flex: 1 }}>{displayValue}</span>
                             {renderEditButton()}
                           </div>
-                          {point.id === 'sp1' && currentBoundAvatar?.tag && (
-                            <div style={{ fontSize: 10, color: '#86909C', marginTop: 4 }}>
-                              主播说出此词时，自动切换到该形象
-                            </div>
-                          )}
                         </div>
                       )
                     } else {
@@ -2186,11 +2184,7 @@ const openActionPreview = (ea: EventAction) => {
                           <span style={{ fontSize: 13, color: '#1D2129', fontWeight: 600 }}>{cc.actionLabel}</span>
                           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                             <MuteTalkIcon id={cc.id} />
-                            {isLive ? (
-                              <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered || isOtherPlaying} title={isOtherPlaying ? '正在播放中，请等待完成' : undefined} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00', color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
-                            ) : (
-                              <button onClick={() => setPreviewPopup({ videoUrl: 'https://assets.miimii.ai/b/avatar-effect-fun.mp4', title: `${cc.actionLabel} 预览`, avatarName: '' })} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(51,112,255,0.3)', background: 'transparent', color: '#3370FF', fontSize: 12, cursor: 'pointer' }}>预览效果</button>
-                            )}
+                            <button onClick={() => triggerSkill(cc.id)} disabled={isTriggered || isOtherPlaying} title={isOtherPlaying ? '正在播放中，请等待完成' : undefined} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: (isTriggered || isOtherPlaying) ? 'default' : 'pointer', border: 'none', background: isTriggered ? '#E6F9EF' : isOtherPlaying ? '#F2F3F5' : '#FF6A00', color: isTriggered ? '#00B42A' : isOtherPlaying ? '#C9CDD4' : '#fff', fontWeight: 500, transition: 'all 0.2s' }}>{isTriggered ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginRight: 2 }}><span style={{ width: 2, height: 8, background: '#00B42A', borderRadius: 1, animation: 'bar1 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 12, background: '#00B42A', borderRadius: 1, animation: 'bar2 0.8s ease-in-out infinite' }}/><span style={{ width: 2, height: 6, background: '#00B42A', borderRadius: 1, animation: 'bar3 0.8s ease-in-out infinite' }}/></span>播放中</> : '▶ 触发'}</button>
                             <button onClick={() => setCustomCommands(prev => prev.filter(c => c.id !== cc.id))} style={{ background: 'none', border: 'none', color: '#C9CDD4', fontSize: 16, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>×</button>
                           </div>
                         </div>
@@ -2245,6 +2239,102 @@ const openActionPreview = (ea: EventAction) => {
           avatarName={previewPopup.avatarName}
           onClose={() => setPreviewPopup(null)} />
       )}
+
+      {/* 一键绑定预览弹窗 */}
+      {showQuickBindModal && (() => {
+        const rows = products
+          .map(p => {
+            const associated = AVATAR_LIBRARY.filter(av => av.configuredProductLabels?.includes(p.name))
+            return { p, associated }
+          })
+          .filter(({ associated }) => associated.length > 0)
+
+        const productsAffected = Object.values(quickBindSelections).filter(id => id !== null).length
+
+        return (
+          <div onClick={() => setShowQuickBindModal(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, width: 520, maxHeight: '80%', display: 'flex', flexDirection: 'column', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', fontFamily: C.font }}>
+              {/* 头部 */}
+              <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid #E5E6EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: '#1D2129' }}>一键绑定关联形象</div>
+                  <div style={{ fontSize: 11, color: '#86909C', marginTop: 2 }}>以下是制作时各商品关联的形象，取消勾选可跳过</div>
+                </div>
+                <button onClick={() => setShowQuickBindModal(false)} style={{ background: 'none', border: 'none', fontSize: 20, color: '#86909C', cursor: 'pointer', lineHeight: 1 }}>×</button>
+              </div>
+
+              {/* 内容列表 */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px' }}>
+                {rows.length === 0 ? (
+                  <div style={{ textAlign: 'center', color: '#86909C', paddingTop: 40, fontSize: 13 }}>暂无商品配置了关联形象</div>
+                ) : rows.map(({ p, associated }) => {
+                  const selectedId = quickBindSelections[p.id] ?? null
+                  const currentBoundId = p.boundAvatars[0]?.avatarId ?? null
+                  return (
+                    <div key={p.id} style={{ marginBottom: 16 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1D2129', marginBottom: 8 }}>{p.name}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {associated.map(av => {
+                          const isSelected = selectedId === av.id
+                          const isCurrent = currentBoundId === av.id
+                          return (
+                            <div
+                              key={av.id}
+                              onClick={() => setQuickBindSelections(prev => ({ ...prev, [p.id]: av.id }))}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                padding: '5px 10px', borderRadius: 8, cursor: 'pointer',
+                                border: isSelected ? '1px solid #3370FF' : '1px solid #E5E6EB',
+                                background: isSelected ? '#E8F3FF' : '#fff',
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              <div style={{ width: 28, height: 28, borderRadius: 6, overflow: 'hidden', background: '#F0F0F0', flexShrink: 0 }}>
+                                <ChromaKeyImage src={av.preview} alt={av.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              </div>
+                              <span style={{ fontSize: 12, color: isSelected ? '#3370FF' : '#1D2129', fontWeight: isSelected ? 500 : 400 }}>
+                                {av.name}
+                              </span>
+                              {isCurrent && <span style={{ fontSize: 10, color: '#86909C', background: '#F2F3F5', padding: '1px 4px', borderRadius: 3 }}>当前</span>}
+                              {isSelected && <span style={{ fontSize: 12, color: '#3370FF' }}>✓</span>}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* 底部操作栏 */}
+              <div style={{ padding: '12px 20px', borderTop: '1px solid #E5E6EB', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 12, color: '#86909C' }}>
+                  {productsAffected > 0 ? `将更新 ${productsAffected} 个商品的绑定` : '未选择任何形象'}
+                </span>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => setShowQuickBindModal(false)} style={{ padding: '6px 16px', borderRadius: 8, border: '1px solid #E5E6EB', background: '#fff', color: '#1D2129', fontSize: 13, cursor: 'pointer' }}>取消</button>
+                  <button
+                    onClick={() => {
+                      setProducts(prev => prev.map(p => {
+                        const avatarId = quickBindSelections[p.id]
+                        if (!avatarId) return p
+                        const av = AVATAR_LIBRARY.find(a => a.id === avatarId)
+                        if (!av) return p
+                        const existing = p.boundAvatars.find(ba => ba.avatarId === avatarId)
+                        const newBound = existing ?? { avatarId: av.id, tag: av.name, skills: mkSkills() }
+                        return { ...p, boundAvatars: [newBound] }
+                      }))
+                      setShowQuickBindModal(false)
+                    }}
+                    disabled={productsAffected === 0}
+                    style={{ padding: '6px 16px', borderRadius: 8, border: 'none', background: productsAffected > 0 ? '#3370FF' : '#E5E6EB', color: productsAffected > 0 ? '#fff' : '#C9CDD4', fontSize: 13, fontWeight: 500, cursor: productsAffected > 0 ? 'pointer' : 'default' }}
+                  >确认绑定</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* 动作库选择弹窗 */}
       {showActionPicker && (() => {

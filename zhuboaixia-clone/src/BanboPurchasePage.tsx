@@ -4,17 +4,29 @@ import { tokens } from './tokens'
 const T = tokens
 const C = T.colors
 
-const UNIT_PRICE = 158
-const BULK_PRICE = 88
-const BULK_MIN = 20
+const TIERS = [
+  { key: 'starter', label: '随心购', minQty: 1,   maxQty: 49,       price: 200, discount: '5折' },
+  { key: 'growth',  label: '超值包', minQty: 50,  maxQty: 99,       price: 160, discount: '4折', recommended: true },
+  { key: 'scale',   label: '大促包', minQty: 100, maxQty: Infinity, price: 120, discount: '3折' },
+]
+const FULL_PRICE = 400
+
+function getActiveTier(qty: number) {
+  let result = TIERS[0]
+  for (const t of TIERS) { if (qty >= t.minQty) result = t }
+  return result
+}
 
 export default function BanboPurchasePage({ onBack, hideHeader }: { onBack?: () => void; hideHeader?: boolean }) {
   const [qty, setQty] = useState(1)
 
-  const isBulk = qty >= BULK_MIN
-  const unitPrice = isBulk ? BULK_PRICE : UNIT_PRICE
-  const total = qty * unitPrice
-  const saving = isBulk ? qty * (UNIT_PRICE - BULK_PRICE) : 0
+  const tier = getActiveTier(qty)
+  const total = qty * tier.price
+  const saved = qty * (FULL_PRICE - tier.price)
+
+  // 下一档升级提示
+  const nextTier = TIERS[TIERS.indexOf(tier) + 1]
+  const toNext = nextTier ? nextTier.minQty - qty : 0
 
   function changeQty(delta: number) {
     setQty(q => Math.max(1, q + delta))
@@ -30,7 +42,6 @@ export default function BanboPurchasePage({ onBack, hideHeader }: { onBack?: () 
       height: '100%', display: 'flex', flexDirection: 'column',
       background: '#fff', fontFamily: T.fonts.family,
     }}>
-      {/* 顶栏：只保留返回 */}
       {!hideHeader && (
         <div style={{
           padding: '0 24px', height: 48,
@@ -51,81 +62,91 @@ export default function BanboPurchasePage({ onBack, hideHeader }: { onBack?: () 
         </div>
       )}
 
-      {/* 内容区 */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '36px 24px 48px' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-          {/* 页面标题 */}
+          {/* 标题 */}
           <div>
             <div style={{ fontSize: 20, fontWeight: 700, color: C.textPrimary, marginBottom: 6 }}>
-              增购伴播形象次数
+              增购童装伴播形象次数
             </div>
-            <div style={{ fontSize: 13, color: C.textSecondary }}>
+            <div style={{ fontSize: 13, color: C.textSecondary, marginBottom: 10 }}>
               购买后次数即时到账，有效期 1 年
+            </div>
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', gap: 7,
+              padding: '9px 12px', borderRadius: 8,
+              background: '#FFF7E6', borderLeft: '3px solid #F59E0B',
+            }}>
+              <span style={{ fontSize: 13, color: '#B45309', lineHeight: 1 }}>ⓘ</span>
+              <span style={{ fontSize: 12, color: '#92400E', lineHeight: '18px' }}>
+                本次数仅适用于童装品类伴播形象，不可用于其他品类
+              </span>
             </div>
           </div>
 
-          {/* 两个定价卡 */}
-          <div style={{ display: 'flex', gap: 14 }}>
-            {/* 灵活购 */}
-            <div
-              onClick={() => { if (isBulk) setQty(1) }}
-              style={{
-                flex: 1, borderRadius: 14, padding: '22px 20px',
-                background: !isBulk ? '#F5F4FF' : '#FAFAFA',
-                border: `2px solid ${!isBulk ? C.primary : '#E5E6EB'}`,
-                cursor: isBulk ? 'pointer' : 'default',
-                transition: 'border-color 0.15s, background 0.15s',
-              }}
-            >
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 12 }}>
-                灵活购
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 14 }}>
-                <span style={{ fontSize: 30, fontWeight: 700, color: C.textPrimary }}>¥{UNIT_PRICE}</span>
-                <span style={{ fontSize: 12, color: C.textSecondary }}> / 次</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <span style={{ fontSize: 12, color: C.textSecondary }}>随买随用，无数量限制</span>
-                <span style={{ fontSize: 12, color: C.textSecondary }}>有效期 1 年</span>
-              </div>
-            </div>
+          {/* 三档阶梯卡片 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {TIERS.map(t => {
+              const isActive = tier.key === t.key
+              return (
+                <div
+                  key={t.key}
+                  onClick={() => setQty(t.minQty)}
+                  style={{
+                    borderRadius: 12, padding: '14px 18px',
+                    background: isActive ? '#F5F4FF' : '#FAFAFA',
+                    border: `2px solid ${isActive ? C.primary : '#E5E6EB'}`,
+                    cursor: isActive ? 'default' : 'pointer',
+                    transition: 'border-color 0.15s, background 0.15s',
+                    display: 'flex', alignItems: 'center',
+                    position: 'relative',
+                  }}
+                >
+                  {/* 推荐角标 */}
+                  {t.recommended && (
+                    <div style={{
+                      position: 'absolute', top: -1, right: 14,
+                      background: '#F43F5E', color: '#fff',
+                      fontSize: 10, fontWeight: 600,
+                      padding: '2px 9px',
+                      borderRadius: '0 0 7px 7px',
+                    }}>推荐</div>
+                  )}
 
-            {/* 超值包 */}
-            <div
-              onClick={() => { if (!isBulk) setQty(BULK_MIN) }}
-              style={{
-                flex: 1, borderRadius: 14, padding: '22px 20px',
-                background: isBulk ? '#F5F4FF' : '#FAFAFA',
-                border: `2px solid ${isBulk ? C.primary : '#E5E6EB'}`,
-                cursor: !isBulk ? 'pointer' : 'default',
-                transition: 'border-color 0.15s, background 0.15s',
-                position: 'relative', overflow: 'hidden',
-              }}
-            >
-              {/* 推荐角标 */}
-              <div style={{
-                position: 'absolute', top: 12, right: 14,
-                background: '#F43F5E', color: '#fff',
-                fontSize: 10, fontWeight: 600,
-                padding: '2px 8px', borderRadius: 10,
-              }}>省 {Math.round((1 - BULK_PRICE / UNIT_PRICE) * 100)}%</div>
+                  {/* 左：档位名 + 数量范围 */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: 14, fontWeight: 600,
+                      color: isActive ? C.primary : C.textPrimary,
+                      marginBottom: 3,
+                    }}>
+                      {t.label}
+                    </div>
+                    <div style={{ fontSize: 12, color: C.textTertiary }}>
+                      {t.maxQty === Infinity ? `${t.minQty} 次及以上` : `${t.minQty}–${t.maxQty} 次`}
+                    </div>
+                  </div>
 
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 12 }}>
-                超值包
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 14 }}>
-                <span style={{ fontSize: 30, fontWeight: 700, color: C.textPrimary }}>¥{BULK_PRICE}</span>
-                <span style={{ fontSize: 12, color: C.textSecondary }}> / 次</span>
-                <span style={{ fontSize: 11, color: C.textTertiary, textDecoration: 'line-through', marginLeft: 4 }}>
-                  ¥{UNIT_PRICE}
-                </span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <span style={{ fontSize: 12, color: C.textSecondary }}>{BULK_MIN} 次起购</span>
-                <span style={{ fontSize: 12, color: C.textSecondary }}>有效期 1 年</span>
-              </div>
-            </div>
+                  {/* 右：价格 + 折扣 */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                    <span style={{
+                      fontSize: 24, fontWeight: 700,
+                      color: isActive ? C.primary : C.textPrimary,
+                    }}>¥{t.price}</span>
+                    <span style={{ fontSize: 12, color: C.textSecondary }}>/次</span>
+                    <span style={{
+                      marginLeft: 6,
+                      background: isActive ? C.primary : '#E5E6EB',
+                      color: isActive ? '#fff' : C.textSecondary,
+                      fontSize: 11, fontWeight: 600,
+                      padding: '2px 7px', borderRadius: 6,
+                      transition: 'background 0.15s, color 0.15s',
+                    }}>{t.discount}</span>
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
           {/* 数量 + 结算 */}
@@ -135,11 +156,11 @@ export default function BanboPurchasePage({ onBack, hideHeader }: { onBack?: () 
           }}>
             {/* 数量行 */}
             <div style={{
-              padding: '18px 20px',
+              padding: '16px 20px',
               display: 'flex', alignItems: 'center', gap: 12,
               borderBottom: `1px solid ${C.border}`,
             }}>
-              <span style={{ fontSize: 13, color: C.textSecondary, marginRight: 4 }}>购买数量</span>
+              <span style={{ fontSize: 13, color: C.textSecondary, marginRight: 4, flexShrink: 0 }}>购买数量</span>
               <button
                 onClick={() => changeQty(-1)}
                 style={{
@@ -173,18 +194,18 @@ export default function BanboPurchasePage({ onBack, hideHeader }: { onBack?: () 
                 }}
               >+</button>
               <span style={{ fontSize: 12, color: C.textTertiary }}>次</span>
-              {/* 提示切换到超值包 */}
-              {!isBulk && (
+              {/* 升档提示 */}
+              {nextTier && toNext <= 10 && (
                 <span
-                  onClick={() => setQty(BULK_MIN)}
-                  style={{ fontSize: 12, color: C.primary, cursor: 'pointer', marginLeft: 'auto' }}
+                  onClick={() => setQty(nextTier.minQty)}
+                  style={{ fontSize: 12, color: C.primary, cursor: 'pointer', marginLeft: 'auto', flexShrink: 0 }}
                 >
-                  买 {BULK_MIN} 次享超值包价 →
+                  再加 {toNext} 次享{nextTier.discount} →
                 </span>
               )}
-              {isBulk && (
-                <span style={{ fontSize: 12, color: '#16A34A', marginLeft: 'auto' }}>
-                  已享超值包价 ✓
+              {!nextTier && (
+                <span style={{ fontSize: 12, color: '#16A34A', marginLeft: 'auto', flexShrink: 0 }}>
+                  已享最低折扣 ✓
                 </span>
               )}
             </div>
@@ -192,15 +213,15 @@ export default function BanboPurchasePage({ onBack, hideHeader }: { onBack?: () 
             {/* 结算行 */}
             <div style={{ padding: '18px 20px', background: '#FAFAFA' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <span style={{ fontSize: 13, color: C.textSecondary }}>
-                  {qty} 次 × ¥{unitPrice}
-                  {isBulk && (
-                    <span style={{ marginLeft: 8, fontSize: 11, color: '#16A34A' }}>
-                      省 ¥{saving}
-                    </span>
-                  )}
-                </span>
-                <span style={{ fontSize: 22, fontWeight: 700, color: C.textPrimary }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span style={{ fontSize: 13, color: C.textSecondary }}>
+                    {qty} 次 × ¥{tier.price}（{tier.discount}）
+                  </span>
+                  <span style={{ fontSize: 11, color: '#16A34A' }}>
+                    已省 ¥{saved}
+                  </span>
+                </div>
+                <span style={{ fontSize: 24, fontWeight: 700, color: C.textPrimary }}>
                   ¥{total}
                 </span>
               </div>

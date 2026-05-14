@@ -4,7 +4,7 @@
 
 AI 虚拟形象直播助播服务，服务抖店达人商家，提供数字人形象制作 + 直播间伴播软件。
 
-- **线上地址**：https://zhuboaixia-clone.vercel.app
+- **线上地址**：http://101.42.25.233/zhuboaixia/（ECS，2026-05-12起；Vercel token 已过期）
 - **Feishu PRD**：https://vqz9o07xyt.feishu.cn/docx/ScyQdONt3oVxktx1ioXctNznnHg
 
 ## 技术栈
@@ -17,6 +17,14 @@ React + TypeScript + Vite + Tailwind CSS + Canvas chroma key（绿幕抠图）
 - Canvas 绿幕实时抠图 + 绑定形象叠加
 - 多形象切换（直播形象 / 商品形象）
 - NDI 输出到直播伴侣（模拟按钮）
+- 搭话暂停开关（技能卡标题栏 mic/mic-off 图标，进出场/表演默认暂停搭话）
+- 穿搭参考图上传校验（JPG/PNG/WebP ≤7MB，单边≤3072px，像素≥196，同时满足火山引擎+NanoBanana Pro）
+- 绿色服饰检测软拦截（BanboCustomizePage + Step3AvatarGen，2026-05-11）：上传分析后 `chromaBg !== 'green' && !chromaOverridden` 时软拦截，按钮禁用但警告条末尾追加"误识别？强制使用"灰色链接；点击后二次确认，确认后设 `chromaOverridden: true` 解锁按钮，confirmed 阶段保留 ⚠ 琥珀色标记；`getConfigFinalChroma` 跳过已覆盖槽位；过渡版 mock 固定返回 `'blue'`，生产版接 `clothing_analysis_v1` 的 `chroma_bg` 字段
+- 商品形象绑定（CanvasPanel，2026-05-08）：过渡版单选限制（每商品仅1个伴播）；右侧快速绑定卡片（`configuredProductLabels` 关联候选，当前绑定标"当前"，其余可一键切换）；商品列表头部「一键绑定」弹窗（单选 radio，无绑定时默认选 AVATAR_LIBRARY 最新 index 候选）
+- 口令场景化优化（CanvasPanel SKILL_POINTS，2026-05-11）：默认口令从晚会语气改为直播讲品话术；进入直播间 `看下上身效果`（2026-05-13精简，原`给大家看下上身效果`）、退出直播间 `模特先下场`、换装 `来看[N]号链接的上身效果`
+- 技能名称优化（CanvasPanel SKILL_POINTS，2026-05-13）：sp4 `自动换装` → `立即换装`；sp10 `暖场` → `穿版展示`，描述改为"伴播多种动作展示服饰的穿版上身效果"
+- 穿搭参考图 tip 文案（BanboCustomizePage，2026-05-13）：改为"优先上传服装上身图，并确保服饰关键细节、logo、图案等未被遮挡。最佳实践"（链接 href="#" 待沈豪填充）
+- 动作视频生成卡片（BanboCustomizePage Step3，2026-05-09）：定装照确认后自动触发 `handleGenerateActions()`，生成进场×1 + 出场×1 + 暖场×8 共10张卡片，默认选中6个暖场；进场/出场固定不可替换，暖场每张可单独「换动作」重新生成；动作库按5年龄段×2性别=10组合各有独立模板
 
 ## 规模化方案
 
@@ -60,8 +68,11 @@ Body: {"start_index": N, "end_index": M}  # end 是 exclusive
 ## 部署
 
 ```bash
+cd /Users/yuchuyang/.openclaw/workspace-miijia2/zhuboaixia-clone
 npm run build
-vercel deploy --prod --token $VERCEL_TOKEN --yes
+rsync -avz --delete -e "ssh -p 65323" dist/ root@101.42.25.233:/var/www/miaofaai/zhuboaixia/
+ssh -p 65323 root@101.42.25.233 "chmod -R 755 /var/www/miaofaai/zhuboaixia/"
 ```
 
-Token 在 Claude Code memory（project_zhuboaixia.md）里，不进代码/git。
+ECS: `101.42.25.233`，SSH port `65323`，root 账户。rsync 后必须 chmod，否则 nginx 返回 403。
+Vercel token 已过期（2026-05-12），不再用 Vercel。
