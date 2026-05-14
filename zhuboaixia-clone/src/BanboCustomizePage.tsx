@@ -142,9 +142,9 @@ function makeActionCards(): ActionCard[] {
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
 function Section({
-  num, title, locked, done, inactive, children,
+  num, title, locked, done, inactive, children, titleExtra,
 }: {
-  num: number; title: string; locked: boolean; done: boolean; inactive?: boolean; children: React.ReactNode
+  num: number; title: string; locked: boolean; done: boolean; inactive?: boolean; children: React.ReactNode; titleExtra?: React.ReactNode
 }) {
   return (
     <div style={{
@@ -182,6 +182,7 @@ function Section({
         {done && !locked && (
           <span style={{ fontSize: 11, color: '#16A34A', marginLeft: 4 }}>已完成</span>
         )}
+        {titleExtra && <div style={{ marginLeft: 'auto' }}>{titleExtra}</div>}
       </div>
       {/* 区块内容 */}
       <div style={{ padding: '20px', background: '#fff', pointerEvents: inactive ? 'none' : 'auto' }}>
@@ -618,6 +619,12 @@ export default function BanboCustomizePage({
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
+  // v1/v2 切换
+  const [step2Version, setStep2Version] = useState<'v1' | 'v2'>('v1')
+  // v2 专用：上身参考图（版型图，可选，最多1张）
+  const [fitRefImage, setFitRefImage] = useState<RefImage | null>(null)
+  const fitFileRef = useRef<HTMLInputElement>(null)
+
   const sec2Ref = useRef<HTMLDivElement>(null)
   const sec3Ref = useRef<HTMLDivElement>(null)
 
@@ -1040,7 +1047,22 @@ export default function BanboCustomizePage({
 
         {/* ── 区块2：配置穿搭 ── */}
         <div ref={sec2Ref}>
-          <Section num={2} title="配置穿搭" locked={!step1Done} done={portraitStatus === 'confirmed' && actionsGenerated} inactive={actionsGenerated}>
+          <Section num={2} title="配置穿搭" locked={!step1Done} done={portraitStatus === 'confirmed' && actionsGenerated} inactive={actionsGenerated}
+            titleExtra={
+              <div style={{ display: 'flex', gap: 2, padding: '2px', background: '#F3F4F6', borderRadius: 8 }}>
+                {(['v1', 'v2'] as const).map(v => (
+                  <button key={v} onClick={() => setStep2Version(v)} style={{
+                    padding: '2px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+                    border: 'none', fontFamily: T.fonts.family, fontWeight: step2Version === v ? 600 : 400,
+                    background: step2Version === v ? '#fff' : 'transparent',
+                    color: step2Version === v ? C.primary : C.textTertiary,
+                    boxShadow: step2Version === v ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.15s',
+                  }}>{v === 'v1' ? '当前版' : '上身图优先'}</button>
+                ))}
+              </div>
+            }
+          >
             <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
 
               {/* 左栏：原始形象 / 定装照（动态切换） */}
@@ -1223,16 +1245,76 @@ export default function BanboCustomizePage({
               )}
             </div>
 
-            {/* 穿搭参考图 */}
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary, marginBottom: 3 }}>穿搭参考图</div>
-              <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 6 }}>
-                上传商品图或模特图，选择需要参考的部位（最多 3 张）
+            {/* 穿搭参考图 — v1/v2 切换 */}
+            {step2Version === 'v2' && (
+              <div style={{ marginBottom: 20 }}>
+                {/* v2：版型参考图（上身图，可选） */}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary }}>版型参考图</div>
+                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 6, background: '#F3F4F6', color: C.textTertiary }}>可选 · 最多 1 张</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 6 }}>
+                    上传同款服装的真实上身照，AI 将参考其版型和松量，平铺图控外观细节
+                  </div>
+                  {fitRefImage ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
+                      <div style={{ width: 40, height: 50, borderRadius: 5, overflow: 'hidden', flexShrink: 0, background: '#F3F4F6' }}>
+                        <img src={fitRefImage.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#FDF4FF', color: '#7E22CE', border: '1px solid #E9D5FF' }}>人物穿搭图</span>
+                        <span style={{ fontSize: 11, color: '#7C3AED', fontWeight: 500 }}>版型参考已设置</span>
+                      </div>
+                      <button onClick={() => setFitRefImage(null)} style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: C.textTertiary, fontSize: 16, padding: '0 4px', lineHeight: 1,
+                      }}>×</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => fitFileRef.current?.click()} style={{
+                      width: '100%', padding: '8px 0', borderRadius: 8, fontSize: 12,
+                      border: `1px dashed ${C.border}`, background: '#FAFAFA',
+                      color: C.textSecondary, cursor: 'pointer', fontFamily: T.fonts.family,
+                    }}>＋ 上传上身参考图（可跳过）</button>
+                  )}
+                  <input ref={fitFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const url = URL.createObjectURL(file)
+                    setFitRefImage({ id: 'fit', url, phase: 'confirmed', imageType: 'human_outfit', selectedParts: ['上衣', '裤/裙', '鞋子'] })
+                    e.target.value = ''
+                  }} />
+                </div>
+
+                {/* v2：外观参考图（平铺图，必填） */}
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary, marginBottom: 3 }}>
+                  外观参考图
+                  <span style={{ color: '#EF4444', marginLeft: 3 }}>*</span>
+                </div>
+                <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 6 }}>
+                  上传商品平铺图或白底图，AI 将参考颜色、图案、面料细节（最多 3 张）
+                </div>
+                <div style={{ fontSize: 11, color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 6, padding: '5px 9px', marginBottom: 10, lineHeight: 1.5 }}>
+                  优先上传纯白底平铺图，确保服饰关键细节、logo、图案完整可见。{' '}
+                  <a href="#" style={{ color: '#92400E', textDecoration: 'underline' }}>最佳实践</a>
+                </div>
               </div>
-              <div style={{ fontSize: 11, color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 6, padding: '5px 9px', marginBottom: 10, lineHeight: 1.5 }}>
-                优先上传服装上身图，并确保服饰关键细节、logo、图案等未被遮挡。{' '}
-                <a href="#" style={{ color: '#92400E', textDecoration: 'underline' }}>最佳实践</a>
-              </div>
+            )}
+
+            <div style={{ display: step2Version === 'v2' ? 'block' : 'block' }}>
+              {step2Version === 'v1' && (
+                <>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.textPrimary, marginBottom: 3 }}>穿搭参考图</div>
+                  <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 6 }}>
+                    上传商品图或模特图，选择需要参考的部位（最多 3 张）
+                  </div>
+                  <div style={{ fontSize: 11, color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 6, padding: '5px 9px', marginBottom: 10, lineHeight: 1.5 }}>
+                    优先上传服装上身图，并确保服饰关键细节、logo、图案等未被遮挡。{' '}
+                    <a href="#" style={{ color: '#92400E', textDecoration: 'underline' }}>最佳实践</a>
+                  </div>
+                </>
+              )}
 
               {refImages.map(img => {
                 const ALL_PARTS: RefImagePart[] = ['上衣', '裤/裙', '鞋子']
@@ -1467,6 +1549,20 @@ export default function BanboCustomizePage({
               })()}
               <input ref={refFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleRefUpload} />
             </div>
+
+            {/* v2：覆盖状态提示条（替换 v1 的绿色提示） */}
+            {step2Version === 'v2' && allPartsCovered && (
+              <div style={{
+                marginTop: 8, padding: '5px 9px', borderRadius: 6,
+                background: fitRefImage ? '#F5F4FF' : '#F0FDF4',
+                border: `1px solid ${fitRefImage ? '#DDD9FF' : '#86EFAC'}`,
+                fontSize: 11, color: fitRefImage ? C.primary : '#16A34A', lineHeight: 1.5,
+              }}>
+                {fitRefImage
+                  ? '✓ 上衣、裤/裙、鞋子均已设置外观参考，版型参考已设置，无需继续上传'
+                  : '✓ 上衣、裤/裙、鞋子均已设置外观参考，无需继续上传（可选：上传上身图补充版型参考）'}
+              </div>
+            )}
 
               </div>{/* 右栏 end */}
             </div>{/* flex row end */}
